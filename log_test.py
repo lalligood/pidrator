@@ -9,9 +9,10 @@ __author__ = 'lalligood'
 
 import sys
 import time
-# https://docs.python.org/2/howto/logging.html
 import logging
-#import psycopg2 as pg2 # Not used yet -- for read/write to postgres
+# https://docs.python.org/2/howto/logging.html
+#import psycopg2 as pg2
+# http://zetcode.com/db/postgresqlpythontutorial/
 
 def userquit():
     print "Terminating at user request."
