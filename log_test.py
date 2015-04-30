@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# pidrator.py
+# log_test.py
 __author__ = 'lalligood'
 # This is designed to use the Raspberry Pi, PowerTail, & thermal
 # sensor to control either a food dehydrator or slow cooker.
@@ -21,7 +21,12 @@ def userquit():
 def userwait():
     time.sleep(5)
 
-logging.basicConfig(filename='pidrator.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s', datefmt='%Y-%m-%d %I:%M:%S%p')
+logfilename = 'pidrator.log'
+loglevel = logging.DEBUG
+logformat = '%(asctime)s %(levelname)s: %(message)s'
+logdateformat = '%Y-%m-%d %I:%M:%S%p'
+
+logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=logdateformat)
 logging.info('Starting up pidrator engine.')
 userwait()
 logging.info('Shutting down pidrator engine.')
