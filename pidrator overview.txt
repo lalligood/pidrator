@@ -15,10 +15,12 @@ IV.     Get user input
     1.      Ask what you are cooking
     2.      Ask how long you want to cook for
     3.      Ask whether to turn off & remain off or keep warm
+    4.      Save current/existing job
+    5.      Option to select & re-run previous job.
+    6.      Generate an (optional) alert to pause to alter trays in dehydrator.
+    7.      Add comments to previous jobs (cooked just right/too short/too long, etc.)
 V.      Serve information to webpage
     1.      List all jobs
     2.      List individual job details
     3.      Display chart(s) of job runtime, average temperature, counts of items cooked, etc.
     4.      Provide emergency controls to start/stop via web input if necessary (login requried!)
-VI.     Save current/existing job
-VII.    Option to select & re-run previous job.

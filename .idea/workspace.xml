@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a6479742-f2e3-404e-bbdc-93bbb2da6a17" name="Default" comment="Merged">
       <change type="DELETED" beforePath="C:\Users\lalligood\Desktop\python\pidrator\pidrator.log" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/log_test.py" afterPath="$PROJECT_DIR$/log_test.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pidrator.py" afterPath="$PROJECT_DIR$/pidrator.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="pidrator.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -331,12 +328,18 @@
       <option name="project" value="LOCAL" />
       <updated>1430415951175</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Merged logging elements of log_test.py into pidrator.py">
+      <created>1430420556825</created>
+      <option name="number" value="00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1430420556825</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1288" y="-8" width="1296" height="1040" extended-state="6" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32939914" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -345,7 +348,7 @@
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32939914" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32939914" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -376,7 +379,8 @@
       <TodoPanelSettings />
     </option>
     <MESSAGE value="Added comment for 'import psycopg2' to reference an excellent online tutorial." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added comment for 'import psycopg2' to reference an excellent online tutorial." />
+    <MESSAGE value="Merged logging elements of log_test.py into pidrator.py" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merged logging elements of log_test.py into pidrator.py" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
