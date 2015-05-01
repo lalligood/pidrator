@@ -1,26 +1,31 @@
 PIDRATOR ROUTINE OVERVIEW
 
 I.      Menu
-    1.      Command line based menu for LAN-based operation
+    1.      Command line based menu for LAN-based operation.
     2.      Web-based menu for remote operation (login required!)
 II.     Power on/power off
     1.      Timer mechanism to turn power on & turn off based on user input, operating temperature, and/or clock.
     2.      Based on periodic temperature reading, briefly turn power back on to maintain a minimum temperature.
 III.    Record temperature to database
-    1.      Log periodic temperature data
-    2.      Log whether dehydrator or crock pot
-    3.      Log item food being cooked
-    4.      Log date/time started & stopped
+    1.      Log periodic temperature data.
+    2.      Log whether dehydrator or crock pot.
+    3.      Log item food being cooked.
+    4.      Log date/time started & stopped.
 IV.     Get user input
-    1.      Ask what you are cooking
-    2.      Ask how long you want to cook for
-    3.      Ask whether to turn off & remain off or keep warm
-    4.      Save current/existing job
-    5.      Option to select & re-run previous job.
-    6.      Generate an (optional) alert to pause to alter trays in dehydrator.
-    7.      Add comments to previous jobs (cooked just right/too short/too long, etc.)
+    1.      Ask what you are cooking.
+    2.      Ask how long you want to cook for.
+    3.      Ask whether to turn off & remain off or keep warm.
+    4.      Ask when you would like to start the job (immediate or for a future time)
+    5.      Save current/existing job.
+    6.      Option to select & re-run previous job.
+    7.      Generate an (optional) alert to pause to alter trays (with dehydrator only).
+    8.      Add comments to previous jobs (cooked just right/too short/too long, etc.)
+    9.      Quick presets for another 30, 60, 90, or 120 minutes.
 V.      Serve information to webpage
-    1.      List all jobs
-    2.      List individual job details
+    1.      List all jobs.
+    2.      List individual job details.
     3.      Display chart(s) of job runtime, average temperature, counts of items cooked, etc.
-    4.      Provide emergency controls to start/stop via web input if necessary (login requried!)
+    4.      Provide emergency controls to start/stop via web input if necessary (login required!)
+
+Helpful links:
+* http://automatetheboringstuff.com/chapter15/ (Chapter 15 – Keeping Time, Scheduling Tasks, and Launching Programs)
