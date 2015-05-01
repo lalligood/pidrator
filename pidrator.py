@@ -1,12 +1,12 @@
 #!/usr/bin/python
 __author__ = 'lalligood'
 
-import os	# needed for thermometer
-import glob	# needed for thermometer
+import os
+import glob
 import logging
 import sys
-import time	# needed for thermometer & powertail
-import RPi.GPIO as io	# needed for powertail
+import time
+#import RPi.GPIO as io
 
 def read_temp_raw():
     f = open(device_file, 'r')
@@ -35,21 +35,34 @@ def userquit():
 def userwait():
     time.sleep(5)
 
-def enable_powertail():
+def enable():
     # Configure powertail & begin data collection
-    io.setmode(io.BCM)	# needed for powertail
+    #io.setmode(io.BCM)
     power_pin = 23	# powertail data in
-    io.setup(power_pin, io.OUT)
-    io.output(power_pin, False)
+    #io.setup(power_pin, io.OUT)
+    #io.output(power_pin, False)
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
     base_dir = '/sys/bus/w1/devices/'
-    device_folder = glob.glob(base_dir + '28*')[0]
-    device_file = device_folder + '/w1_slave'
+    #device_folder = glob.glob(base_dir + '28*')[0]
+    #device_file = device_folder + '/w1_slave'
+    device_file = False
     if device_file:
         msg = 'Powertail detected & started successfully.'
     else:
         msg = 'Powertail not found.'
+    logging.info(msg)
+    print msg
+
+def poweron():
+    #io.output(power_pin, True)
+    msg = 'Powertail turned ON successfully.'
+    logging.info(msg)
+    print msg
+
+def poweroff():
+    #io.output(power_pin, False)
+    msg = 'Powertail turned OFF successfully.'
     logging.info(msg)
     print msg
 
@@ -62,25 +75,22 @@ logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, date
 
 # Main routine
 logging.info('Starting up pidrator engine.')
-enable_powertail()
+enable()
 count = 0
 header = 'Temp_C Temp_F Date_Time                Count'
 print
 while True:
-    # 5 lines below are for thermometer
     if count % 10 == 0:
         print header
-    print '%4.3f %4.3f' % read_temp(), time.asctime(), count
+    #print '%4.3f %4.3f' % read_temp(), time.asctime(), count
     count += 1
-    # 6 lines below are for powertail switch
-    print("Powertail OFF")
-    io.output(power_pin, False)
+    poweron()
     userwait()
-    print("Powertail ON")
-    io.output(power_pin, True)
-    userwait()
-    msg = 'Shutting down pidrator engine.'
-    logging.info(msg)
-    print msg
-else:
-    userquit()
+    poweroff()
+    if count == 2:
+        break
+
+msg = 'Shutting down pidrator engine.'
+logging.info(msg)
+print msg
+userquit()
