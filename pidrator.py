@@ -73,32 +73,53 @@ def poweroff():
     print msg
 
 
-def selectmenu():
-    #os.system('clear') # clear screen
-    print 'Welcome to pidrator'
-    print '1. Dehydrator'
-    print '2. Slow Cooker'
-    cookdevice = int(raw_input('Enter the number of the device you want to cook with: '))
-    if cookdevice == 1:
-        print 'You selected Dehydrator.'
-    elif cookdevice == 2:
-        print 'You selected Slow Cooker.'
-    else:
-        print 'That is not a valid selection. Please try again...'
-        time.sleep(5)
-        selectmenu()
-    cookfood = raw_input('What are you planning to cook? ')
-    if cookfood == '':
-        print 'Please enter what you are planning to cook...'
-        time.sleep(5)
-        selectmenu()
-    cookhour = int(raw_input('Enter the number of hours would you like to cook: '))
-    if cookhour > 2 or cookhour <= 12:
-        print 'You want to cook something for', cookhour, 'hours.'
-    else:
-        print 'You have entered a time that is too short or too long. Please try again...'
-        time.sleep(5)
-        selectmenu()
+def selectDeviceMenu():
+    while True:
+        #os.system('clear') # clear screen
+        print """Welcome to pidrator
+    1. Dehydrator
+    2. Slow Cooker"""
+        try:
+            cookdevice = int(raw_input('Enter the number (1 - 2) of the device you want to control: '))
+            if cookdevice == 1:
+                print 'Dehydrator selected.'
+            elif cookdevice == 2:
+                print 'Slow cooker selected.'
+        except ValueError:
+            print 'That is not a valid selection. Please try again...'
+            continue
+
+        #if not cookdevice in range(1, 3):
+            #print 'That is not a valid selection. Please try again...'
+            #continue
+        return cookdevice
+
+def selectFoodMenu():
+    while True:
+        try:
+            cookfood = str(raw_input('What are you planning to cook? '))
+            if len(cookfood) < 5:
+                print 'You must enter a useful description. Please try again...'
+                continue
+        except ValueError:
+            print 'You must enter a useful description. Please try again...'
+            continue
+        return cookfood
+
+def selectTimeMenu():
+    while True:
+        try:
+            cookhour = int(raw_input('Enter the number of hours would you like to cook: '))
+            if cookhour in range(2, 13):
+                print 'You want to cook something for', cookhour, 'hours.'
+        except ValueError:
+            print 'The time entered is too short or too long. Please try again...'
+            continue
+
+        if not cookhour in range(2, 13):
+            print 'The time entered is too short or too long. Please try again...'
+            continue
+        return cookhour
 
 
 # Configure logging
@@ -111,9 +132,10 @@ logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, date
 # Main routine
 logging.info('Starting up pidrator engine.')
 enable()
-selectmenu()
-count = 0
-header = 'Temp_C Temp_F Date_Time                Count'
+selectDeviceMenu()
+selectFoodMenu()
+selectTimeMenu()
+print "You are planning to use the", cookdevice, "to make", cookfood, "for ", cookhour, "hours."
 while True:
     if count % 10 == 0:
         print header
