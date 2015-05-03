@@ -1,4 +1,4 @@
-#!/usr/bin/python
+1#!/usr/bin/python
 __author__ = 'lalligood'
 
 import os
@@ -6,7 +6,10 @@ import glob
 import logging
 import sys
 import time
-#import RPi.GPIO as io
+try:
+    import RPi.GPIO as io
+except RuntimeError:
+    print("Error Importing RPi.GPIO!")
 
 def read_temp_raw():
     f = open(device_file, 'r')
@@ -40,11 +43,11 @@ def userwait():
 
 
 def enable():
-    # Configure powertail & begin data collection
+    # Configure powertail
     #io.setmode(io.BCM)
-    power_pin = 23	# powertail data in
-    #io.setup(power_pin, io.OUT)
-    #io.output(power_pin, False)
+    #io.setup(powertail['power_pin'], io.OUT)
+    #io.output(powertail['power_pin'], False)
+    # Configure thermometer & begin data collection
     os.system('modprobe w1-gpio')
     os.system('modprobe w1-therm')
     base_dir = '/sys/bus/w1/devices/'
@@ -52,9 +55,9 @@ def enable():
     #device_file = device_folder + '/w1_slave'
     device_file = False # This added to ensure following condition is false
     if device_file:
-        msg = 'Powertail detected & started successfully.'
+        msg = 'Thermometer detected & started successfully.'
     else:
-        msg = 'Powertail not found.'
+        msg = 'Thermometer not found.'
     logging.info(msg)
     print msg
 
@@ -83,16 +86,18 @@ def selectDeviceMenu():
             cookdevice = int(raw_input('Enter the number (1 - 2) of the device you want to control: '))
             if cookdevice == 1:
                 print 'Dehydrator selected.'
+                menu['device'] = 'dehydrator'
             elif cookdevice == 2:
                 print 'Slow cooker selected.'
+                menu['device'] = 'slow cooker'
         except ValueError:
             print 'That is not a valid selection. Please try again...'
             continue
 
-        #if not cookdevice in range(1, 3):
-            #print 'That is not a valid selection. Please try again...'
-            #continue
-        return cookdevice
+        if not cookdevice in range(1, 3):
+            print 'That is not a valid selection. Please try again...'
+            continue
+        return menu
 
 def selectFoodMenu():
     while True:
@@ -101,17 +106,19 @@ def selectFoodMenu():
             if len(cookfood) < 5:
                 print 'You must enter a useful description. Please try again...'
                 continue
+            else:
+                menu['food'] = cookfood
         except ValueError:
             print 'You must enter a useful description. Please try again...'
             continue
-        return cookfood
+        return menu
 
 def selectTimeMenu():
     while True:
         try:
             cookhour = int(raw_input('Enter the number of hours would you like to cook: '))
             if cookhour in range(2, 13):
-                print 'You want to cook something for', cookhour, 'hours.'
+                menu['hour'] = cookhour
         except ValueError:
             print 'The time entered is too short or too long. Please try again...'
             continue
@@ -119,7 +126,7 @@ def selectTimeMenu():
         if not cookhour in range(2, 13):
             print 'The time entered is too short or too long. Please try again...'
             continue
-        return cookhour
+        return menu
 
 
 # Configure logging
@@ -130,20 +137,27 @@ logdateformat = '%Y-%m-%d %I:%M:%S%p'
 logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=logdateformat)
 
 # Main routine
+print "Current date/time is:", time.asctime()
 logging.info('Starting up pidrator engine.')
+powertail = {
+    'power_pin': 23	# powertail data in
+}
 enable()
+menu = {}
 selectDeviceMenu()
 selectFoodMenu()
 selectTimeMenu()
-print "You are planning to use the", cookdevice, "to make", cookfood, "for ", cookhour, "hours."
+print "You want to cook", menu['food'], "in the", menu['device'], "for", menu['hour'], "hours."
+count = 0
 while True:
     if count % 10 == 0:
-        print header
+        print "Temp F  Temp C  Time           Count"
     #print '%4.3f %4.3f' % read_temp(), time.asctime(), count
     count += 1
     poweron()
     userwait()
     poweroff()
+    userwait()
     if count == 2:
         break
 

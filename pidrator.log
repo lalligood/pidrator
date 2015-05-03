@@ -1,5 +1,6 @@
 2015-04-30 12:06:54PM INFO: Starting up pidrator engine.
 2015-04-30 12:06:59PM INFO: Shutting down pidrator engine.
+<<<<<<< Updated upstream
 2015-05-01 12:57:46PM INFO: Starting up pidrator engine.
 2015-05-01 12:57:46PM INFO: Powertail not found.
 2015-05-01 12:59:00PM INFO: Starting up pidrator engine.
@@ -16,3 +17,141 @@
 2015-05-01 01:01:41PM INFO: Powertail turned ON successfully.
 2015-05-01 01:01:46PM INFO: Powertail turned OFF successfully.
 2015-05-01 01:01:46PM INFO: Powertail turned ON successfully.
+=======
+2015-04-30 10:48:58PM INFO: Starting up pidrator engine.
+2015-04-30 10:49:23PM INFO: Starting up pidrator engine.
+2015-04-30 10:50:18PM INFO: Starting up pidrator engine.
+2015-04-30 10:52:42PM INFO: Starting up pidrator engine.
+2015-04-30 10:53:38PM INFO: Starting up pidrator engine.
+2015-04-30 10:53:38PM INFO: Powertail not found.
+2015-04-30 10:54:15PM INFO: Starting up pidrator engine.
+2015-04-30 10:54:15PM INFO: Powertail not found.
+2015-04-30 10:54:46PM INFO: Starting up pidrator engine.
+2015-04-30 10:54:46PM INFO: Powertail not found.
+2015-04-30 10:54:46PM INFO: Powertail turned ON successfully.
+2015-04-30 10:54:51PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:54:51PM INFO: Shutting down pidrator engine.
+2015-04-30 10:54:51PM INFO: Powertail turned ON successfully.
+2015-04-30 10:54:56PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:54:56PM INFO: Shutting down pidrator engine.
+2015-04-30 10:54:56PM INFO: Powertail turned ON successfully.
+2015-04-30 10:55:01PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:55:01PM INFO: Shutting down pidrator engine.
+2015-04-30 10:55:01PM INFO: Powertail turned ON successfully.
+2015-04-30 10:56:32PM INFO: Starting up pidrator engine.
+2015-04-30 10:56:32PM INFO: Powertail not found.
+2015-04-30 10:56:32PM INFO: Powertail turned ON successfully.
+2015-04-30 10:56:37PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:56:37PM INFO: Powertail turned ON successfully.
+2015-04-30 10:56:42PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:56:42PM INFO: Powertail turned ON successfully.
+2015-04-30 10:56:47PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:56:47PM INFO: Powertail turned ON successfully.
+2015-04-30 10:56:52PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:56:52PM INFO: Powertail turned ON successfully.
+2015-04-30 10:56:57PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:56:57PM INFO: Powertail turned ON successfully.
+2015-04-30 10:57:02PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:57:02PM INFO: Powertail turned ON successfully.
+2015-04-30 10:57:07PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:57:07PM INFO: Powertail turned ON successfully.
+2015-04-30 10:57:15PM INFO: Starting up pidrator engine.
+2015-04-30 10:57:15PM INFO: Powertail not found.
+2015-04-30 10:57:15PM INFO: Powertail turned ON successfully.
+2015-04-30 10:57:20PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:57:20PM INFO: Powertail turned ON successfully.
+2015-04-30 10:57:25PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:57:25PM INFO: Powertail turned ON successfully.
+2015-04-30 10:57:30PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:58:08PM INFO: Starting up pidrator engine.
+2015-04-30 10:58:08PM INFO: Powertail not found.
+2015-04-30 10:58:08PM INFO: Powertail turned ON successfully.
+2015-04-30 10:58:13PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:58:13PM INFO: Powertail turned ON successfully.
+2015-04-30 10:58:18PM INFO: Powertail turned OFF successfully.
+2015-04-30 10:58:18PM INFO: Shutting down pidrator engine.
+2015-04-30 10:58:18PM WARNING: Terminating pidrator.
+>>>>>>> Stashed changes
+2015-05-02 12:09:00PM INFO: Starting up pidrator engine.
+2015-05-02 12:09:00PM INFO: Powertail not found.
+2015-05-02 08:43:27PM INFO: Starting up pidrator engine.
+2015-05-02 08:43:27PM INFO: Powertail not found.
+2015-05-02 08:48:53PM INFO: Starting up pidrator engine.
+2015-05-02 08:48:53PM INFO: Powertail not found.
+2015-05-02 08:49:13PM INFO: Starting up pidrator engine.
+2015-05-02 08:49:13PM INFO: Powertail not found.
+2015-05-02 08:50:25PM INFO: Starting up pidrator engine.
+2015-05-02 08:50:25PM INFO: Powertail not found.
+2015-05-02 08:53:39PM INFO: Starting up pidrator engine.
+2015-05-02 08:53:39PM INFO: Powertail not found.
+2015-05-02 08:56:55PM INFO: Starting up pidrator engine.
+2015-05-02 08:56:55PM INFO: Powertail not found.
+2015-05-02 08:57:08PM INFO: Powertail turned ON successfully.
+2015-05-02 08:57:13PM INFO: Powertail turned OFF successfully.
+2015-05-02 08:57:13PM INFO: Powertail turned ON successfully.
+2015-05-02 08:57:18PM INFO: Powertail turned OFF successfully.
+2015-05-02 08:57:18PM INFO: Shutting down pidrator engine.
+2015-05-02 08:57:18PM WARNING: Terminating pidrator.
+2015-05-02 09:07:25PM INFO: Starting up pidrator engine.
+2015-05-02 09:07:25PM INFO: Thermometer not found.
+2015-05-02 09:08:01PM INFO: Starting up pidrator engine.
+2015-05-02 09:08:01PM INFO: Thermometer not found.
+2015-05-02 09:15:24PM INFO: Starting up pidrator engine.
+2015-05-02 09:15:24PM INFO: Thermometer not found.
+2015-05-02 09:17:58PM INFO: Starting up pidrator engine.
+2015-05-02 09:17:58PM INFO: Thermometer not found.
+2015-05-02 09:18:04PM INFO: Powertail turned ON successfully.
+2015-05-02 09:18:09PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:18:14PM INFO: Powertail turned ON successfully.
+2015-05-02 09:19:15PM INFO: Starting up pidrator engine.
+2015-05-02 09:19:15PM INFO: Thermometer not found.
+2015-05-02 09:19:31PM INFO: Powertail turned ON successfully.
+2015-05-02 09:19:36PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:19:41PM INFO: Powertail turned ON successfully.
+2015-05-02 09:19:46PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:19:51PM INFO: Shutting down pidrator engine.
+2015-05-02 09:19:51PM WARNING: Terminating pidrator.
+2015-05-02 09:22:28PM INFO: Starting up pidrator engine.
+2015-05-02 09:22:28PM INFO: Thermometer not found.
+2015-05-02 09:22:43PM INFO: Powertail turned ON successfully.
+2015-05-02 09:22:48PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:22:53PM INFO: Powertail turned ON successfully.
+2015-05-02 09:22:58PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:24:01PM INFO: Starting up pidrator engine.
+2015-05-02 09:24:01PM INFO: Thermometer not found.
+2015-05-02 09:24:17PM INFO: Powertail turned ON successfully.
+2015-05-02 09:24:22PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:24:27PM INFO: Powertail turned ON successfully.
+2015-05-02 09:24:32PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:24:37PM INFO: Shutting down pidrator engine.
+2015-05-02 09:24:37PM WARNING: Terminating pidrator.
+2015-05-02 09:25:59PM INFO: Starting up pidrator engine.
+2015-05-02 09:25:59PM INFO: Thermometer not found.
+2015-05-02 09:29:44PM INFO: Starting up pidrator engine.
+2015-05-02 09:29:44PM INFO: Thermometer not found.
+2015-05-02 09:29:56PM INFO: ('You want to cook', 'sauce', 'in the', 'slow cooker', 'for', 7, 'hours.')
+2015-05-02 09:29:56PM INFO: Powertail turned ON successfully.
+2015-05-02 09:30:01PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:30:06PM INFO: Powertail turned ON successfully.
+2015-05-02 09:30:11PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:30:16PM INFO: Shutting down pidrator engine.
+2015-05-02 09:30:16PM WARNING: Terminating pidrator.
+2015-05-02 09:32:34PM INFO: Starting up pidrator engine.
+2015-05-02 09:32:34PM INFO: Thermometer not found.
+2015-05-02 09:32:41PM INFO: ('You want to cook', 'Jerky', 'in the', 'dehydrator', 'for', 4, 'hours.')
+2015-05-02 09:32:41PM INFO: Powertail turned ON successfully.
+2015-05-02 09:32:46PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:32:51PM INFO: Powertail turned ON successfully.
+2015-05-02 09:32:56PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:33:01PM INFO: Shutting down pidrator engine.
+2015-05-02 09:33:01PM WARNING: Terminating pidrator.
+2015-05-02 09:34:13PM INFO: Starting up pidrator engine.
+2015-05-02 09:34:13PM INFO: Thermometer not found.
+2015-05-02 09:34:19PM INFO: ('You want to cook', 'jerky', 'in the', 'dehydrator', 'for', 4, 'hours.')
+2015-05-02 09:34:19PM INFO: Powertail turned ON successfully.
+2015-05-02 09:34:24PM INFO: Powertail turned OFF successfully.
+2015-05-02 09:45:51PM INFO: Starting up pidrator engine.
+2015-05-02 09:45:51PM INFO: Thermometer not found.
+2015-05-02 09:55:46PM INFO: Starting up pidrator engine.
+2015-05-02 09:57:39PM INFO: Starting up pidrator engine.
+2015-05-02 09:57:39PM INFO: Thermometer not found.
