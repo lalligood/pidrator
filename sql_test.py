@@ -19,13 +19,19 @@ conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
 cur = conn.cursor()
 
 # INSERT
-#SQL = 'insert into devices (devicename) values (%s) returning *'
-#devname = ('stove', )
-#cur.execute(SQL, devname)
-#conn.commit()
+'''
+SQL = 'insert into devices (devicename) values (%s) returning *'
+devname = ('stove', )
+try:
+    cur.execute(SQL, devname)
+except psycopg2.Error as dberror:
+    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+    cleanexit()
+conn.commit()
+'''
 
 # SELECT w/o WHERE
-SQL = 'select username, fullname, email_address from user;'
+SQL = 'select username, fullname, email_address from users;'
 try:
     cur.execute(SQL)
 except psycopg2.Error as dberror:
@@ -40,9 +46,12 @@ print('But I\'m not telling you what your password is!')
 # SELECT w/ WHERE
 SQL = 'select * from devices where devicename = (%s)'
 devname = ('slow cooker', )
-cur.execute(SQL, devname)
+try:
+    cur.execute(SQL, devname)
+except psycopg2.Error as dberror:
+    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+    cleanexit()
 row = cur.fetchone()
 print('slow cooker ID is: ' + row[0])
 created = row[2].strftime('%m-%d-%Y %H:%M:%S')
 print('slow cooker was added to DB on: ' + created)
-
