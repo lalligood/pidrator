@@ -4,6 +4,11 @@ import psycopg2
 import sys
 import datetime
 
+def cleanexit(): # Close DB connection & exit gracefully
+    cur.close()
+    conn.close()
+    sys.exit()
+
 # DB connection info
 mydb = 'postgres'
 mydbuser = 'lalligood'
@@ -25,9 +30,7 @@ try:
     cur.execute(SQL)
 except psycopg2.Error as dberror:
     print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cur.close()
-    conn.close()
-    sys.exit()
+    cleanexit()
 row = cur.fetchone()
 print('Your username is: ' + row[0])
 print('Your name is: ' + row[1])
@@ -43,7 +46,3 @@ print('slow cooker ID is: ' + row[0])
 created = row[2].strftime('%m-%d-%Y %H:%M:%S')
 print('slow cooker was added to DB on: ' + created)
 
-# Close DB connection & exit gracefully
-cur.close()
-conn.close()
-sys.exit()
