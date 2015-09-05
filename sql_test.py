@@ -20,8 +20,14 @@ cur = conn.cursor()
 #conn.commit()
 
 # SELECT w/o WHERE
-SQL = 'select username, fullname, email_address from users;'
-cur.execute(SQL)
+SQL = 'select username, fullname, email_address from user;'
+try:
+    cur.execute(SQL)
+except psycopg2.Error as dberror:
+    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+    cur.close()
+    conn.close()
+    sys.exit()
 row = cur.fetchone()
 print('Your username is: ' + row[0])
 print('Your name is: ' + row[1])
