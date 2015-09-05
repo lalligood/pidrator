@@ -1,0 +1,1 @@
+﻿insert into devices (devicename) values ('slow cooker'), ('dehydrator')
