@@ -5,6 +5,7 @@ create table job_info (
     , job_name text not null
     , user_id uuid
     , device_id uuid
+    , food_id uuid
     , temperature_deg int
     , temperature_setting text
     , createtime timestamp with time zone default now()
