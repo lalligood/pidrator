@@ -1,0 +1,1 @@
+﻿insert into foods (foodname) values ('beef jerky'), ('pineapple'), ('BBQ pulled pork'), ('BBQ beef brisket') returning *
