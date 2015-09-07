@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+__author__ = 'lalligood'
 
 import psycopg2
 import psycopg2.extras
@@ -59,28 +60,27 @@ created = row[2].strftime('%m-%d-%Y %H:%M:%S')
 print('slow cooker was added to DB on: ' + created)
 '''
 
-# SELECT W/ JOIN
+# SELECT w/ multiple parameters being passed in
 # INSERT new job_info row first!
 '''
 SQL = 'insert into job_info (jobname) values (%s) returning *'
-params = ('first time', )
+params = ('third time is a charm', )
 query()
 conn.commit()
 '''
 
 # Retrieve list of job names from job_info
 print('Here is a list of job names: ')
-SQL = 'select jobname from job_info'
+SQL = 'select jobname from job_info order by createtime'
 params = ''
 query()
-jobname = cur.fetchall()
-for x in jobname:
+joblist = cur.fetchall()
+for x in joblist:
     print(x)
 
 # Get user input & SELECT row from job_info based on input
-print('Enter the name of the job that you want to modify: ')
-response = input()
-# Format response appropriately as variable 
+response = input('Enter the name of the job that you want to modify: ')
+# Format response appropriately as variable
 jobname = eval('(\'' + response + '\', )')
 # Check to see if response matches result(s) here
 '''
@@ -92,26 +92,59 @@ query()
 jobid = cur.fetchone()
 
 # SELECT username from users
+print('Here is a list of users: ')
+SQL = 'select username from users order by username'
+params = ''
+query()
+userlist = cur.fetchall()
+for x in userlist:
+    print(x)
+response = input('Enter the username you want to add to the selected job: ')
+username = eval('(\'' + response + '\', )')
 SQL = 'select id from users where username = (%s)'
-params = ('lalligood', )
+params = username
 query()
 user = cur.fetchone()
 
 # SELECT devicename from devices
+print('Here is a list of devices: ')
+SQL = 'select devicename from devices order by devicename'
+params = ''
+query()
+devlist = cur.fetchall()
+for x in devlist:
+    print(x)
+response = input('Enter the username you want to add to the selected job: ')
+devname = eval('(\'' + response + '\', )')
 SQL = 'select id from devices where devicename = (%s)'
-params = ('slow cooker', )
+params = devname
 query()
 device = cur.fetchone()
 
+# SELECT foodname from foods
+print('Here is a list of foods: ')
+SQL = 'select foodname from foods order by foodname'
+params = ''
+query()
+foodlist = cur.fetchall()
+for x in foodlist:
+    print(x)
+response = input('Enter the username you want to add to the selected job: ')
+foodname = eval('(\'' + response + '\', )')
+SQL = 'select id from foods where foodname = (%s)'
+params = foodname
+query()
+food = cur.fetchone()
+
 # UPDATE user_id & device_id in job_info
-SQL = 'update job_info set user_id = (%s), device_id = (%s) where jobname = (%s)'
-params = user + device + jobname
+SQL = 'update job_info set user_id = (%s), device_id = (%s), food_id = (%s) where jobname = (%s)'
+params = user + device + food + jobname
 query()
 conn.commit()
 
 # Make sure it worked...!
-SQL = 'select * from job_info'
-params = ''
+SQL = 'select * from job_info where jobname = (%s)'
+params = jobname
 query()
 row = cur.fetchone()
 print(row)
