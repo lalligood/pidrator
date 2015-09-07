@@ -143,10 +143,23 @@ query()
 conn.commit()
 
 # Make sure it worked...!
-SQL = 'select * from job_info where jobname = (%s)'
+SQL = 'select \
+    jobname \
+    , fullname \
+    , devicename \
+    , foodname \
+from job_info \
+    left outer join users on job_info.user_id = users.id \
+    left outer join devices on job_info.device_id = devices.id \
+    left outer join foods on job_info.food_id = foods.id \
+where jobname = (%s)'
 params = jobname
 query()
 row = cur.fetchone()
-print(row)
-print('Row inserted & updated in job_info successfully!')
+# Convert tuple to list
+list(row)
+print('Job: ', row[0])
+print('Name: ', row[1])
+print('Device: ', row[2])
+print('Food: ', row[3])
 cleanexit()
