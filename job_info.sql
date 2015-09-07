@@ -2,7 +2,7 @@
 
 create table job_info (
     id uuid not null default uuid_generate_v4()
-    , job_name text not null
+    , jobname text not null unique
     , user_id uuid
     , device_id uuid
     , food_id uuid
