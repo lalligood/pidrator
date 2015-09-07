@@ -1,4 +1,4 @@
-1#!/usr/bin/python
+1#!/usr/bin/python3
 __author__ = 'lalligood'
 
 import os
