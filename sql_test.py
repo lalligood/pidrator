@@ -12,6 +12,13 @@ def cleanexit(): # Close DB connection & exit gracefully
     conn.close()
     sys.exit()
 
+def query():
+    try:
+        cur.execute(SQL, params)
+    except psycopg2.Error as dberror:
+        print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+        cleanexit()
+
 # DB connection info
 mydb = 'postgres'
 mydbuser = 'lalligood'
@@ -25,22 +32,15 @@ cur = conn.cursor()
 '''
 SQL = 'insert into devices (devicename) values (%s) returning *'
 devname = ('stove', )
-try:
-    cur.execute(SQL, devname)
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+query()
 conn.commit()
 '''
 
 # SELECT w/o WHERE
 '''
-SQL = 'select username, fullname, email_address from users;'
-try:
-    cur.execute(SQL)
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+SQL = 'select username, fullname, email_address from users'
+params = ''
+query()
 row = cur.fetchone()
 print('Your username is: ' + row[0])
 print('Your name is: ' + row[1])
@@ -51,12 +51,8 @@ print('But I\'m not telling you what your password is!')
 # SELECT w/ WHERE
 '''
 SQL = 'select * from devices where devicename = (%s)'
-devname = ('slow cooker', )
-try:
-    cur.execute(SQL, devname)
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+params = ('slow cooker', )
+query()
 row = cur.fetchone()
 print('slow cooker ID is: ' + row[0])
 created = row[2].strftime('%m-%d-%Y %H:%M:%S')
@@ -65,54 +61,46 @@ print('slow cooker was added to DB on: ' + created)
 
 # SELECT W/ JOIN
 # INSERT new job_info row first!
+'''
 SQL = 'insert into job_info (job_name) values (%s) returning *'
-jobname = ('first time', )
-try:
-    cur.execute(SQL, jobname)
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+params = ('first time', )
+query()
 conn.commit()
+'''
+
+# SELECT username from job_info
+getjob = input()
+jobname = '(\'' + getjob + '\', )'
+SQL = 'select id from users where jobname = (%s)'
+params = ('lalligood', )
+query()
+user = cur.fetchone()
+
 # SELECT username from users
 SQL = 'select id from users where username = (%s)'
-usrname = ('lalligood', )
-try:
-    cur.execute(SQL, usrname)
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+params = ('lalligood', )
+query()
 user = cur.fetchone()
 
 # SELECT devicename from devices
 SQL = 'select id from devices where devicename = (%s)'
-devname = ('slow cooker', )
-try:
-    cur.execute(SQL, devname)
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+params = ('slow cooker', )
+query()
 device = cur.fetchone()
 
 print (jobname, user, device)
 
-# UPDATE user_id & device_id in job_info 
-SQL = 'update job_info set user_id = (%s) where job_name = (%s)'
-params = user + jobname
-try:
-    cur.execute(SQL, params)
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+# UPDATE user_id & device_id in job_info
+SQL = 'update job_info set user_id = (%s), device_id = (%s) where job_name = (%s)'
+params = user + device + jobname
+query()
 conn.commit()
 
 # Make sure it worked...!
 SQL = 'select * from job_info'
-try:
-    cur.execute(SQL)
-    row = cur.fetchone()
-except psycopg2.Error as dberror:
-    print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-    cleanexit()
+params = ''
+query()
+row = cur.fetchone()
 print(row)
 print('Row inserted & updated in job_info successfully!')
 cleanexit()
