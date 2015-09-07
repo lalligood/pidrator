@@ -11,5 +11,6 @@ create table job_info (
     , createtime timestamp with time zone default now()
     , starttime timestamp with time zone
     , endtime timestamp with time zone
+    , cookminutes int
     , constraint job_info_pkey primary key (id)
     )
