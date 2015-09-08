@@ -5,10 +5,18 @@ import psycopg2
 import psycopg2.extras
 import sys
 import datetime
+import time
+import logging
 
 psycopg2.extras.register_uuid()
+logfilename = 'sql_test.log'
+loglevel = logging.DEBUG
+logformat = '%(time.asctime)s %(levelname)s: %(mesage)s'
+logdateformat = '%Y-%m-%d %I:%M:%S%p' # YYYY-MM-DD HH:MM:SSAP
+logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=logdateformat)
 
 def cleanexit(): # Close DB connection & exit gracefully
+    logging.info('Preparing to shut down application.')
     cur.close()
     conn.close()
     sys.exit()
@@ -17,7 +25,7 @@ def query(): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
     except psycopg2.Error as dberror:
-        print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+        logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
         cleanexit()
 
 # DB connection info
@@ -90,6 +98,7 @@ SQL = 'select id from job_info where jobname = (%s)'
 params = jobname
 query()
 jobid = cur.fetchone()
+logging.info('Retrieved ' + str(jobid) + ' from database successfully.')
 
 # SELECT username from users
 print('Here is a list of users: ')
@@ -105,6 +114,7 @@ SQL = 'select id from users where username = (%s)'
 params = username
 query()
 user = cur.fetchone()
+logging.info('Retrieved ' + str(username) + ' from database successfully.')
 
 # SELECT devicename from devices
 print('Here is a list of devices: ')
@@ -120,6 +130,7 @@ SQL = 'select id from devices where devicename = (%s)'
 params = devname
 query()
 device = cur.fetchone()
+logging.info('Retrieved ' + str(devname) + ' from database successfully.')
 
 # SELECT foodname from foods
 print('Here is a list of foods: ')
