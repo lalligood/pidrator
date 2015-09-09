@@ -37,35 +37,39 @@ def userlogin(user): # User login
         userlogin(user)
 
 def changepswd(user): # User elects to change password
-    response = getpass.getpass('Enter your current password: ')
-    oldpswd = eval('(\'' + response + '\', )')
-    response = getpass.getpass('Enter your new password: ')
-    newpswd1 = eval('(\'' + response + '\', )')
-    response = getpass.getpass('Enter your new password again: ')
-    newpswd2 = eval('(\'' + response + '\', )')
-    if newpswd1[0] != newpswd2[0]:
-        print('New passwords do not match. Try again...')
-        changepswd(user)
-    if len(newpswd1[0]) < 8:
-        print('New password length is too short. Try again...')
-        changepswd(user)
-    if oldpswd[0] == newpswd1[0]:
-        print('New password must be different from old password. Try again...')
-        changepswd(user)
-    SQL = 'select (password = crypt((%s), password)) as userpass from users where username = (%s)'
-    params = oldpswd + user
-    query(SQL, params)
-    pswdverify = cur.fetchone()
-    if pswdverify[0]:
-        SQL = 'update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)'
-        params = newpswd1 + user
+    while True:
+        response = getpass.getpass('Enter your current password: ')
+        oldpswd = eval('(\'' + response + '\', )')
+        response = getpass.getpass('Enter your new password: ')
+        newpswd1 = eval('(\'' + response + '\', )')
+        response = getpass.getpass('Enter your new password again: ')
+        newpswd2 = eval('(\'' + response + '\', )')
+        if newpswd1[0] != newpswd2[0]:
+            print('New passwords do not match. Try again...')
+            time.sleep(2)
+            continue
+        if len(newpswd1[0]) < 8:
+            print('New password length is too short. Try again...')
+            time.sleep(2)
+            continue
+        if oldpswd[0] == newpswd1[0]:
+            print('New password must be different from old password. Try again...')
+            time.sleep(2)
+            continue
+        SQL = 'select (password = crypt((%s), password)) as userpass from users where username = (%s)'
+        params = oldpswd + user
         query(SQL, params)
-        conn.commit()
-        print('Your password has been updated successfully.')
-    else:
-        print('Username and/or password incorrect. Try again...')
-        time.sleep(2)
-        changepswd(user)
+        pswdverify = cur.fetchone()
+        if pswdverify[0]:
+            SQL = 'update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)'
+            params = newpswd1 + user
+            query(SQL, params)
+            conn.commit()
+            print('Your password has been updated successfully.')
+            break
+        else:
+            print('Old password incorrect. Try again...')
+            time.sleep(2)
 
 # DB connection info
 mydb = 'postgres'
@@ -80,3 +84,4 @@ response = input('Enter your username: ')
 user = eval('(\'' + response.lower() + '\', )')
 userlogin(user)
 changepswd(user)
+cleanexit()
