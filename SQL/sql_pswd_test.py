@@ -77,6 +77,6 @@ conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
 cur = conn.cursor()
 
 response = input('Enter your username: ')
-user = eval('(\'' + response + '\', )')
+user = eval('(\'' + response.lower() + '\', )')
 userlogin(user)
 changepswd(user)
