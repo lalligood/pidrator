@@ -8,17 +8,17 @@ import datetime
 
 psycopg2.extras.register_uuid()
 
-def cleanexit(): # Close DB connection & exit gracefully
+def cleanexit(ec): # Close DB connection & exit gracefully
     cur.close()
     conn.close()
-    sys.exit()
+    sys.exit(ec)
 
 def query(): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
     except psycopg2.Error as dberror:
         print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        cleanexit()
+        cleanexit(1)
 
 # DB connection info
 mydb = 'postgres'
@@ -162,4 +162,4 @@ print('Job: ', row[0])
 print('Name: ', row[1])
 print('Device: ', row[2])
 print('Food: ', row[3])
-cleanexit()
+cleanexit(0)

@@ -10,17 +10,17 @@ import getpass
 
 psycopg2.extras.register_uuid()
 
-def cleanexit(): # Close DB connection & exit gracefully
+def cleanexit(ec): # Close DB connection & exit gracefully
     cur.close()
     conn.close()
-    sys.exit()
+    sys.exit(ec)
 
 def query(SQL, params): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
     except psycopg2.Error as dberror:
         print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        cleanexit()
+        cleanexit(1)
 
 def userlogin(user): # User login
     response = getpass.getpass('Enter your password: ')
@@ -84,4 +84,4 @@ response = input('Enter your username: ')
 user = eval('(\'' + response.lower() + '\', )')
 userlogin(user)
 changepswd(user)
-cleanexit()
+cleanexit(0)
