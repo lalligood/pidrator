@@ -36,10 +36,16 @@ SQL = 'select jobname from job_info order by createtime'
 params = ''
 query()
 jobs = cur.fetchall()
-joblist = ()
-for x in range(len(jobs)):
-    joblist = joblist + jobs[x]
-for x in range(len(jobs)):
-    print(joblist[x])
+for jobname in jobs:
+    print('    ' + jobname[0])
 
+# Insert start time into job_info row
+'''
+SQL = 'update job_info set starttime = (%s) where jobname = \'first time\' returning *'
+params = time.localtime()
+print(params)
+query()
+row = cur.fetchone()
+print(row)
+'''
 cleanexit()
