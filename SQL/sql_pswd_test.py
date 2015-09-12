@@ -10,10 +10,10 @@ import getpass
 
 psycopg2.extras.register_uuid()
 
-def cleanexit(ec): # Close DB connection & exit gracefully
+def cleanexit(exitcode): # Close DB connection & exit gracefully
     cur.close()
     conn.close()
-    sys.exit(ec)
+    sys.exit(exitcode)
 
 def query(SQL, params): # General purpose query submission that will exit if error
     try:
