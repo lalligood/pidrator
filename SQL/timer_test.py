@@ -13,7 +13,7 @@ def cleanexit(): # Close DB connection & exit gracefully
     conn.close()
     sys.exit()
 
-def query(): # General purpose query submission that will exit if error
+def query(SQL, params): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
     except psycopg2.Error as dberror:
@@ -32,9 +32,7 @@ cur = conn.cursor()
 
 # Retrieve list of job names from job_info
 print('Here is a list of job names: ')
-SQL = 'select jobname from job_info order by createtime'
-params = ''
-query()
+query('select jobname from job_info order by createtime', '')
 jobs = cur.fetchall()
 for jobname in jobs:
     print('    ' + jobname[0])
@@ -44,9 +42,7 @@ currjob = eval('(\'' + response + '\', )')
 # Insert start time into job_info row
 start = datetime.now()
 starttime = eval('(\'' + datetime.strftime(start, date_format) + '\', )')
-SQL = 'update job_info set starttime = (%s) where jobname = (%s) returning *'
-params = starttime + currjob 
-query()
+query('update job_info set starttime = (%s) where jobname = (%s) returning *', starttime + currjob)
 conn.commit()
 row = cur.fetchone()
 
@@ -56,9 +52,7 @@ cookmin = int(input('Enter the number of minutes that you want to cook: '))
 cookdelta = timedelta(hours=cookhour, minutes=cookmin)
 end = start + cookdelta
 endtime = eval('(\'' + datetime.strftime(end, date_format) + '\', )')
-SQL = 'update job_info set endtime = (%s) where jobname = (%s) returning *'
-params = endtime + currjob 
-query()
+query('update job_info set endtime = (%s) where jobname = (%s) returning *', endtime + currjob)
 conn.commit()
 row = cur.fetchone()
 print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')

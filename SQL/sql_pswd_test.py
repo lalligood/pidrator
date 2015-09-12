@@ -25,9 +25,7 @@ def query(SQL, params): # General purpose query submission that will exit if err
 def userlogin(user): # User login
     response = getpass.getpass('Enter your password: ')
     pswd = eval('(\'' + response + '\', )')
-    SQL = 'select (password = crypt((%s), password)) as userpass from users where username = (%s)'
-    params = pswd + user
-    query(SQL, params)
+    query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + user)
     pswdverify = cur.fetchone()
     if pswdverify[0]:
         print('Password entered successfully!')
@@ -56,14 +54,10 @@ def changepswd(user): # User elects to change password
             print('New password must be different from old password. Try again...')
             time.sleep(2)
             continue
-        SQL = 'select (password = crypt((%s), password)) as userpass from users where username = (%s)'
-        params = oldpswd + user
-        query(SQL, params)
+        query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user)
         pswdverify = cur.fetchone()
         if pswdverify[0]:
-            SQL = 'update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)'
-            params = newpswd1 + user
-            query(SQL, params)
+            query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user)
             conn.commit()
             print('Your password has been updated successfully.')
             break
