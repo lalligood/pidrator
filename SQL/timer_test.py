@@ -40,12 +40,11 @@ for jobname in jobs:
     print('    ' + jobname[0])
 
 # Insert start time into job_info row
-'''
-SQL = 'update job_info set starttime = (%s) where jobname = \'first time\' returning *'
-params = time.localtime()
-print(params)
+starttime = eval('(\'' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) + '\', )')
+SQL = "update job_info set starttime = (%s) where jobname = 'first time' returning *"
+params = starttime
 query()
+conn.commit()
 row = cur.fetchone()
 print(row)
-'''
 cleanexit()
