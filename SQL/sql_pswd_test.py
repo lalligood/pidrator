@@ -15,9 +15,19 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
     conn.close()
     sys.exit(exitcode)
 
-def query(SQL, params): # General purpose query submission that will exit if error
+def query(SQL, params, fetch, commit): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
+        # fetch parameter: all = return rows, one = return only 1 row, else 0
+        if fetch == 'all':
+            row = cur.fetchall()
+            return row
+        elif fetch == 'one':
+            row = cur.fetchone()
+            return row
+        # commit parameter: True = commit, else not necessary to commit
+        if commit:
+            conn.commit()
     except psycopg2.Error as dberror:
         print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
         cleanexit(1)
@@ -25,8 +35,7 @@ def query(SQL, params): # General purpose query submission that will exit if err
 def userlogin(user): # User login
     response = getpass.getpass('Enter your password: ')
     pswd = eval('(\'' + response + '\', )')
-    query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + user)
-    pswdverify = cur.fetchone()
+    pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + user, 'one', False)
     if pswdverify[0]:
         print('Password entered successfully!')
     else:
@@ -54,10 +63,9 @@ def changepswd(user): # User elects to change password
             print('New password must be different from old password. Try again...')
             time.sleep(2)
             continue
-        query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user)
-        pswdverify = cur.fetchone()
+        pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, 'one', False)
         if pswdverify[0]:
-            query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user)
+            query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, 'none', True)
             conn.commit()
             print('Your password has been updated successfully.')
             break
