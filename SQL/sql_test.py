@@ -5,12 +5,26 @@ import psycopg2
 import psycopg2.extras
 import sys
 import datetime
+import time
+import logging
 
 psycopg2.extras.register_uuid()
+date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
+
+# Configure logging
+logfilename = 'sql_test.log'
+#loglevel = logging.DEBUG
+#loglevel = logging.INFO
+loglevel = logging.WARNING
+#loglevel = logging.ERROR
+#loglevel = logging.CRITICAL
+logformat = '%(time.asctime)s %(levelname)s: %(message)s'
+logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
 
 def cleanexit(exitcode): # Close DB connection & exit gracefully
     cur.close()
     conn.close()
+    logging.info('Shutting down application with exit status ' + exitcode + '.')
     sys.exit(exitcode)
 
 def dbinput(text, input_type): # Get user input & format for use in query
@@ -40,17 +54,27 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
         if commit:
             conn.commit()
     except psycopg2.Error as dberror:
-        print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+        logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
         cleanexit(1)
 
+################
+# MAIN ROUTINE #
+################
+
+logging.info('Initializing application & attempting to connect to database.')
 # DB connection info
 mydb = 'postgres'
 mydbuser = 'lalligood'
 mydbport = 5433
 
 # Connect to DB
-conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
-cur = conn.cursor()
+try:
+    conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
+    cur = conn.cursor()
+    logging.info('Connected to database successfully')
+except psycopg2.Error as dberror:
+    logging.critical('Unable to connect to database. Is it running?')
+    cleanexit(1)
 
 # INSERT
 '''
