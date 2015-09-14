@@ -26,6 +26,10 @@ def dbinput(text, input_type): # Get user input & format for use in query
         eval('(\'' + response + '\', )')
     return response
 
+def dbdate(date): # Get date value & format for inserting into database
+    response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
+    return response
+
 def query(SQL, params, fetch, commit): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
@@ -62,7 +66,7 @@ currjob = dbinput('Enter the job name that you want to run: ', '')
 
 # Insert start time into job_info row
 start = datetime.now()
-starttime = eval('(\'' + datetime.strftime(start, date_format) + '\', )')
+starttime = dbdate(start)
 query('update job_info set starttime = (%s) where jobname = (%s)', starttime + currjob, 'none', True)
 
 # Get user input to determine how long job should be
@@ -70,7 +74,7 @@ cookhour = int(input('Enter the number of hours that you want to cook: '))
 cookmin = int(input('Enter the number of minutes that you want to cook: '))
 cookdelta = timedelta(hours=cookhour, minutes=cookmin)
 end = start + cookdelta
-endtime = eval('(\'' + datetime.strftime(end, date_format) + '\', )')
+endtime = dbdate(end)
 query('update job_info set endtime = (%s) where jobname = (%s)', endtime + currjob, 'none', True)
 print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')
 
