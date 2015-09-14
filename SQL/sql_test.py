@@ -9,33 +9,45 @@ import time
 import logging
 
 psycopg2.extras.register_uuid()
-logfilename = 'sql_test.log'
-loglevel = logging.DEBUG
-logformat = '%(time.asctime)s %(levelname)s: %(mesage)s'
-logdateformat = '%Y-%m-%d %I:%M:%S%p' # YYYY-MM-DD HH:MM:SSAP
-logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=logdateformat)
+date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 
-def cleanexit(): # Close DB connection & exit gracefully
-    logging.info('Preparing to shut down application.')
+# Configure logging
+logfilename = 'sql_test.log'
+#loglevel = logging.DEBUG
+#loglevel = logging.INFO
+loglevel = logging.WARNING
+#loglevel = logging.ERROR
+#loglevel = logging.CRITICAL
+logformat = '%(time.asctime)s %(levelname)s: %(message)s'
+logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
+
+def cleanexit(exitcode): # Close DB connection & exit gracefully
     cur.close()
     conn.close()
-    sys.exit()
+    logging.info('Shutting down application with exit status ' + exitcode + '.')
+    sys.exit(exitcode)
 
 def query(): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
     except psycopg2.Error as dberror:
         logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        cleanexit()
+        cleanexit(1)
 
+logging.info('Initializing application & attempting to connect to database.')
 # DB connection info
 mydb = 'postgres'
 mydbuser = 'lalligood'
 mydbport = 5433
 
 # Connect to DB
-conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
-cur = conn.cursor()
+try:
+    conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
+    cur = conn.cursor()
+    logging.info('Connected to database successfully')
+except psycopg2.Error as dberror:
+    logging.critical('Unable to connect to database. Is it running?')
+    cleanexit(1)
 
 # INSERT
 '''
@@ -173,4 +185,4 @@ print('Job: ', row[0])
 print('Name: ', row[1])
 print('Device: ', row[2])
 print('Food: ', row[3])
-cleanexit()
+cleanexit(0)
