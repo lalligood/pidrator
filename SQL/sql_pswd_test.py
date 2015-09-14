@@ -15,6 +15,19 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
     conn.close()
     sys.exit(exitcode)
 
+def dbinput(text, input_type): # Get user input & format for use in query
+    response = ''
+    if input_type = 'pswd':
+        response = getpass.getpass(text)
+        eval('(\'' + response + '\', )')
+    elif input_type = 'user':
+        response = input(text)
+        eval('(\'' + response.lower() + '\', )')
+    else:
+        response = input(text)
+        eval('(\'' + response + '\', )')
+    return response
+
 def query(SQL, params, fetch, commit): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
@@ -32,25 +45,21 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
         print(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
         cleanexit(1)
 
-def userlogin(user): # User login
-    response = getpass.getpass('Enter your password: ')
-    pswd = eval('(\'' + response + '\', )')
-    pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + user, 'one', False)
+def userlogin(username): # User login
+    pswd = dbinput('Enter your password: ', 'pswd')
+    pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, 'one', False)
     if pswdverify[0]:
         print('Password entered successfully!')
     else:
         print('Username and/or password incorrect. Try again...')
         time.sleep(2)
-        userlogin(user)
+        userlogin(username)
 
 def changepswd(user): # User elects to change password
     while True:
-        response = getpass.getpass('Enter your current password: ')
-        oldpswd = eval('(\'' + response + '\', )')
-        response = getpass.getpass('Enter your new password: ')
-        newpswd1 = eval('(\'' + response + '\', )')
-        response = getpass.getpass('Enter your new password again: ')
-        newpswd2 = eval('(\'' + response + '\', )')
+        oldpswd = dbinput('Enter your current password: ', 'pswd')
+        newpswd1 = dbinput('Enter your new password: ', 'pswd')
+        newpswd2 = dbinput('Enter your new password again: ', 'pswd')
         if newpswd1[0] != newpswd2[0]:
             print('New passwords do not match. Try again...')
             time.sleep(2)
@@ -66,7 +75,6 @@ def changepswd(user): # User elects to change password
         pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, 'one', False)
         if pswdverify[0]:
             query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, 'none', True)
-            conn.commit()
             print('Your password has been updated successfully.')
             break
         else:
@@ -82,8 +90,7 @@ mydbport = 5433
 conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
 cur = conn.cursor()
 
-response = input('Enter your username: ')
-user = eval('(\'' + response.lower() + '\', )')
+user = dbinput('Enter your username: ', 'user')
 userlogin(user)
 changepswd(user)
 cleanexit(0)

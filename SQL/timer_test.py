@@ -13,6 +13,19 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
     conn.close()
     sys.exit(exitcode)
 
+def dbinput(text, input_type): # Get user input & format for use in query
+    response = ''
+    if input_type = 'pswd':
+        response = getpass.getpass(text)
+        eval('(\'' + response + '\', )')
+    elif input_type = 'user':
+        response = input(text)
+        eval('(\'' + response.lower() + '\', )')
+    else:
+        response = input(text)
+        eval('(\'' + response + '\', )')
+    return response
+
 def query(SQL, params, fetch, commit): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
@@ -45,8 +58,7 @@ print('Here is a list of job names: ')
 jobs = query('select jobname from job_info order by createtime', '', 'all', False)
 for jobname in jobs:
     print('    ' + jobname[0])
-response = input('Enter the job name that you want to run: ')
-currjob = eval('(\'' + response + '\', )')
+currjob = dbinput('Enter the job name that you want to run: ', '')
 
 # Insert start time into job_info row
 start = datetime.now()

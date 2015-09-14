@@ -13,6 +13,19 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
     conn.close()
     sys.exit(exitcode)
 
+def dbinput(text, input_type): # Get user input & format for use in query
+    response = ''
+    if input_type = 'pswd':
+        response = getpass.getpass(text)
+        eval('(\'' + response + '\', )')
+    elif input_type = 'user':
+        response = input(text)
+        eval('(\'' + response.lower() + '\', )')
+    else:
+        response = input(text)
+        eval('(\'' + response + '\', )')
+    return response
+
 def query(SQL, params, fetch, commit): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
@@ -43,7 +56,6 @@ cur = conn.cursor()
 '''
 devname = ('stove', )
 query('insert into devices (devicename) values (%s) returning *', devname, 'none', True)
-conn.commit()
 '''
 
 # SELECT w/o WHERE
@@ -78,9 +90,8 @@ for x in joblist:
     print(x[0])
 
 # Get user input & SELECT row from job_info based on input
-response = input('Enter the name of the job that you want to modify: ')
 # Format response appropriately as variable
-jobname = eval('(\'' + response + '\', )')
+jobname = dbinput('Enter the name of the job that you want to modify: ', '')
 # Check to see if response matches result(s) here
 '''
 '''
@@ -92,8 +103,7 @@ print('Here is a list of users: ')
 userlist = query('select username from users order by username', '', 'all', False)
 for x in userlist:
     print(x[0])
-response = input('Enter the username you want to add to the selected job: ')
-username = eval('(\'' + response + '\', )')
+username = dbinput('Enter the username you want to add to the selected job: ', 'user')
 user = query('select id from users where username = (%s)', username, 'one', False)
 
 # SELECT devicename from devices
@@ -101,8 +111,7 @@ print('Here is a list of devices: ')
 devlist = query('select devicename from devices order by devicename', '', 'all', False)
 for x in devlist:
     print(x[0])
-response = input('Enter the username you want to add to the selected job: ')
-devname = eval('(\'' + response + '\', )')
+devname = dbinput('Enter the username you want to add to the selected job: ', '')
 device = query('select id from devices where devicename = (%s)', devname, 'one', False)
 
 # SELECT foodname from foods
@@ -110,8 +119,7 @@ print('Here is a list of foods: ')
 foodlist = query('select foodname from foods order by foodname', '', 'all', False)
 for x in foodlist:
     print(x[0])
-response = input('Enter the username you want to add to the selected job: ')
-foodname = eval('(\'' + response + '\', )')
+foodname = dbinput('Enter the username you want to add to the selected job: ', '')
 food = query('select id from foods where foodname = (%s)', foodname, 'one', False)
 
 # UPDATE user_id & device_id in job_info
