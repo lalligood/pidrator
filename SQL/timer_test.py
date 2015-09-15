@@ -14,17 +14,16 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
     sys.exit(exitcode)
 
 def dbinput(text, input_type): # Get user input & format for use in query
-    response = ''
-    if input_type = 'pswd':
+    if input_type == 'pswd':
         response = getpass.getpass(text)
-        eval('(\'' + response + '\', )')
-    elif input_type = 'user':
+        dbformat = eval('(\'' + response + '\', )')
+    elif input_type == 'user':
         response = input(text)
-        eval('(\'' + response.lower() + '\', )')
+        dbformat = eval('(\'' + response.lower() + '\', )')
     else:
         response = input(text)
-        eval('(\'' + response + '\', )')
-    return response
+        dbformat = eval('(\'' + response + '\', )')
+    return dbformat
 
 def dbdate(date): # Get date value & format for inserting into database
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
