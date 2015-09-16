@@ -1,23 +1,26 @@
-## Genesis ##
-I was looking for a reason to get my hands on a Raspberry Pi, but I wanted a reason--a purpose--for getting one. As I've already tried my hand at Arduino & got bored/complacement with making inevitably increasing more complex LED circuits, I wanted to do something completely different, and dare I say *actually useful*.
+## Overview ##
+Using a Raspberry Pi, I want to be able to control & monitor either a slow cooker or food dehydrator. To ensure best results, a digital temperature sensor  & PostgreSQL database are configured so I can log data about each cooking task.
 
-It was around that same time that I got a food dehydrator. Also it just so happened that I'd been making more & more meals with a slow cooker (aka crock pot) but sometimes they were coming out overcooked when I got home after turning it on as I left home in the morning.
+The Raspberry Pi will be controlled one of two ways: either a web interface for remote access and/or a GUI (access by a screen hardwired to the Raspberry Pi). Since I am new to programming with python, I am trying to leave my options open but will reassess this decision later in the project.
 
-I thought: "It sure would be nice if I had a way that I could control either of those appliances..." Then there was a flash of inspiration, an order was placed, and an idea was born! (The other option was to replace 2 perfectly good, working applicances with much more expensive & still not quite as functional appliances.)
+## Hardware & Software Needed ##
+* Raspberry Pi (based on the scope of this project, any Pi should be acceptable)
+* USB Wifi adapter
+* High-speed (Class 10 preferred) SD/MicroSD card
+* high temp waterproof DS18B20 Digital temperature sensor (purchased from Adafruit)
+* Powertail 2 (purchased from Adafruit)
+* Debian-based Linux distro for Rapsberry Pi (I prefer Raspbian)
+* Python version 3.4+
+* PostgreSQL version 9.1+
+* RPi.GPIO python class (for communicating with GPIO pins on Raspberry Pi)
+* psycopg2 python class (for interacting with PostgreSQL database)
+* TBD: A web interface requires a http (or https) server, ergo Apache or nginx. PHP will then be required for interacting with the database.
+* TBD: If a GUI is ever implemented, some kind of screen & input method will be required. (The official touchscreen display was recently released & would be an excellent candidate for this project.)
 
-## Getting the hardware ##
-If I was going to pull this off, I would need a wifi adapter, high temp waterproof DS18B20 Digital temperature sensor, & a Powertail to turn on/off the dehydrator or slow cooker.
-
-Both the Powertail & temp sensor use the RPi.GPIO class for functionality. In less than 20 lines of Python, it's trivial to enable, turn on/off, & read from both pieces of equipment. And sure if I wanted to "just" do those things, it would have only taken a few minutes...but I have bigger ideas in mind!
-
-## Ambitions or Too Ambitious? ##
-Among the crazy ideas I have been contemplating:
-
-1. I work with databases for a living. So I figured if I'm going to configure the RPi to control the cooking process, why not record the data while I'm at it? I envisioned tracking the rise & fall of the cooking temperatures, determining the optimal cooking time for everything I like to make, and more. The easiest way to do this (I thought) is with a database. The project was expanded to account for this.
-2. Sure I could access the RPi remotely via SSH--and I'm very comfortable doing that--but what if I wanted to monitor--or even control--the cooking process through a webpage?! Yup, gotta build a HTML front end to control my ever expanding scope...
-3. And if I have a web front end, that means I'll need graphics. And some of those graphics could lead to making charts. So we need charts.
-4. But controlling it should be *easy*. Dead frickin' simple to use. That means menus. Menus that allow you to create a new job (read: cooking schedule), pick a previous job, and modify the current job. Menus that make it very easy to configure & run the appliances.
-5. Be smart. With the slow cooker, most dishes are usually cooked in 8 hours or less. But I leave the house in the morning & don't get back home for closer to 10 hours later most days. So I need something that will effectively turn off after 8 hours (or however long I want it to) but maybe monitor the temperature & turn itself back on long enough to maintain a certain (warm) temperature after that... And with the dehydrator, you need to rotate the trays so that the food on the top doesn't overdry while the food on the bottom tray needs to go longer. So alerting me every once in a while to rotate the trays would be very helpful too.
-6. If all that wasn't enough, I happen to have a 16x2 LCD with buttons that I've contemplated adding to the RPi. So instead of havinng to use my web browser or a terminal session to start/monitor/stop a cooking job, I could do it all from the "front panel" of the RPi. Here is where I begin to question my own sanity though...
-
-## So Let's Get to Work, Shall We? ##
+## Project Goals ##
+1. **Ease of use.** If it's not easy to use, no one will want to use it. Everything should be as obvious as possible & contribute to that goal.
+2. **Stability.** Using well-proven programming & database tools, it shouldn't require any extraordinary effort to make a stable application. However, it's possible to screw it up so I need to be vigilant in the execution of my code.
+3. **Web interface.** The Raspberry Pi may require interacting directly with it to execute the jobs. At a minimum, the web interface is how I would like to monitor & display graphs of the progress of any previous cooking job(s). I am definitely open to exploring the possibility of using a web interface to control all aspects of the cooking job(s).
+4. **Local interface.** The Raspberry Pi Foundation just released (Sep 2015) a 7" touchscreen display that attaches directly to the Pi. Depending on any progress made with the web interface, a local (only) GUI might be designed for controlling the cooking job(s).
+5. **Notifications.** python can send messages via email using SMTP or via SMS. The idea of being notified periodically (or in case of job failure) is desirable.
+6. **Security Concerns** Since there is a high chance of being able to control this device through a web interface, I'm taking a cautious approach to security. Thankfully setting up password encryption on the PostgreSQL database is a piece of cake. It uses Blowfish encryption & salts the encrypted password so that even instances where 2 different users use the same password, they will be unique (unlike password created with a MD5 hash). And the python code enforces a minimum password length of 8 characters.
