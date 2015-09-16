@@ -57,16 +57,22 @@ conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
 cur = conn.cursor()
 
 # Retrieve list of job names from job_info
+'''
 print('Here is a list of job names: ')
 jobs = query('select jobname from job_info order by createtime', '', 'all', False)
 for jobname in jobs:
     print('    ' + jobname[0])
 currjob = dbinput('Enter the job name that you want to run: ', '')
+'''
+
+# Enter the name of a new job
+newjob = dbinput('What would you like to call your new job? ', '')
+jobid = query('insert into job_info (jobname) values (%s) returning id', newjob, 'one', True)
 
 # Insert start time into job_info row
 start = datetime.now()
 starttime = dbdate(start)
-query('update job_info set starttime = (%s) where jobname = (%s)', starttime + currjob, 'none', True)
+query('update job_info set starttime = (%s) where jobname = (%s)', starttime + newjob, '', True)
 
 # Get user input to determine how long job should be
 cookhour = int(input('Enter the number of hours that you want to cook: '))
@@ -74,7 +80,26 @@ cookmin = int(input('Enter the number of minutes that you want to cook: '))
 cookdelta = timedelta(hours=cookhour, minutes=cookmin)
 end = start + cookdelta
 endtime = dbdate(end)
-query('update job_info set endtime = (%s) where jobname = (%s)', endtime + currjob, 'none', True)
+query('update job_info set endtime = (%s) where jobname = (%s)', endtime + newjob, '', True)
 print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')
+
+# Main cooking loop
+currdelta = timedelta(seconds=30) # How often it should log data while cooking
+temp = eval('(\'' + str(100) + '\', )') # This is a temporary placeholder value!
+countdown = 0
+while True:
+    currtime = datetime.now()
+    if currtime >= start + currdelta:
+        current = dbdate(currtime)
+        query('insert into job_data (job_id, moment, temperature) \
+            values ((%s), (%s), (%s))',
+            jobid + current + temp, '', True)
+        start = datetime.now()
+        countdown += 0.5
+        print('You job has been active for ' + str(countdown) + ' minutes.')
+    if currtime >= end:
+        break
+
+print('Job complete!')
 
 cleanexit(0)
