@@ -16,24 +16,28 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
     sys.exit(exitcode)
 
 def loginmenu(): # Welcome screen to login, create acct, or exit
-    menuopt = input('''pidrator Menu
+    while True:
+        menuopt = input('''pidrator Menu
 
-            Select from one of the following choices:
-            1) Login (must have an account)
-            2) Create a new account
-            x) Exit
-            ''')
-    While True:
+Select from one of the following choices:
+1) Login (must have an account)
+2) Create a new account
+x) Exit
+''')
         if menuopt == '1':
             user = userlogin()
+            return user
             break
         elif menuopt == '2':
             user = usercreate()
+            return user
+            break
         elif menuopt == 'x':
             print('Exiting pidrator...')
             cleanexit(0)
         else:
             print('Invalid choice. Please try again...')
+            time.sleep(2)
 
 def dbinput(text, input_type): # Get user input & format for use in query
     response = ''
@@ -66,29 +70,33 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
         cleanexit(1)
 
 def userlogin(): # User login
-    username = dbinput('Enter your username: ', 'user')
-    pswd = dbinput('Enter your password: ', 'pswd')
-    pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, 'one', False)
-    if pswdverify[0]:
-        print('Password entered successfully!')
-        return username
-    else:
-        print('Username and/or password incorrect. Try again...')
+    while True:
+        username = dbinput('Enter your username: ', 'user')
+        pswd = dbinput('Enter your password: ', 'pswd')
+        userverify = query('select username from users where username = (%s)', username, 'one', False)
+        pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, 'one', False)
+        if userverify == None:
+            print('Username and/or password incorrect. Try again...')
+        elif pswdverify[0]:
+            print('Password entered successfully!')
+            return username
+            break
+        else:
+            print('Username and/or password incorrect. Try again...')
         time.sleep(2) # Slow down any brute force login attempts
-        userlogin(username)
 
 def usercreate(): # User login
     while True:
         username = dbinput('Enter your desired username: ', 'user')
         fullname = dbinput('Enter your full name: ', 'user')
-        emailaddr = dbinput('Enter your  email address: ', 'user')
+        emailaddr = dbinput('Enter your email address: ', 'user')
         pswd = dbinput('Enter your password: ', 'pswd')
         pswdconfirm = dbinput('Enter your password: ', 'pswd')
         if pswd != pswdconfirm: # Make sure passwords match
             print('Your passwords do not match. Please try again...')
             time.sleep(2) # Slow down any brute force login attempts
             continue
-        elif len(pswd) < 8: # Make sure passwords are long enough
+        if len(pswd[0]) < 8: # Make sure passwords are long enough
             print('Your password is not long enough. Must be at least 8 characters. Try again...')
             time.sleep(2) # Slow down any brute force login attempts
             continue
@@ -98,13 +106,11 @@ def usercreate(): # User login
             time.sleep(2) # Slow down any brute force login attempts
             continue
         else:
-            dbinput('insert into users (username, fullname, email_address, password) \
-                    values ((%s), (%s), (%s), crypt((%s), gen_salt('bf'))', \
-                    username + fullname + emailaddr + pswd, '', True)
+            query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, '', True)
             print('Your username was created successfully.')
             return username
 
-def changepswd(user): # User elects to change password
+def changepswd(username): # User elects to change password
     while True:
         oldpswd = dbinput('Enter your current password: ', 'pswd')
         newpswd1 = dbinput('Enter your new password: ', 'pswd')
@@ -139,6 +145,8 @@ mydbport = 5433
 conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
 cur = conn.cursor()
 
-loginmenu()
-changepswd(user)
+user = loginmenu()
+response = input('Do you want to change your password? [Y/N] ')
+if response.lower() == 'y':
+    changepswd(user)
 cleanexit(0)
