@@ -57,6 +57,23 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
         logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
         cleanexit(1)
 
+def picklist(listname, colname, tablename, ordername):
+    print('The following ' + listname + ' are available: ')
+    itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', 'all', False)
+    count = 0
+    for x in itemlist: # Display list
+        count += 1
+        print('    ' + str(count) + '. ' + x[0])
+    itemnbr = int(input('Enter the number that you want to access: '))
+    count = 0
+    for x in itemlist: # Iterate & find selected value
+        count += 1
+        if count == itemnbr:
+            itemname = x
+            print('You selected: ' + itemname[0] + '.')
+            return itemname
+            break
+
 ################
 # MAIN ROUTINE #
 ################
@@ -108,6 +125,7 @@ query('insert into job_info (jobname) values (%s) returning *', params, 'none', 
 '''
 
 # Display list of jobs & identify each job by number
+'''
 print('Here is the list of job names: ')
 joblist = query('select jobname from job_info order by createtime', '', 'all', False)
 count = 0
@@ -124,17 +142,30 @@ for x in joblist:
         jobname = x
         print('You selected: ' + jobname[0] + '.')
         break
+'''
+jobname = picklist('job names', 'jobname', 'job_info', 'createtime')
 
 # Fetch job ID for selected job
 jobid = query('select id from job_info where jobname = (%s)', jobname, 'one', False)
 
 # SELECT username from users
-print('Here is a list of users: ')
+print('Here is the list of users: ')
 userlist = query('select username from users order by username', '', 'all', False)
+count = 0
 for x in userlist:
-    print(x[0])
-username = dbinput('Enter the username you want to add to the selected job: ', 'user')
-user = query('select id from users where username = (%s)', username, 'one', False)
+    count += 1
+    print('    ' + str(count) + '. ' + x[0])
+usernbr = int(input('Enter the number of the user you want to own this job: '))
+count = 0
+for x in userlist:
+    count += 1
+    if count == usernbr:
+        username = x
+        print('You selected: ' + username[0] + '.')
+        break
+
+userid = dbinput('Enter the username you want to add to the selected job: ', 'user')
+user = query('select id from users where username = (%s)', userid, 'one', False)
 
 # SELECT devicename from devices
 print('Here is a list of devices: ')

@@ -25,6 +25,10 @@ def dbinput(text, input_type): # Get user input & format for use in query
         dbformat = eval('(\'' + response + '\', )')
     return dbformat
 
+def dbnumber(number): # Get date value & format for inserting into database
+    response = eval('(\'' + str(number) + '\', )')
+    return response
+
 def dbdate(date): # Get date value & format for inserting into database
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
     return response
@@ -78,7 +82,7 @@ query('update job_info set starttime = (%s) where jobname = (%s)', starttime + n
 cookhour = int(input('Enter the number of hours that you want to cook: '))
 cookmin = int(input('Enter the number of minutes that you want to cook: '))
 cookdelta = timedelta(hours=cookhour, minutes=cookmin)
-cooktime = eval('(\'' + str((cookhour * 60) + cookmin) + '\', )')
+cooktime = dbnumber((cookhour * 60) + cookmin)
 end = start + cookdelta
 endtime = dbdate(end)
 query('update job_info set endtime = (%s), cookminutes = (%s) where jobname = (%s)', endtime + cooktime + newjob, '', True)
@@ -86,7 +90,7 @@ print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(c
 
 # Main cooking loop
 currdelta = timedelta(seconds=30) # How often it should log data while cooking
-temp = eval('(\'' + str(100) + '\', )') # This is a temporary placeholder value!
+temp = dbnumber(100) # This is a temporary placeholder value!
 countdown = 0
 while True:
     currtime = datetime.now()
