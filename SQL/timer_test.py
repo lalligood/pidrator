@@ -78,9 +78,10 @@ query('update job_info set starttime = (%s) where jobname = (%s)', starttime + n
 cookhour = int(input('Enter the number of hours that you want to cook: '))
 cookmin = int(input('Enter the number of minutes that you want to cook: '))
 cookdelta = timedelta(hours=cookhour, minutes=cookmin)
+cooktime = eval('(\'' + str((cookhour * 60) + cookmin) + '\', )')
 end = start + cookdelta
 endtime = dbdate(end)
-query('update job_info set endtime = (%s) where jobname = (%s)', endtime + newjob, '', True)
+query('update job_info set endtime = (%s), cookminutes = (%s) where jobname = (%s)', endtime + cooktime + newjob, '', True)
 print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')
 
 # Main cooking loop
