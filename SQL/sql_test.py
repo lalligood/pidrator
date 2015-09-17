@@ -107,18 +107,24 @@ params = ('third time is a charm', )
 query('insert into job_info (jobname) values (%s) returning *', params, 'none', True)
 '''
 
-# Retrieve list of job names from job_info
-print('Here is a list of job names: ')
+# Display list of jobs & identify each job by number
+print('Here is the list of job names: ')
 joblist = query('select jobname from job_info order by createtime', '', 'all', False)
+count = 0
 for x in joblist:
-    print(x[0])
+    count += 1
+    print('    ' + str(count) + '. ' + x[0])
 
-# Get user input & SELECT row from job_info based on input
-# Format response appropriately as variable
-jobname = dbinput('Enter the name of the job that you want to modify: ', '')
-# Check to see if response matches result(s) here
-'''
-'''
+# Get user input & identify job name by job number from user.
+jobnbr = int(input('Enter the number of the job that you want to modify: '))
+count = 0
+for x in joblist:
+    count += 1
+    if count == jobnbr:
+        jobname = x
+        print('You selected: ' + jobname[0] + '.')
+        break
+
 # Fetch job ID for selected job
 jobid = query('select id from job_info where jobname = (%s)', jobname, 'one', False)
 
