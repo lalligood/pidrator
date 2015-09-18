@@ -13,8 +13,21 @@ psycopg2.extras.register_uuid()
 def cleanexit(exitcode): # Close DB connection & exit gracefully
     cur.close()
     conn.close()
-    logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
+    if exitcode > 0: # Log as error when not closing normally
+        logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
+    else:
+        logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
     sys.exit(exitcode)
+
+def dbconnect(): # Connect to the database
+    try:
+        connection = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
+        cursor = connection.cursor()
+        logging.info('Connected to database successfully')
+        return cursor
+    except psycopg2.Error as dberror:
+        logging.critical('Unable to connect to database. Is it running?')
+        cleanexit(1)
 
 def dbinput(text, input_type): # Get user input & format for use in query
     response = ''
@@ -114,13 +127,8 @@ mydbport = 5433
 # MAIN ROUTINE #
 ################
 
-try:
-    conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
-    cur = conn.cursor()
-    logging.info('Connected to database successfully')
-except psycopg2.Error as dberror:
-    logging.critical('Unable to connect to database. Is it running?')
-    cleanexit(1)
+# Open connection to database
+cur = dbconnect()
 
 # Pick job from list
 jobname = picklist('job names', 'jobname', 'job_info', 'createtime')
@@ -154,8 +162,8 @@ from job_info \
 where jobname = (%s)', jobname, 'one', False)
 # Convert tuple to list
 list(row)
-print('Job: ', row[0])
-print('Name: ', row[1])
+print('Job:    ', row[0])
+print('Name:   ', row[1])
 print('Device: ', row[2])
-print('Food: ', row[3])
+print('Food:   ', row[3])
 cleanexit(0)
