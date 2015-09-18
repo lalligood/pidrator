@@ -36,6 +36,7 @@ create table job_data (
     , job_id uuid
     , moment timestamp with time zone
     , temperature double precision
+    , constraint job_data_pkey primary key (id)
     );
 
 create table job_info (
