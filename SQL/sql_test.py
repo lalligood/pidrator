@@ -16,15 +16,6 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
     logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
     sys.exit(exitcode)
 
-def dbconnect(): # Connect to DB
-    try:
-        conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
-        cur = conn.cursor()
-        logging.info('Connected to database successfully')
-    except psycopg2.Error as dberror:
-        logging.critical('Unable to connect to database. Is it running?')
-        cleanexit(1)
-
 def dbinput(text, input_type): # Get user input & format for use in query
     response = ''
     if input_type == 'pswd':
@@ -57,21 +48,41 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
         cleanexit(1)
 
 def picklist(listname, colname, tablename, ordername):
-    print('The following ' + listname + ' are available: ')
-    itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', 'all', False)
-    count = 0
-    for x in itemlist: # Display list
-        count += 1
-        print('    ' + str(count) + '. ' + x[0])
-    itemnbr = int(input('Enter the number that you want to access: '))
-    count = 0
-    for x in itemlist: # Iterate & find selected value
-        count += 1
-        if count == itemnbr:
-            itemname = x
-            print('You selected: ' + itemname[0] + '.')
-            return itemname
-            break
+    while True:
+        print('The following ' + listname + ' are available: ')
+        itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', 'all', False)
+        count = 0
+        for x in itemlist: # Display list
+            count += 1
+            print('    ' + str(count) + '. ' + x[0])
+        print('    0. Add an item to the list.')
+        countlist = count
+        itemnbr = int(input('Enter the number that you want to access: '))
+        if itemnbr == 0: # Add new item to the table
+            newitem = dbinput('Enter the name of the item you would like to add: ', '')
+            confirm = input('You entered: ' + newitem[0] + '. Is that correct? [y/n]')
+            if confirm.lower() == 'y':
+                '''
+                Add check to make sure that itemname does not already exist here!
+                '''
+                query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, '', True)
+                print('Returning to list of available ' + listname + '.')
+            else:
+                print('Invalid entry. Please try again...')
+            time.sleep(2)
+            continue
+        elif itemnbr < 0 or itemnbr > countlist: # Verify input is valid
+            print('Invalid selection. Please try again...')
+            time.sleep(2)
+            continue
+        count = 0
+        for x in itemlist: # Iterate & find selected value
+            count += 1
+            if count == itemnbr:
+                itemname = x
+                print('You selected: ' + itemname[0] + '.')
+                return itemname
+                break
 
 ##############
 # PARAMETERS #
@@ -98,7 +109,13 @@ mydbport = 5433
 # MAIN ROUTINE #
 ################
 
-dbconnect()
+try:
+    conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
+    cur = conn.cursor()
+    logging.info('Connected to database successfully')
+except psycopg2.Error as dberror:
+    logging.critical('Unable to connect to database. Is it running?')
+    cleanexit(1)
 
 # Pick job from list
 jobname = picklist('job names', 'jobname', 'job_info', 'createtime')
