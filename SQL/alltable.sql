@@ -12,7 +12,7 @@ create table devices (
     , devicename text not null unique
     , createdate timestamp with time zone default now()
     , constraint devices_pkey primary key (id)
-    )
+    );
 
 create table foodcomments (
     jobinfo_id uuid not null
@@ -25,14 +25,14 @@ create table foods (
     , foodname text not null unique
     , createdate timestamp with time zone default now()
     , constraint foods_pkey primary key (id)
-    )
+    );
 
 create table job_data (
     id serial primary key
     , job_id uuid
     , moment timestamp with time zone
     , temperature double precision
-    )
+    );
 
 create table job_info (
     id uuid not null default uuid_generate_v4()
@@ -47,7 +47,7 @@ create table job_info (
     , endtime timestamp with time zone
     , cookminutes int
     , constraint job_info_pkey primary key (id)
-    )
+    );
 
 create table users (
     id uuid not null default uuid_generate_v4()
@@ -57,7 +57,7 @@ create table users (
     , "password" text not null
     , createdate timestamp with time zone default now()
     , constraint users_pkey primary key (id)
-    )
+    );
 
 -- If desired, you can pre-populate some tables with sample data
 -- by removing /* & */
