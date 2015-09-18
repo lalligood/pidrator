@@ -1,3 +1,7 @@
+-- Make sure that uuid-ossp & pgcrypto extensions are installed
+create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
+
 -- Drop any existing tables if they exist
 drop table if exists devices;
 drop table if exists foodcomments;
