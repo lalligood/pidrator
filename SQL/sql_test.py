@@ -57,16 +57,20 @@ def picklist(listname, colname, tablename, ordername):
             print('    ' + str(count) + '. ' + x[0])
         print('    0. Add an item to the list.')
         countlist = count
-        itemnbr = int(input('Enter the number that you want to access: '))
+        itemnbr = int(input('Enter the number of the item that you want to use: '))
         if itemnbr == 0: # Add new item to the table
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [y/n]')
-            if confirm.lower() == 'y':
-                '''
-                Add check to make sure that itemname does not already exist here!
-                '''
-                query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, '', True)
-                print('Returning to list of available ' + listname + '.')
+            if confirm.lower() == 'y': # Confirm this is what they want to add
+                existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, 'one', False)
+                if newitem == existingitem: # If existing item is found, disallow
+                    print('That item already exists in the list. Please try again...')
+                    time.sleep(2)
+                    continue
+                else: # Insert new item into table
+                    query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, '', True)
+                    print('Your new item has been added to the list.')
+                    print('Returning to list of available ' + listname + '.')
             else:
                 print('Invalid entry. Please try again...')
             time.sleep(2)
@@ -75,14 +79,15 @@ def picklist(listname, colname, tablename, ordername):
             print('Invalid selection. Please try again...')
             time.sleep(2)
             continue
-        count = 0
-        for x in itemlist: # Iterate & find selected value
-            count += 1
-            if count == itemnbr:
-                itemname = x
-                print('You selected: ' + itemname[0] + '.')
-                return itemname
-                break
+        else: # Find the item in the list
+            count = 0
+            for x in itemlist: # Iterate & find selected value
+                count += 1
+                if count == itemnbr:
+                    itemname = x
+                    print('You selected: ' + itemname[0] + '.')
+                    return itemname
+                    break
 
 ##############
 # PARAMETERS #
