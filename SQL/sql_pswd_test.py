@@ -146,7 +146,12 @@ conn = psycopg2.connect(database=mydb, user=mydbuser, port=mydbport)
 cur = conn.cursor()
 
 user = loginmenu()
-response = input('Do you want to change your password? [Y/N] ')
-if response.lower() == 'y':
-    changepswd(user)
+while True:
+    response = input('Do you want to change your password? [Y/N] ')
+    if response.lower() == 'y':
+        changepswd(user)
+        break
+    else:
+        print('Invalid selection. Please try again...')
+        time.sleep(2)
 cleanexit(0)
