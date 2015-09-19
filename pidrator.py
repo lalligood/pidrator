@@ -21,16 +21,6 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
         logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
     sys.exit(exitcode)
 
-def dbconnect(dbname, dbuser, dbport): # Connect to the database
-    try:
-        connection = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
-        cursor = connection.cursor()
-        logging.info('Connected to database successfully')
-        return cursor
-    except psycopg2.Error as dberror:
-        logging.critical('Unable to connect to database. Is it running?')
-        cleanexit(1)
-
 def dbinput(text, input_type): # Get user input & format for use in query
     response = ''
     if input_type == 'pswd':
@@ -83,7 +73,7 @@ def picklist(listname, colname, tablename, ordername):
         itemnbr = int(input('Enter the number of the item that you want to use: '))
         if itemnbr == 0: # Add new item to the table
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
-            confirm = input('You entered: ' + newitem[0] + '. Is that correct? [y/n]')
+            confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
                 existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, 'one', False)
                 if newitem == existingitem: # If existing item is found, disallow
@@ -112,6 +102,31 @@ def picklist(listname, colname, tablename, ordername):
                     return itemname
                     break
 
+def loginmenu(): # Welcome screen to login, create acct, or exit
+    while True:
+        menuopt = input('''
+pidrator Menu
+
+Select from one of the following choices:
+    1. Login (must have an account)
+    2. Create a new account
+    x. Exit
+''')
+        if menuopt == '1':
+            user = userlogin()
+            return user
+            break
+        elif menuopt == '2':
+            user = usercreate()
+            return user
+            break
+        elif menuopt == 'x':
+            print('Exiting pidrator...')
+            cleanexit(0)
+        else:
+            print('Invalid choice. Please try again...')
+            time.sleep(2)
+
 def userlogin(): # User login
     while True:
         username = dbinput('Enter your username: ', 'user')
@@ -121,7 +136,7 @@ def userlogin(): # User login
         if userverify == None:
             print('Username and/or password incorrect. Try again...')
         elif pswdverify[0]:
-            print('Password entered successfully!')
+            print('Login successful.')
             return username
             break
         else:
@@ -183,6 +198,10 @@ def changepswd(username): # User elects to change password
 **** PARAMETERS ****
 '''
 
+# Database connection information
+dbname = 'postgres'
+dbuser = 'lalligood'
+dbport = 5433
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
@@ -197,33 +216,32 @@ logging.info('Initializing application & attempting to connect to database.')
 '''
 
 # Open connection to database
-cur = dbconnect('postgres', 'lalligood', 5433)
+try:
+    conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
+    cur = conn.cursor()
+    logging.info('Connected to database successfully')
+except psycopg2.Error as dberror:
+    logging.critical('Unable to connect to database. Is it running?')
+    cleanexit(1)
 
-'''
-EVERYTHING BELOW THIS POINT IS THE MAIN ROUTINES FROM sql_test, sql_pswd_test, & timer_test
-
-This all needs to be organized (& functionalized further if necessary) into a cohesive routine
-'''
-#**** BEGIN FROM sql_pswd_test.py ****
+# User login
 user = loginmenu()
+
+# User password change (optional)
 while True:
     response = input('Do you want to change your password? [Y/N] ')
     if response.lower() == 'y':
         changepswd(user)
         break
+    elif response.lower() == 'n':
+        break
     else:
         print('Invalid selection. Please try again...')
         time.sleep(2)
-#**** END FROM sql_pswd_test.py ****
 
-#**** BEGIN FROM sql_test.py ****
 # Pick job from list
 jobname = picklist('job names', 'jobname', 'job_info', 'createtime')
 jobid = query('select id from job_info where jobname = (%s)', jobname, 'one', False)
-
-# Pick user from list
-username = picklist('users', 'username', 'users', 'username')
-user = query('select id from users where username = (%s)', username, 'one', False)
 
 # Pick cooking device from list
 devname = picklist('cooking devices', 'devicename', 'devices', 'devicename')
@@ -233,8 +251,11 @@ device = query('select id from devices where devicename = (%s)', devname, 'one',
 foodname = picklist('foods', 'foodname', 'foods', 'foodname')
 food = query('select id from foods where foodname = (%s)', foodname, 'one', False)
 
+# Get user_id
+userid = query('select id from users where username = (%s)', user, 'one', False)
+
 # Update user_id, device_id, & food_id in job_info
-query('update job_info set user_id = (%s), device_id = (%s), food_id = (%s) where jobname = (%s)', user + device + food + jobname, 'none', True)
+query('update job_info set user_id = (%s), device_id = (%s), food_id = (%s) where jobname = (%s)', userid + device + food + jobname, 'none', True)
 
 # Now make sure it worked...!
 row = query('select \
@@ -249,30 +270,32 @@ from job_info \
 where jobname = (%s)', jobname, 'one', False)
 # Convert tuple to list
 list(row)
-print('Job:    ', row[0])
-print('Name:   ', row[1])
-print('Device: ', row[2])
-print('Food:   ', row[3])
-#**** END FROM sql_test.py ****
-
-#**** BEGIN FROM timer_test.py ****
-# Enter the name of a new job
-newjob = dbinput('What would you like to call your new job? ', '')
-jobid = query('insert into job_info (jobname) values (%s) returning id', newjob, 'one', True)
-
-# Insert start time into job_info row
-start = datetime.now()
-starttime = dbdate(start)
-query('update job_info set starttime = (%s) where jobname = (%s)', starttime + newjob, '', True)
+print('    Job name:            ', row[0])
+print('    Prepared by:         ', row[1])
+print('    Cooking device:      ', row[2])
+print('    Food being prepared: ', row[3])
 
 # Get user input to determine how long job should be
 cookhour = int(input('Enter the number of hours that you want to cook: '))
 cookmin = int(input('Enter the number of minutes that you want to cook: '))
+
+# Prompt before continuing with the job
+while True:
+    response = input('Type \'Y\' when you are ready to start your job. ')
+    if response.lower() == 'y':
+        break
+
+# Insert start time into job_info row
+start = datetime.now()
+starttime = dbdate(start)
+query('update job_info set starttime = (%s) where id = (%s)', starttime + jobid, '', True)
+
+# Calculate job run time
 cookdelta = timedelta(hours=cookhour, minutes=cookmin)
 cooktime = dbnumber((cookhour * 60) + cookmin)
 end = start + cookdelta
 endtime = dbdate(end)
-query('update job_info set endtime = (%s), cookminutes = (%s) where jobname = (%s)', endtime + cooktime + newjob, '', True)
+query('update job_info set endtime = (%s), cookminutes = (%s) where id = (%s)', endtime + cooktime + jobid, '', True)
 print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')
 
 # Main cooking loop
@@ -288,10 +311,9 @@ while True:
             jobid + current + temp, '', True)
         start = datetime.now()
         countdown += 0.5
-        print('You job has been active for ' + str(countdown) + ' minutes.')
+        print('Your job has been active for ' + str(countdown) + ' minutes.')
     if currtime >= end:
         break
 
 print('Job complete!')
 cleanexit(0)
-#**** END FROM timer_test.py ****
