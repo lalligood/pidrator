@@ -32,7 +32,7 @@ create table foods (
     );
 
 create table job_data (
-    id serial primary key
+    id serial
     , job_id uuid
     , moment timestamp with time zone
     , temperature double precision
