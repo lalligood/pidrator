@@ -245,17 +245,17 @@ jobid = query('select id from job_info where jobname = (%s)', jobname, 'one', Fa
 
 # Pick cooking device from list
 devname = picklist('cooking devices', 'devicename', 'devices', 'devicename')
-device = query('select id from devices where devicename = (%s)', devname, 'one', False)
+deviceid = query('select id from devices where devicename = (%s)', devname, 'one', False)
 
 # Pick food from list
 foodname = picklist('foods', 'foodname', 'foods', 'foodname')
-food = query('select id from foods where foodname = (%s)', foodname, 'one', False)
+foodid = query('select id from foods where foodname = (%s)', foodname, 'one', False)
 
 # Get user_id
 userid = query('select id from users where username = (%s)', user, 'one', False)
 
 # Update user_id, device_id, & food_id in job_info
-query('update job_info set user_id = (%s), device_id = (%s), food_id = (%s) where jobname = (%s)', userid + device + food + jobname, 'none', True)
+query('update job_info set user_id = (%s), device_id = (%s), food_id = (%s) where id = (%s)', userid + deviceid + foodid + jobid, 'none', True)
 
 # Now make sure it worked...!
 row = query('select \
@@ -276,16 +276,26 @@ print('    Cooking device:      ', row[2])
 print('    Food being prepared: ', row[3])
 
 # Get user input to determine how long job should be
-cookhour = int(input('Enter the number of hours that you want to cook: '))
-cookmin = int(input('Enter the number of minutes that you want to cook: '))
+while True:
+    cookhour = int(input('Enter the number of hours that you want to cook (0-12): '))
+    if cookhour < 0 or cookhour > 12:
+        print('Invalid selection. Please try again...')
+        time.sleep(2)
+        continue
+    cookmin = int(input('Enter the number of minutes that you want to cook (0-59): '))
+    if cookmin < 0 or cookmin > 59:
+        print('Invalid selection. Please try again...')
+        time.sleep(2)
+        continue
+    break
 
 # Prompt before continuing with the job
 while True:
-    response = input('Type \'Y\' when you are ready to start your job. ')
+    response = input('Type \'Y\' or \'y\' when you are ready to start your job. ')
     if response.lower() == 'y':
         break
 
-# Insert start time into job_info row
+# Update job_info row with start time 
 start = datetime.now()
 starttime = dbdate(start)
 query('update job_info set starttime = (%s) where id = (%s)', starttime + jobid, '', True)
@@ -311,7 +321,8 @@ while True:
             jobid + current + temp, '', True)
         start = datetime.now()
         countdown += 0.5
-        print('Your job has been active for ' + str(countdown) + ' minutes.')
+        timeleft = int(cooktime[0]) - countdown
+        print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
     if currtime >= end:
         break
 
