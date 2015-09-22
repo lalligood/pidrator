@@ -24,7 +24,6 @@ def cleanexit(exitcode): # Close DB connection & exit gracefully
 def errmsgslow(text): # Print message & pause for 2 seconds
     print(text)
     time.sleep(2)
-    continue
 
 def dbinput(text, input_type): # Get user input & format for use in query
     response = ''
@@ -83,6 +82,7 @@ def picklist(listname, colname, tablename, ordername):
                 existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, 'one', False)
                 if newitem == existingitem: # If existing item is found, disallow
                     errmsgslow('That item already exists in the list. Please try again...')
+                    continue
                 else: # Insert new item into table
                     query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, '', True)
                     print('Your new item has been added to the list.')
@@ -93,6 +93,7 @@ def picklist(listname, colname, tablename, ordername):
             continue
         elif itemnbr < 0 or itemnbr > countlist: # Verify input is valid
             errmsgslow('Invalid selection. Please try again...')
+            continue
         else: # Find the item in the list
             count = 0
             for x in itemlist: # Iterate & find selected value
@@ -135,14 +136,13 @@ def userlogin(): # User login
         userverify = query('select username from users where username = (%s)', username, 'one', False)
         pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, 'one', False)
         if userverify == None:
-            print('Username and/or password incorrect. Try again...')
+            errmsgslow('Username and/or password incorrect. Try again...')
         elif pswdverify[0]:
             print('Login successful.')
             return username
             break
         else:
-            print('Username and/or password incorrect. Try again...')
-        time.sleep(2) # Slow down any brute force login attempts
+            errmsgslow('Username and/or password incorrect. Try again...')
 
 def usercreate(): # User login
     while True:
@@ -153,11 +153,14 @@ def usercreate(): # User login
         pswdconfirm = dbinput('Enter your password: ', 'pswd')
         if pswd != pswdconfirm: # Make sure passwords match
             errmsgslow('Your passwords do not match. Please try again...')
+            continue
         if len(pswd[0]) < 8: # Make sure passwords are long enough
             errmsgslow('Your password is not long enough. Must be at least 8 characters. Try again...')
+            continue
         existinguser = query('select username from users where username = (%s)', username, 'one', False)
         if username == existinguser: # Make sure user doesn't already exist
             errmsgslow('That username is already in use. Please try again...')
+            continue
         else:
             query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, '', True)
             print('Your username was created successfully.')
@@ -170,10 +173,13 @@ def changepswd(username): # User elects to change password
         newpswd2 = dbinput('Enter your new password again: ', 'pswd')
         if newpswd1[0] != newpswd2[0]:
             errmsgslow('New passwords do not match. Try again...')
+            continue
         if len(newpswd1[0]) < 8:
             errmsgslow('New password length is too short. Try again...')
+            continue
         if oldpswd[0] == newpswd1[0]:
             errmsgslow('New password must be different from old password. Try again...')
+            continue
         pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, 'one', False)
         if pswdverify[0]:
             query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, 'none', True)
@@ -269,9 +275,11 @@ while True:
     cookhour = int(input('Enter the number of hours that you want to cook (0-12): '))
     if cookhour < 0 or cookhour > 12:
         errmsgslow('Invalid selection. Please try again...')
+        continue
     cookmin = int(input('Enter the number of minutes that you want to cook (0-59): '))
     if cookmin < 0 or cookmin > 59:
         errmsgslow('Invalid selection. Please try again...')
+        continue
     break
 
 # Prompt before continuing with the job
