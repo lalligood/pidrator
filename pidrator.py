@@ -4,8 +4,10 @@ __author__ = 'lalligood'
 from datetime import datetime, timedelta
 import getpass
 import logging
+import os
 import psycopg2
 import psycopg2.extras
+from RPi import GPIO
 import sys
 import time
 
@@ -188,6 +190,20 @@ def changepswd(username): # User elects to change password
         else:
             print('Old password incorrect. Try again...')
             time.sleep(2)
+
+def enableGPIO(): # Enable all devices attached to RaspPi GPIO
+    '''
+    Code goes here
+    '''
+
+def powertail(onoff): # Turn Powertail on/off
+    '''
+    Code goes here
+    '''
+def gettemp(): # Read thermal sensor
+    '''
+    Code goes here
+    '''
 
 '''
 **** PARAMETERS ****
