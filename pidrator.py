@@ -3,6 +3,7 @@ __author__ = 'lalligood'
 
 from datetime import datetime, timedelta
 import getpass
+import glob
 import logging
 import os
 import psycopg2
@@ -192,18 +193,43 @@ def changepswd(username): # User elects to change password
             time.sleep(2)
 
 def enableGPIO(): # Enable all devices attached to RaspPi GPIO
-    '''
-    Code goes here
-    '''
+    io.setmode(io.BCM)
+    io.setup(power_pin, io.OUT)
+    io.output(power_pin, False) # Make sure powertail is off!
+    os.system('modprobe w1-gpio')
+    os.system('modprobe w1-therm')
+    base_dir = '/sys/bus/w1/devices/'
+    device_folder = glob.glob(base_dir + '28*')[0]
+    device_file = device_folder + '/w1_slave'
+    if device_file:
+        msg = 'Powertail detected & started successfully.'
+    else:
+        msg = 'Powertail not found.'
+    print msg
 
 def powertail(onoff): # Turn Powertail on/off
-    '''
-    Code goes here
-    '''
+    if onoff:
+        io.output(power_pin, True) # Powertail on
+    else:
+        io.output(power_pin, False) # Powertail off
+
+def enabletemp(): # Enable thermal sensor
+     f = open(device_file, 'r')
+     lines = f.readlines()
+     f.close()
+     return lines
+ 
 def gettemp(): # Read thermal sensor
-    '''
-    Code goes here
-    '''
+     lines = read_temp_raw()
+     while lines[0].strip()[-3:] != 'YES':
+         time.sleep(0.2)
+         lines = read_temp_raw()
+     equals_pos = lines[1].find('t=')
+     if equals_pos != -1:
+         temp_string = lines[1][equals_pos+2:]
+         temp_c = float(temp_string) / 1000.0
+         temp_f = temp_c * 9.0 / 5.0 + 32.0
+         return temp_c, temp_f
 
 '''
 **** PARAMETERS ****
@@ -221,6 +247,8 @@ loglevel = logging.WARNING # Available logging levels, from low to high: DEBUG, 
 logformat = '%(time.asctime)s %(levelname)s: %(message)s'
 logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
 logging.info('Initializing application & attempting to connect to database.')
+# Hardware configuration
+power_pin = 23 # GPIO pin 23
 
 '''
 **** MAIN ROUTINE ****
