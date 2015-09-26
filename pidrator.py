@@ -16,6 +16,9 @@ if raspi:
     from RPi import GPIO
 import sys
 import time
+if raspi and getpass.getuser() != 'root': # RasPi should run this as root
+    print('For proper functionality, pidrator should be run as root (sudo)!')
+    sys.exit(1)
 
 # Following is necessary for handling UUIDs with PostgreSQL
 psycopg2.extras.register_uuid()
@@ -200,26 +203,28 @@ def changepswd(username): # Change user password
 
 def enableGPIO(): # Enable all devices attached to RaspPi GPIO
     if raspi:
-        io.setmode(io.BCM)
-        io.setup(power_pin, io.OUT)
-        io.output(power_pin, False) # Make sure powertail is off!
+        # Powertail configuration
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(power_pin, GPIO.OUT)
+        GPIO.output(power_pin, False) # Make sure powertail is off!
+        # Thermal sensor configuration
         os.system('modprobe w1-gpio')
         os.system('modprobe w1-therm')
         base_dir = '/sys/bus/w1/devices/'
         device_folder = glob.glob(base_dir + '28*')[0]
         device_file = device_folder + '/w1_slave'
         if device_file:
-            msg = 'Powertail detected & started successfully.'
+            msg = 'Thermal sensor detected & started successfully.'
         else:
-            msg = 'Powertail not found.'
+            msg = 'Thermal sensor not found.'
         print(msg)
 
 def powertail(onoff): # Turn Powertail on/off
     if raspi:
         if onoff:
-            io.output(power_pin, True) # Powertail on
+            GPIO.output(power_pin, True) # Powertail on
         else:
-            io.output(power_pin, False) # Powertail off
+            GPIO.output(power_pin, False) # Powertail off
 
 def enabletemp(): # Enable thermal sensor
     if raspi:
