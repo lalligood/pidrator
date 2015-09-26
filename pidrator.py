@@ -381,6 +381,8 @@ fractmin = 15 # After how many seconds should I log temp to database?
 currdelta = timedelta(seconds=fractmin) # How often it should log data while cooking
 temp = dbnumber(100) # This is a temporary placeholder value!
 countdown = 0
+if raspi:
+    powertail(True)
 while True:
     currtime = datetime.now()
     if currtime >= start + currdelta:
@@ -392,7 +394,10 @@ while True:
         countdown += (fractmin / 60)
         timeleft = int(cooktime[0]) - countdown
         print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
-    if currtime >= end:
+    if raspi and currtime >= end: # Powertail off & stop if RasPi
+        powertail(True)
+        break
+    elif currtime >= end: # Otherwise stop when time has ended
         break
 
 print('\n\n')
