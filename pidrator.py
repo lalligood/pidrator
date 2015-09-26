@@ -6,9 +6,14 @@ import getpass
 import glob
 import logging
 import os
+import platform
+raspi = False
+if platform.machine() == 'armv6l': # Enable some functionality ONLY if raspi!
+    raspi = True
 import psycopg2
 import psycopg2.extras
-#from RPi import GPIO
+if raspi:
+    from RPi import GPIO
 import sys
 import time
 
@@ -65,7 +70,8 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
             conn.commit()
     except psycopg2.Error as dberror:
         logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        cleanexit(1)
+        # Terminating while cooking may be happening = BAD IDEA
+        #cleanexit(1)
 
 def picklist(listname, colname, tablename, ordername):
     while True:
@@ -147,7 +153,7 @@ def userlogin(): # User login
         else:
             errmsgslow('Username and/or password incorrect. Try again...')
 
-def usercreate(): # User login
+def usercreate(): # Create a new user
     while True:
         username = dbinput('Enter your desired username: ', 'user')
         fullname = dbinput('Enter your full name: ', 'user')
@@ -169,7 +175,7 @@ def usercreate(): # User login
             print('Your username was created successfully.')
             return username
 
-def changepswd(username): # User elects to change password
+def changepswd(username): # Change user password
     while True:
         oldpswd = dbinput('Enter your current password: ', 'pswd')
         newpswd1 = dbinput('Enter your new password: ', 'pswd')
@@ -192,46 +198,47 @@ def changepswd(username): # User elects to change password
             print('Old password incorrect. Try again...')
             time.sleep(2)
 
-'''
 def enableGPIO(): # Enable all devices attached to RaspPi GPIO
-    io.setmode(io.BCM)
-    io.setup(power_pin, io.OUT)
-    io.output(power_pin, False) # Make sure powertail is off!
-    os.system('modprobe w1-gpio')
-    os.system('modprobe w1-therm')
-    base_dir = '/sys/bus/w1/devices/'
-    device_folder = glob.glob(base_dir + '28*')[0]
-    device_file = device_folder + '/w1_slave'
-    if device_file:
-        msg = 'Powertail detected & started successfully.'
-    else:
-        msg = 'Powertail not found.'
-    print(msg)
+    if raspi:
+        io.setmode(io.BCM)
+        io.setup(power_pin, io.OUT)
+        io.output(power_pin, False) # Make sure powertail is off!
+        os.system('modprobe w1-gpio')
+        os.system('modprobe w1-therm')
+        base_dir = '/sys/bus/w1/devices/'
+        device_folder = glob.glob(base_dir + '28*')[0]
+        device_file = device_folder + '/w1_slave'
+        if device_file:
+            msg = 'Powertail detected & started successfully.'
+        else:
+            msg = 'Powertail not found.'
+        print(msg)
 
 def powertail(onoff): # Turn Powertail on/off
-    if onoff:
-        io.output(power_pin, True) # Powertail on
-    else:
-        io.output(power_pin, False) # Powertail off
+    if raspi:
+        if onoff:
+            io.output(power_pin, True) # Powertail on
+        else:
+            io.output(power_pin, False) # Powertail off
 
 def enabletemp(): # Enable thermal sensor
-     f = open(device_file, 'r')
-     lines = f.readlines()
-     f.close()
-     return lines
- 
+    if raspi:
+        f = open(device_file, 'r')
+        lines = f.readlines()
+        f.close()
+        return lines
+
 def gettemp(): # Read thermal sensor
-     lines = read_temp_raw()
-     while lines[0].strip()[-3:] != 'YES':
-         time.sleep(0.2)
-         lines = read_temp_raw()
-     equals_pos = lines[1].find('t=')
-     if equals_pos != -1:
-         temp_string = lines[1][equals_pos+2:]
-         temp_c = float(temp_string) / 1000.0
-         temp_f = temp_c * 9.0 / 5.0 + 32.0
-         return temp_c, temp_f
-'''
+    if raspi:
+        lines = read_temp_raw()
+        while lines[0].strip()[-3:] != 'YES':
+            lines = read_temp_raw() # This line may refer to enabletemp()
+            equals_pos = lines[1].find('t=')
+        if equals_pos != -1:
+            temp_string = lines[1][equals_pos+2:]
+            temp_c = round((float(temp_string) / 1000.0), 3)
+            temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
+            return temp_c, temp_f # Return temp to 3 decimal places in C & F
 
 '''
 **** PARAMETERS ****
@@ -239,16 +246,14 @@ def gettemp(): # Read thermal sensor
 
 # Database connection information
 # There are 2 sets of DB connection variables below. ONLY USE ONE AT A TIME!
-# NON-RASPI TEST DB
-dbname = 'postgres'
-dbuser = 'lalligood'
-dbport = 5433
-# RASPI DB
-'''
-dbname = 'pi'
-dbuser = 'pi'
-dbport = 5432
-'''
+if raspi: # RASPI DB
+    dbname = 'pi'
+    dbuser = 'pi'
+    dbport = 5432
+else: # NON-RASPI TEST DB
+    dbname = 'postgres'
+    dbuser = 'lalligood'
+    dbport = 5433
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
@@ -341,6 +346,8 @@ while True:
     if cookmin < 0 or cookmin > 59:
         errmsgslow('Invalid selection. Please try again...')
         continue
+    # Should eventually put a check in here to make sure that errors when
+    # cookhour = 0 & cookmin = 0 (NO COOKTIME!)
     break
 print('\n\n')
 
@@ -365,7 +372,7 @@ query('update job_info set endtime = (%s), cookminutes = (%s) where id = (%s)', 
 print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')
 
 # Main cooking loop
-fractmin = 15
+fractmin = 15 # After how many seconds should I log temp to database?
 currdelta = timedelta(seconds=fractmin) # How often it should log data while cooking
 temp = dbnumber(100) # This is a temporary placeholder value!
 countdown = 0
