@@ -238,9 +238,17 @@ def gettemp(): # Read thermal sensor
 '''
 
 # Database connection information
+# There are 2 sets of DB connection variables below. ONLY USE ONE AT A TIME!
+# NON-RASPI TEST DB
 dbname = 'postgres'
 dbuser = 'lalligood'
 dbport = 5433
+# RASPI DB
+'''
+dbname = 'pi'
+dbuser = 'pi'
+dbport = 5432
+'''
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
@@ -267,6 +275,7 @@ except psycopg2.Error as dberror:
 
 # User login
 user = loginmenu()
+print('\n\n')
 
 # User password change (optional)
 while True:
@@ -279,18 +288,22 @@ while True:
     else:
         print('Invalid selection. Please try again...')
         time.sleep(2)
+print('\n\n')
 
 # Pick job from list
 jobname = picklist('job names', 'jobname', 'job_info', 'createtime')
 jobid = query('select id from job_info where jobname = (%s)', jobname, 'one', False)
+print('\n\n')
 
 # Pick cooking device from list
 devname = picklist('cooking devices', 'devicename', 'devices', 'devicename')
 deviceid = query('select id from devices where devicename = (%s)', devname, 'one', False)
+print('\n\n')
 
 # Pick food from list
 foodname = picklist('foods', 'foodname', 'foods', 'foodname')
 foodid = query('select id from foods where foodname = (%s)', foodname, 'one', False)
+print('\n\n')
 
 # Get user_id
 userid = query('select id from users where username = (%s)', user, 'one', False)
@@ -311,10 +324,12 @@ from job_info \
 where jobname = (%s)', jobname, 'one', False)
 # Convert tuple to list
 list(row)
+print('\n\n')
 print('    Job name:            ', row[0])
 print('    Prepared by:         ', row[1])
 print('    Cooking device:      ', row[2])
 print('    Food being prepared: ', row[3])
+print('\n\n')
 
 # Get user input to determine how long job should be
 while True:
@@ -327,14 +342,16 @@ while True:
         errmsgslow('Invalid selection. Please try again...')
         continue
     break
+print('\n\n')
 
 # Prompt before continuing with the job
 while True:
     response = input('Type \'Y\' or \'y\' when you are ready to start your job. ')
     if response.lower() == 'y':
         break
+print('\n\n')
 
-# Update job_info row with start time 
+# Update job_info row with start time
 start = datetime.now()
 starttime = dbdate(start)
 query('update job_info set starttime = (%s) where id = (%s)', starttime + jobid, '', True)
@@ -366,5 +383,6 @@ while True:
     if currtime >= end:
         break
 
+print('\n\n')
 print('Job complete!')
 cleanexit(0)
