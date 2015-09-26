@@ -395,7 +395,7 @@ while True:
         timeleft = int(cooktime[0]) - countdown
         print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
     if raspi and currtime >= end: # Powertail off & stop if RasPi
-        powertail(True)
+        powertail(False)
         break
     elif currtime >= end: # Otherwise stop when time has ended
         break
