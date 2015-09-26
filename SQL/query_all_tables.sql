@@ -7,7 +7,6 @@
     , job_info.starttime
     , job_info.endtime
     , job_info.cookminutes
-    , job_info.food_amount
     , users.username
     , users.fullname
     , users.email_address
