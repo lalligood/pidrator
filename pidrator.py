@@ -8,7 +8,7 @@ import logging
 import os
 import psycopg2
 import psycopg2.extras
-from RPi import GPIO
+#from RPi import GPIO
 import sys
 import time
 
@@ -192,6 +192,7 @@ def changepswd(username): # User elects to change password
             print('Old password incorrect. Try again...')
             time.sleep(2)
 
+'''
 def enableGPIO(): # Enable all devices attached to RaspPi GPIO
     io.setmode(io.BCM)
     io.setup(power_pin, io.OUT)
@@ -205,7 +206,7 @@ def enableGPIO(): # Enable all devices attached to RaspPi GPIO
         msg = 'Powertail detected & started successfully.'
     else:
         msg = 'Powertail not found.'
-    print msg
+    print(msg)
 
 def powertail(onoff): # Turn Powertail on/off
     if onoff:
@@ -230,6 +231,7 @@ def gettemp(): # Read thermal sensor
          temp_c = float(temp_string) / 1000.0
          temp_f = temp_c * 9.0 / 5.0 + 32.0
          return temp_c, temp_f
+'''
 
 '''
 **** PARAMETERS ****
@@ -346,7 +348,8 @@ query('update job_info set endtime = (%s), cookminutes = (%s) where id = (%s)', 
 print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')
 
 # Main cooking loop
-currdelta = timedelta(seconds=30) # How often it should log data while cooking
+fractmin = 15
+currdelta = timedelta(seconds=fractmin) # How often it should log data while cooking
 temp = dbnumber(100) # This is a temporary placeholder value!
 countdown = 0
 while True:
@@ -357,7 +360,7 @@ while True:
             values ((%s), (%s), (%s))',
             jobid + current + temp, '', True)
         start = datetime.now()
-        countdown += 0.5
+        countdown += (fractmin / 60)
         timeleft = int(cooktime[0]) - countdown
         print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
     if currtime >= end:
