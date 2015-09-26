@@ -16,9 +16,15 @@ if raspi:
     from RPi import GPIO
 import sys
 import time
-if raspi and getpass.getuser() != 'root': # RasPi should run this as root
+
+# RasPi should only run as root
+if raspi and getpass.getuser() != 'root':
     print('For proper functionality, pidrator should be run as root (sudo)!')
     sys.exit(1)
+
+'''
+**** FUNCTIONS ****
+'''
 
 # Following is necessary for handling UUIDs with PostgreSQL
 psycopg2.extras.register_uuid()
@@ -138,23 +144,28 @@ Enter your selection: ''')
             print('Exiting pidrator...')
             cleanexit(0)
         else:
-            print('Invalid choice. Please try again...')
-            time.sleep(2)
+            errmsgslow('Invalid choice. Please try again...')
 
 def userlogin(): # User login
+    badlogin = 0
     while True:
         username = dbinput('Enter your username: ', 'user')
         pswd = dbinput('Enter your password: ', 'pswd')
         userverify = query('select username from users where username = (%s)', username, 'one', False)
         pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, 'one', False)
-        if userverify == None:
+        if userverify == None: # User not found
             errmsgslow('Username and/or password incorrect. Try again...')
-        elif pswdverify[0]:
+            badlogin += 1
+        elif pswdverify[0]: # User & password successful
             print('Login successful.')
             return username
             break
-        else:
+        else: # Password does not match
             errmsgslow('Username and/or password incorrect. Try again...')
+            badlogin += 1
+        if badlogin == 3:
+            print('Too many incorrect login attempts.')
+            cleanexit(1)
 
 def usercreate(): # Create a new user
     while True:
@@ -198,8 +209,7 @@ def changepswd(username): # Change user password
             print('Your password has been updated successfully.')
             break
         else:
-            print('Old password incorrect. Try again...')
-            time.sleep(2)
+            errmsgslow('Old password incorrect. Try again...')
 
 def enableGPIO(): # Enable all devices attached to RaspPi GPIO
     if raspi:
@@ -358,8 +368,11 @@ print('\n\n')
 
 # Prompt before continuing with the job
 while True:
-    response = input('Type \'Y\' or \'y\' when you are ready to start your job. ')
-    if response.lower() == 'y':
+    response = input('Enter \'y\' when you are ready to start your job or \'x\' to exit without cooking. ')
+    if response.lower() == 'x':
+        print('You have chosen to exit without cooking.')
+        cleanexit(0)
+    elif response.lower() == 'y':
         break
 print('\n\n')
 
