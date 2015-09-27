@@ -154,18 +154,18 @@ def userlogin(): # User login
         userverify = query('select username from users where username = (%s)', username, 'one', False)
         pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, 'one', False)
         if userverify == None: # User not found
-            errmsgslow('Username and/or password incorrect. Try again...')
             badlogin += 1
-        elif pswdverify[0]: # User & password successful
+        elif pswdverify[0]: # Allow if username & password successful
             print('Login successful.')
             return username
             break
         else: # Password does not match
-            errmsgslow('Username and/or password incorrect. Try again...')
             badlogin += 1
-        if badlogin == 3:
+        if badlogin == 3: # Quit after 3 failed logins
             print('Too many incorrect login attempts.')
             cleanexit(1)
+        else: # Failed login message & try again
+            errmsgslow('Username and/or password incorrect. Try again...')
 
 def usercreate(): # Create a new user
     while True:
