@@ -211,24 +211,6 @@ def changepswd(username): # Change user password
         else:
             errmsgslow('Old password incorrect. Try again...')
 
-def enableGPIO(): # Enable all devices attached to RaspPi GPIO
-    if raspi:
-        # Powertail configuration
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(power_pin, GPIO.OUT)
-        GPIO.output(power_pin, False) # Make sure powertail is off!
-        # Thermal sensor configuration
-        os.system('modprobe w1-gpio')
-        os.system('modprobe w1-therm')
-        base_dir = '/sys/bus/w1/devices/'
-        device_folder = glob.glob(base_dir + '28*')[0]
-        device_file = device_folder + '/w1_slave'
-        if device_file:
-            msg = 'Thermal sensor detected & started successfully.'
-        else:
-            msg = 'Thermal sensor not found.'
-        print(msg)
-
 def powertail(onoff): # Turn Powertail on/off
     if raspi:
         if onoff:
@@ -236,22 +218,22 @@ def powertail(onoff): # Turn Powertail on/off
         else:
             GPIO.output(power_pin, False) # Powertail off
 
-def enabletemp(): # Enable thermal sensor
+def readtemp(): # Read thermal sensor
     if raspi:
-        f = open(device_file, 'r')
-        lines = f.readlines()
-        f.close()
-        return lines
+        sensor = open(sensor_file, 'r') # Open thermal sensor "file"
+        rawdata = sensor.readlines() # Read sensor
+        sensor.close() # Close "file"
+        return rawdata
 
 def gettemp(): # Read thermal sensor
     if raspi:
-        lines = read_temp_raw()
-        while lines[0].strip()[-3:] != 'YES':
-            lines = read_temp_raw() # This line may refer to enabletemp()
-            equals_pos = lines[1].find('t=')
-        if equals_pos != -1:
-            temp_string = lines[1][equals_pos+2:]
-            temp_c = round((float(temp_string) / 1000.0), 3)
+        results = readtemp()                    # Read sensor
+        while results[0].strip()[-3:] != 'YES': # Continue to read until result
+            results = readtemp()                # is valid, just in case
+        validate = results[1].find('t=')
+        if validate != -1:
+            parse_temp = lines[1][equals_pos + 2:]
+            temp_c = round((float(parse_temp) / 1000.0), 3)
             temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
             return temp_c, temp_f # Return temp to 3 decimal places in C & F
 
@@ -283,6 +265,19 @@ power_pin = 23 # GPIO pin 23
 '''
 **** MAIN ROUTINE ****
 '''
+
+# Enable all devices attached to RaspPi GPIO
+if raspi:
+    # Powertail configuration
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(power_pin, GPIO.OUT)
+    GPIO.output(power_pin, False) # Make sure powertail is off!
+    # Thermal sensor configuration
+    os.system('modprobe w1-gpio')
+    os.system('modprobe w1-therm')
+    base_dir = '/sys/bus/w1/devices/'               # Navigate path to
+    device_folder = glob.glob(base_dir + '28*')[0]  # thermal sensor
+    sensor_file = device_folder + '/w1_slave'       # "file"
 
 # Open connection to database
 try:
