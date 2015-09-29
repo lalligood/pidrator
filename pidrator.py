@@ -17,8 +17,11 @@ if raspi:
 import sys
 import time
 
-# RasPi should only run as root
-if raspi and getpass.getuser() != 'root':
+(major, minor, bugfix) = platform.python_version_tuple()
+if major < 3: # Verify running python3
+    print('pidrator is written to run on python version 3. Please update,')
+    sys.exit(1)
+elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
     print('For proper functionality, pidrator should be run as root (sudo)!')
     sys.exit(1)
 
