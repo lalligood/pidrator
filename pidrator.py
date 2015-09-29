@@ -387,7 +387,6 @@ print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(c
 # Main cooking loop
 fractmin = 15 # After how many seconds should I log temp to database?
 currdelta = timedelta(seconds=fractmin) # How often it should log data while cooking
-temp = dbnumber(100) # This is a temporary placeholder value!
 countdown = 0
 if raspi:
     powertail(True)
@@ -395,13 +394,26 @@ while True:
     currtime = datetime.now()
     if currtime >= start + currdelta:
         current = dbdate(currtime)
-        query('insert into job_data (job_id, moment, temperature) \
-            values ((%s), (%s), (%s))',
-            jobid + current + temp, '', True)
+        if raspi:
+            temp_cen, temp_far = gettemp() # Read temperature
+            temp_c = dbnumber(temp_cen) # Convert to tuple
+            temp_f = dbnumber(temp_far) # Convert to tuple
+            query('insert into job_data (job_id, moment, temp_c, temp_f) \
+                values ((%s), (%s), (%s))',
+                jobid + current + temp_c + temp_f, '', True)
+        else: # If running on test, then don't read temperature
+            query('insert into job_data (job_id, moment) \
+                values ((%s), (%s), (%s))',
+                jobid + current, '', True)
         start = datetime.now()
         countdown += (fractmin / 60)
         timeleft = int(cooktime[0]) - countdown
-        print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
+        if raspi:
+            print('Job has been active for ' + str(countdown) + ' minutes.')
+            print('There are ' + str(timeleft) + ' minutes left.')
+            print('The current temperature is ' + str(temp_cen) + ' degrees C.')
+        else:
+            print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
     if raspi and currtime >= end: # Powertail off & stop if RasPi
         powertail(False)
         break

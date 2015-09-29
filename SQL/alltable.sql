@@ -35,7 +35,8 @@ create table job_data (
     id serial
     , job_id uuid
     , moment timestamp with time zone
-    , temperature double precision
+    , temp_c double precision
+    , temp_f double precision
     , constraint job_data_pkey primary key (id)
     );
 
