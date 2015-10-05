@@ -131,15 +131,19 @@ table_name \
 from information_schema.tables \
 where table_schema = (%s) \
 order by table_name', schema, 'all', False)
-table_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
-table_tuple = ('devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users')
-tables2 = list(tables)
-for table in table_list, tables2:
-# ^^^ Need to straighten out comparison here
-    if table_list == tables2:
-        print('The ' + str(tables[0]) + ' table exists. Skipping...')
+tables_list = [] # Convert results tuple -> list
+for table in tables:
+    tables_list.append(table[0])
+master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
+# Get intersection of master_list & tables_list
+results_list = set(master_list).intersection(tables_list)
+
+# Iterate through the set to find any missing tables in datbase
+for table in master_list, tables_list:
+    if master_list == tables_list:
+        print('The ' + str(table[0]) + ' table exists. Skipping...')
     else:
         # Add code to create table
-        print('The ' + str(tables[0]) + ' table does NOT exist.')
+        print('The ' + str(table[0]) + ' table does NOT exist.')
 
 cleanexit(0)
