@@ -17,8 +17,8 @@ if raspi:
 import sys
 import time
 
-(major, minor, bugfix) = platform.python_version_tuple()
-if major < 3: # Verify running python3
+major, minor, bugfix = platform.python_version_tuple()
+if int(major) < 3: # Verify running python3
     print('pidrator is written to run on python version 3. Please update,')
     sys.exit(1)
 elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
@@ -124,3 +124,22 @@ except psycopg2.Error as dberror:
     logging.critical('Unable to connect to database. Is it running?')
     cleanexit(1)
 
+# Check to see if all tables exists
+schema = ('public', )
+tables = query('select \
+table_name \
+from information_schema.tables \
+where table_schema = (%s) \
+order by table_name', schema, 'all', False)
+table_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
+table_tuple = ('devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users')
+tables2 = list(tables)
+for table in table_list, tables2:
+# ^^^ Need to straighten out comparison here
+    if table_list == tables2:
+        print('The ' + str(tables[0]) + ' table exists. Skipping...')
+    else:
+        # Add code to create table
+        print('The ' + str(tables[0]) + ' table does NOT exist.')
+
+cleanexit(0)
