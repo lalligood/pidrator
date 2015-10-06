@@ -138,7 +138,19 @@ master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'user
 # Get difference of master_list & tables_list
 results_list = set(master_list).difference(tables_list)
 if len(results_list) > 0:
-    # Insert code here to build all missing tables
+    for result in results_list:
+        if result == 'devices':
+            # build devices table
+        if result == 'foodcomments':
+            # build foodcomments table
+        if result == 'foods':
+            # build foods table
+        if result == 'job_data':
+            # build job_data table
+        if result == 'job_info':
+            # build job_info table
+        if result == 'users':
+            # build users table
 else:
     print('All tables present & accounted for. Skipping...')
 
