@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#! python3
 __author__ = 'lalligood'
 
 from datetime import datetime, timedelta
@@ -135,15 +135,11 @@ tables_list = [] # Convert results tuple -> list
 for table in tables:
     tables_list.append(table[0])
 master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
-# Get intersection of master_list & tables_list
-results_list = set(master_list).intersection(tables_list)
-
-# Iterate through the set to find any missing tables in datbase
-for table in master_list, tables_list:
-    if master_list == tables_list:
-        print('The ' + str(table[0]) + ' table exists. Skipping...')
-    else:
-        # Add code to create table
-        print('The ' + str(table[0]) + ' table does NOT exist.')
+# Get difference of master_list & tables_list
+results_list = set(master_list).difference(tables_list)
+if len(results_list) > 0:
+    # Insert code here to build all missing tables
+else:
+    print('All tables present & accounted for. Skipping...')
 
 cleanexit(0)
