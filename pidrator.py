@@ -82,8 +82,6 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
             conn.commit()
     except psycopg2.Error as dberror:
         logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        # Terminating while cooking may be happening = BAD IDEA
-        #cleanexit(1)
 
 def picklist(listname, colname, tablename, ordername):
     while True:
