@@ -171,8 +171,8 @@ def userlogin(): # User login
 def usercreate(): # Create a new user
     while True:
         username = dbinput('Enter your desired username: ', 'user')
-        fullname = dbinput('Enter your full name: ', 'user')
-        emailaddr = dbinput('Enter your email address: ', 'user')
+        fullname = dbinput('Enter your full name: ', '')
+        emailaddr = dbinput('Enter your email address: ', '')
         pswd = dbinput('Enter your password: ', 'pswd')
         pswdconfirm = dbinput('Enter your password: ', 'pswd')
         if pswd != pswdconfirm: # Make sure passwords match
@@ -357,9 +357,12 @@ while True:
     if cookmin < 0 or cookmin > 59:
         errmsgslow('Invalid selection. Please try again...')
         continue
-    # Should eventually put a check in here to make sure that errors when
-    # cookhour = 0 & cookmin = 0 (NO COOKTIME!)
-    break
+    if cookhour == 0 and cookmin == 0:
+        errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
+        continue
+    response = input('You entered ' + cookhour + ' hours and ' + cookmin + ' minutes. is this correct? [Y/N] ')
+    if response.lower() == 'y':
+        break
 print('\n\n')
 
 # Prompt before continuing with the job
