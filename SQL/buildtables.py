@@ -138,19 +138,63 @@ master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'user
 # Get difference of master_list & tables_list
 results_list = set(master_list).difference(tables_list)
 if len(results_list) > 0:
+    query('create extension if not exists "uuid-ossp";', None, '', False)
+    query('create extension if not exists "pgcrypto";', None, '', False)
     for result in results_list:
         if result == 'devices':
-            # build devices table
-        if result == 'foodcomments':
-            # build foodcomments table
-        if result == 'foods':
-            # build foods table
-        if result == 'job_data':
-            # build job_data table
-        if result == 'job_info':
-            # build job_info table
-        if result == 'users':
-            # build users table
+            query('create table devices (\
+            id uuid not null default uuid_generate_v4()\
+            , devicename text not null unique\
+            , createdate timestamp with time zone default now()\
+            , constraint devices_pkey primary key (id)\
+            );', None, '', True)
+        elif result == 'foodcomments':
+            query('create table foodcomments (\
+            jobinfo_id uuid not null\
+            , foodcomments text\
+            , createtime timestamp with time zone default now()\
+            );', None, '', True)
+        elif result == 'foods':
+            query('create table foods (\
+            id uuid not null default uuid_generate_v4()\
+            , foodname text not null unique\
+            , createdate timestamp with time zone default now()\
+            , constraint foods_pkey primary key (id)\
+            );', None, '', True)
+        elif result == 'job_data':
+            query('create table job_data (\
+            id serial\
+            , job_id uuid\
+            , moment timestamp with time zone\
+            , temp_c double precision\
+            , temp_f double precision\
+            , constraint job_data_pkey primary key (id)\
+            );', None, '', True)
+        elif result == 'job_info':
+            query('create table job_info (\
+            id uuid not null default uuid_generate_v4()\
+            , jobname text not null unique\
+            , user_id uuid\
+            , device_id uuid\
+            , food_id uuid\
+            , temperature_deg int\
+            , temperature_setting text\
+            , createtime timestamp with time zone default now()\
+            , starttime timestamp with time zone\
+            , endtime timestamp with time zone\
+            , cookminutes int\
+            , constraint job_info_pkey primary key (id)\
+            );', None, '', True)
+        elif result == 'users':
+            query('create table users (\
+            id uuid not null default uuid_generate_v4()\
+            , username text not null unique\
+            , fullname text not null\
+            , email_address text not null unique\
+            , "password" text not null\
+            , createdate timestamp with time zone default now()\
+            , constraint users_pkey primary key (id)\
+            );', None, '', True)
 else:
     print('All tables present & accounted for. Skipping...')
 
