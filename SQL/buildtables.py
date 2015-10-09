@@ -90,6 +90,7 @@ def create_devices():
     , createdate timestamp with time zone default now()\
     , constraint devices_pkey primary key (id)\
     );', None, '', True)
+    print("'devices' table created successfully.")
 
 def create_foodcomments():
     query('create table foodcomments (\
@@ -97,6 +98,7 @@ def create_foodcomments():
     , foodcomments text\
     , createtime timestamp with time zone default now()\
     );', None, '', True)
+    print("'foodcomments' table created successfully.")
 
 def create_foods():
     query('create table foods (\
@@ -105,6 +107,7 @@ def create_foods():
     , createdate timestamp with time zone default now()\
     , constraint foods_pkey primary key (id)\
     );', None, '', True)
+    print("'foods' table created successfully.")
 
 def create_job_data():
     query('create table job_data (\
@@ -115,6 +118,7 @@ def create_job_data():
     , temp_f double precision\
     , constraint job_data_pkey primary key (id)\
     );', None, '', True)
+    print("'job_data' table created successfully.")
 
 def create_job_info():
     query('create table job_info (\
@@ -131,6 +135,7 @@ def create_job_info():
     , cookminutes int\
     , constraint job_info_pkey primary key (id)\
     );', None, '', True)
+    print("'job_info' table created successfully.")
 
 def create_users():
     query('create table users (\
@@ -142,6 +147,7 @@ def create_users():
     , createdate timestamp with time zone default now()\
     , constraint users_pkey primary key (id)\
     );', None, '', True)
+    print("'users' table created successfully.")
 
 '''
 **** PARAMETERS ****
