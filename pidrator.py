@@ -325,15 +325,26 @@ print('\n\n')
 # Get user_id
 userid = query('select id from users where username = (%s)', user, 'one', False)
 
+# Get temperature setting
+tempcheck = query('select temperature from job_info where id = (%s)', jobid, 'one', False)
+if tempcheck == None:
+    print('No previous temperature found.')
+    tempset = dbinput('What temperature (degrees or setting) are you going to cook your job at? ')
+else:
+    print('Last job was cooked at temperature/setting: ' + tempcheck[0])
+
 # Update user_id, device_id, & food_id in job_info
-query('update job_info set user_id = (%s), device_id = (%s), food_id = (%s) where id = (%s)', userid + deviceid + foodid + jobid, 'none', True)
+query('update job_info set user_id = (%s), device_id = (%s),\
+    food_id = (%s), temperature = (%s) where id = (%s)',
+    userid + deviceid + foodid + tempset + jobid, 'none', True)
 
 # Now make sure it worked...!
 row = query('select \
     jobname \
-    , fullname \
-    , devicename \
-    , foodname \
+    , users.fullname \
+    , devices.devicename \
+    , foods.foodname \
+    , temperature \
 from job_info \
     left outer join users on job_info.user_id = users.id \
     left outer join devices on job_info.device_id = devices.id \
@@ -346,6 +357,7 @@ print('    Job name:            ', row[0])
 print('    Prepared by:         ', row[1])
 print('    Cooking device:      ', row[2])
 print('    Food being prepared: ', row[3])
+print('    At temperature:      ', row[4])
 print('\n\n')
 
 # Get user input to determine how long job should be
