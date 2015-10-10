@@ -19,7 +19,8 @@ import time
 
 (major, minor, bugfix) = platform.python_version_tuple()
 if int(major) < 3: # Verify running python3
-    print('pidrator is written to run on python version 3. Please update,')
+    print('pidrator is written to run on python version 3.')
+    print("Please update by running 'sudo apt-get install python3'.")
     sys.exit(1)
 elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
     print('For proper functionality, pidrator should be run as root (sudo)!')
