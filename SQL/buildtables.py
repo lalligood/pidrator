@@ -219,6 +219,6 @@ if len(results_list) > 0:
             }
         options[result]()
 else:
-    print('All tables present & accounted for. Skipping...')
+    print('Confirmed that all tables present & accounted for. Exiting...')
 
 cleanexit(0)
