@@ -327,10 +327,11 @@ userid = query('select id from users where username = (%s)', user, 'one', False)
 
 # Get temperature setting
 tempcheck = query('select temperature from job_info where id = (%s)', jobid, 'one', False)
-if tempcheck == None:
+if tempcheck[0] == None:
     print('No previous temperature found.')
-    tempset = dbinput('What temperature (degrees or setting) are you going to cook your job at? ')
+    tempset = dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
 else:
+    tempset = tempcheck
     print('Last job was cooked at temperature/setting: ' + tempcheck[0])
 
 # Update user_id, device_id, & food_id in job_info
@@ -373,7 +374,7 @@ while True:
     if cookhour == 0 and cookmin == 0:
         errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
         continue
-    response = input('You entered ' + cookhour + ' hours and ' + cookmin + ' minutes. is this correct? [Y/N] ')
+    response = input('You entered ' + str(cookhour) + ' hours and ' + str(cookmin) + ' minutes. is this correct? [Y/N] ')
     if response.lower() == 'y':
         break
 print('\n\n')
