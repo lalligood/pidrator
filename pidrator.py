@@ -17,15 +17,6 @@ if raspi:
 import sys
 import time
 
-(major, minor, bugfix) = platform.python_version_tuple()
-if int(major) < 3: # Verify running python3
-    print('pidrator is written to run on python version 3.')
-    print("Please update by running 'sudo apt-get install python3'.")
-    sys.exit(1)
-elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
-    print('For proper functionality, pidrator should be run as root (sudo)!')
-    sys.exit(1)
-
 '''
 **** FUNCTIONS ****
 '''
@@ -70,7 +61,7 @@ def dbdate(date): # Get date value & format for inserting into database
 def query(SQL, params, fetch, commit): # General purpose query submission that will exit if error
     try:
         cur.execute(SQL, params)
-        logging.info('Query executed successfully.')
+        logging.info("Query '" + SQL + "' executed successfully.")
         # fetch parameter: all = return rows, one = return only 1 row, else 0
         if fetch == 'all':
             row = cur.fetchall()
@@ -83,6 +74,7 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
             conn.commit()
     except psycopg2.Error as dberror:
         logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+        logging.error('Failed query: ' + SQL)
 
 def picklist(listname, colname, tablename, ordername):
     while True:
@@ -268,18 +260,38 @@ power_pin = 23 # GPIO pin 23
 **** MAIN ROUTINE ****
 '''
 
+# Verify running python 3.x
+(major, minor, bugfix) = platform.python_version_tuple()
+if int(major) < 3: # Verify running python3
+    logging.error('pidrator is written to run on python version 3.')
+    logging.error("Please update by running 'sudo apt-get install python3'.")
+    sys.exit(1)
+elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
+    logging.error('For proper functionality, pidrator should be run as root (sudo)!')
+    sys.exit(1)
+
 # Enable all devices attached to RaspPi GPIO
 if raspi:
     # Powertail configuration
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(power_pin, GPIO.OUT)
-    GPIO.output(power_pin, False) # Make sure powertail is off!
+    try:
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(power_pin, GPIO.OUT)
+        GPIO.output(power_pin, False) # Make sure powertail is off!
+    except:
+        logging.error('Powertail not found or connected. Cannot cook anything without it!')
+        sysexit(1)
     # Thermal sensor configuration
-    os.system('modprobe w1-gpio')
-    os.system('modprobe w1-therm')
-    base_dir = '/sys/bus/w1/devices/'               # Navigate path to
-    device_folder = glob.glob(base_dir + '28*')[0]  # thermal sensor
-    sensor_file = device_folder + '/w1_slave'       # "file"
+    try:
+        os.system('modprobe w1-gpio')
+        os.system('modprobe w1-therm')
+        base_dir = '/sys/bus/w1/devices/'               # Navigate path to
+        device_folder = glob.glob(base_dir + '28*')[0]  # thermal sensor
+        sensor_file = device_folder + '/w1_slave'       # "file"
+        therm_sens = True
+    except:
+        logging.warning('Thermal sensor not found or connected.')
+        logging.warning('Unable to record temperature while cooking.')
+        therm_sens = False
 
 # Open connection to database
 try:
@@ -412,7 +424,7 @@ while True:
     currtime = datetime.now()
     if currtime >= start + currdelta:
         current = dbdate(currtime)
-        if raspi:
+        if raspi and therm_sens: # If running RPi & thermal sensor is present
             temp_cen, temp_far = gettemp() # Read temperature
             temp_c = dbnumber(temp_cen) # Convert to tuple
             temp_f = dbnumber(temp_far) # Convert to tuple
@@ -426,7 +438,7 @@ while True:
         start = datetime.now()
         countdown += (fractmin / 60)
         timeleft = int(cooktime[0]) - countdown
-        if raspi:
+        if raspi and therm_sens:
             print('Job has been active for ' + str(countdown) + ' minutes.')
             print('There are ' + str(timeleft) + ' minutes left.')
             print('The current temperature is ' + str(temp_cen) + ' degrees C.')
