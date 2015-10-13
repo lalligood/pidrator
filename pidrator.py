@@ -24,13 +24,13 @@ import time
 # Following is necessary for handling UUIDs with PostgreSQL
 psycopg2.extras.register_uuid()
 
-def cleanexit(exitcode): # Close DB connection & exit gracefully
+def cleanexit(exitcode): # Close DB connection & attempt to exit gracefully
     cur.close()
     conn.close()
-    if exitcode > 0: # Log as error when not closing normally
-        logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
-    else:
+    if exitcode == 0: # Log as info when closing normally
         logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
+    else: # Log as error when closing abnormally
+        logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
     sys.exit(exitcode)
 
 def errmsgslow(text): # Print message & pause for 2 seconds
@@ -62,7 +62,7 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
     try:
         cur.execute(SQL, params)
         logging.info("Query '" + SQL + "' executed successfully.")
-        # fetch parameter: all = return rows, one = return only 1 row, else 0
+        # fetch parameter: all = return many rows, one = return only 1 row, or 0
         if fetch == 'all':
             row = cur.fetchall()
             return row
@@ -141,7 +141,7 @@ Enter your selection: ''')
             errmsgslow('Invalid choice. Please try again...')
 
 def userlogin(): # User login
-    badlogin = 0
+    badlogin = 0 # Counter for login attempts; 3 strikes & you're out
     while True:
         username = dbinput('Enter your username: ', 'user')
         pswd = dbinput('Enter your password: ', 'pswd')
@@ -178,7 +178,7 @@ def usercreate(): # Create a new user
         if username == existinguser: # Make sure user doesn't already exist
             errmsgslow('That username is already in use. Please try again...')
             continue
-        else:
+        else: # If all conditions met, then add user
             query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, '', True)
             print('Your username was created successfully.')
             return username
@@ -248,8 +248,8 @@ else: # NON-RASPI TEST DB
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
-logfilename = 'sql_test.log'
-loglevel = logging.WARNING # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
+logfilename = 'pidrator.log'
+loglevel = logging.INFO # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
 logformat = '%(time.asctime)s %(levelname)s: %(message)s'
 logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
 logging.info('Initializing application & attempting to connect to database.')
@@ -261,7 +261,7 @@ power_pin = 23 # GPIO pin 23
 '''
 
 # Verify running python 3.x
-(major, minor, bugfix) = platform.python_version_tuple()
+(major, minor, patchlevel) = platform.python_version_tuple()
 if int(major) < 3: # Verify running python3
     logging.error('pidrator is written to run on python version 3.')
     logging.error("Please update by running 'sudo apt-get install python3'.")
