@@ -339,12 +339,23 @@ userid = query('select id from users where username = (%s)', user, 'one', False)
 
 # Get temperature setting
 tempcheck = query('select temperature from job_info where id = (%s)', jobid, 'one', False)
-if tempcheck[0] == None:
+if tempcheck[0] == None: # No previous cooking data available
     print('No previous temperature found.')
     tempset = dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
-else:
-    tempset = tempcheck
-    print('Last job was cooked at temperature/setting: ' + tempcheck[0])
+else: # Previous cooking data available
+    while True: # Will food will be cooked at same temp as last time?
+        print('Last job was cooked at temperature/setting: ' + tempcheck[0] + '.')
+        response = input('Are you going to cook at the same temperature/setting? [Y/N] ')
+        if response.lower() == 'y': # Cook at the same temp
+            print('You selected to cook at the same temperature/setting.')
+            tempset = tempcheck
+            break
+        elif response.lower() == 'n': # Cook at a different temp
+            tempset = input('What temperature/setting are you going to use this time? ')
+            break
+        else:
+            errmsgslow('Invalid selection. Please try again...')
+print('\n\n')
 
 # Update user_id, device_id, & food_id in job_info
 query('update job_info set user_id = (%s), device_id = (%s),\
@@ -386,7 +397,7 @@ while True:
     if cookhour == 0 and cookmin == 0:
         errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
         continue
-    response = input('You entered ' + str(cookhour) + ' hours and ' + str(cookmin) + ' minutes. is this correct? [Y/N] ')
+    response = input('You entered ' + str(cookhour) + ' hours and ' + str(cookmin) + ' minutes. Is this correct? [Y/N] ')
     if response.lower() == 'y':
         break
 print('\n\n')
