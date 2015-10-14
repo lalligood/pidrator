@@ -31,6 +31,7 @@ def cleanexit(exitcode): # Close DB connection & attempt to exit gracefully
         logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
     else: # Log as error when closing abnormally
         logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
+    logging.shutdown()
     sys.exit(exitcode)
 
 def errmsgslow(text): # Print message & pause for 2 seconds
@@ -249,8 +250,8 @@ else: # NON-RASPI TEST DB
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
 logfilename = 'pidrator.log'
-loglevel = logging.INFO # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
-logformat = '%(time.asctime)s %(levelname)s: %(message)s'
+loglevel = logging.DEBUG # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
+logformat = '%(asctime)s %(levelname)s: %(message)s'
 logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
 logging.info('Initializing application & attempting to connect to database.')
 # Hardware configuration
@@ -351,7 +352,7 @@ else: # Previous cooking data available
             tempset = tempcheck
             break
         elif response.lower() == 'n': # Cook at a different temp
-            tempset = input('What temperature/setting are you going to use this time? ')
+            tempset = dbinput('What temperature/setting are you going to use this time? ', '')
             break
         else:
             errmsgslow('Invalid selection. Please try again...')
