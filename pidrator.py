@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#! python3
 __author__ = 'lalligood'
 
 import core as c
@@ -39,8 +39,8 @@ else: # NON-RASPI TEST DB
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
 logfilename = 'pidrator.log'
-loglevel = logging.DEBUG # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
-logformat = '%(asctime)s %(levelname)s: %(message)s'
+loglevel = logging.WARNING # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
+logformat = '%(asctime)s [%(levelname)s] %(message)s'
 logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
 logging.info('Initializing application & attempting to connect to database.')
 # Hardware configuration
@@ -89,8 +89,8 @@ try:
     cur = conn.cursor()
     logging.info('Connected to database successfully')
 except psycopg2.Error as dberror:
-    logging.critical('Unable to connect to database. Is it running?')
-    cleanexit(1)
+    logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
+    c.cleanexit(1)
 
 # User login
 user = c.loginmenu()
