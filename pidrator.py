@@ -24,7 +24,8 @@ import time
 # Following is necessary for handling UUIDs with PostgreSQL
 psycopg2.extras.register_uuid()
 
-def cleanexit(exitcode): # Close DB connection & attempt to exit gracefully
+def cleanexit(exitcode):
+    'Closes database connection & attempts to exit gracefully'
     cur.close()
     conn.close()
     if exitcode == 0: # Log as info when closing normally
@@ -34,11 +35,13 @@ def cleanexit(exitcode): # Close DB connection & attempt to exit gracefully
     logging.shutdown()
     sys.exit(exitcode)
 
-def errmsgslow(text): # Print message & pause for 2 seconds
+def errmsgslow(text): 
+    'Prints message then pauses for 2 seconds'
     print(text)
     time.sleep(2)
 
-def dbinput(text, input_type): # Get user input & format for use in query
+def dbinput(text, input_type): 
+    'Gets user input & formats input text for use in query as a parameter'
     response = ''
     if input_type == 'pswd':
         response = getpass.getpass(text)
@@ -51,15 +54,19 @@ def dbinput(text, input_type): # Get user input & format for use in query
         dbformat = eval('(\'' + response + '\', )')
     return dbformat
 
-def dbnumber(number): # Get date value & format for inserting into database
+def dbnumber(number):
+    'Gets numeric value & formats for use in query as a parameter'
     response = eval('(\'' + str(number) + '\', )')
     return response
 
-def dbdate(date): # Get date value & format for inserting into database
+def dbdate(date):
+    'Gets date value & formats for use in query as a parameter'
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
     return response
 
-def query(SQL, params, fetch, commit): # General purpose query submission that will exit if error
+def query(SQL, params, fetch, commit):
+    '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT, 
+or DELETE queries, with or without parameters.'''
     try:
         cur.execute(SQL, params)
         logging.info("Query '" + SQL + "' executed successfully.")
@@ -78,6 +85,10 @@ def query(SQL, params, fetch, commit): # General purpose query submission that w
         logging.error('Failed query: ' + SQL)
 
 def picklist(listname, colname, tablename, ordername):
+    '''Displays a list of items referred as listname from the column name (colname)
+from table (tablename) & the list is ordered by ordername is desired.
+It then asks if you want to add item(s) to the list, select an item from the
+list, or return an error if the choice is not valid.'''
     while True:
         print('The following ' + listname + ' are available: ')
         itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', 'all', False)
@@ -117,7 +128,8 @@ def picklist(listname, colname, tablename, ordername):
                     return itemname
                     break
 
-def loginmenu(): # Welcome screen to login, create acct, or exit
+def loginmenu():
+    'Basic Welcome screen to login, create acct, or exit'
     while True:
         menuopt = input('''
 pidrator Menu
@@ -141,7 +153,8 @@ Enter your selection: ''')
         else:
             errmsgslow('Invalid choice. Please try again...')
 
-def userlogin(): # User login
+def userlogin():
+    'Handles user login by verifying that the user & password are correct.'
     badlogin = 0 # Counter for login attempts; 3 strikes & you're out
     while True:
         username = dbinput('Enter your username: ', 'user')
@@ -162,7 +175,8 @@ def userlogin(): # User login
         else: # Failed login message & try again
             errmsgslow('Username and/or password incorrect. Try again...')
 
-def usercreate(): # Create a new user
+def usercreate():
+    'Create a new user.'
     while True:
         username = dbinput('Enter your desired username: ', 'user')
         fullname = dbinput('Enter your full name: ', '')
@@ -184,7 +198,8 @@ def usercreate(): # Create a new user
             print('Your username was created successfully.')
             return username
 
-def changepswd(username): # Change user password
+def changepswd(username):
+    'Allows the user to change their password.'
     while True:
         oldpswd = dbinput('Enter your current password: ', 'pswd')
         newpswd1 = dbinput('Enter your new password: ', 'pswd')
@@ -206,21 +221,24 @@ def changepswd(username): # Change user password
         else:
             errmsgslow('Old password incorrect. Try again...')
 
-def powertail(onoff): # Turn Powertail on/off
+def powertail(onoff):
+    'If device if present, it turns Powertail on/off.'
     if raspi:
         if onoff:
             GPIO.output(power_pin, True) # Powertail on
         else:
             GPIO.output(power_pin, False) # Powertail off
 
-def readtemp(): # Read thermal sensor
+def readtemp():
+    'If device is present, it will open a connection to thermal sensor.'
     if raspi:
         sensor = open(sensor_file, 'r') # Open thermal sensor "file"
         rawdata = sensor.readlines() # Read sensor
         sensor.close() # Close "file"
         return rawdata
 
-def gettemp(): # Read thermal sensor
+def gettemp():
+    'Reads thermal sensor until it gets a valid result.'
     if raspi:
         results = readtemp()                    # Read sensor
         while results[0].strip()[-3:] != 'YES': # Continue to read until result
