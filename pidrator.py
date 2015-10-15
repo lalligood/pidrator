@@ -2,6 +2,8 @@
 __author__ = 'lalligood'
 
 import core as c
+import core.UserSecurity as cus
+import core.PiHardware as cph
 from datetime import datetime, timedelta
 import getpass
 import glob
@@ -100,13 +102,12 @@ print('\n\n')
 while True:
     response = input('Do you want to change your password? [Y/N] ')
     if response.lower() == 'y':
-        c.changepswd(user)
+        cus.changepswd(user)
         break
     elif response.lower() == 'n':
         break
     else:
-        print('Invalid selection. Please try again...')
-        time.sleep(2)
+        errmsgslow('Invalid selection. Please try again...')
 print('\n\n')
 
 # Pick job from list
@@ -220,15 +221,15 @@ fractmin = 15 # After how many seconds should I log temp to database?
 currdelta = timedelta(seconds=fractmin) # How often it should log data while cooking
 countdown = 0
 if raspi:
-    c.powertail(True)
+    cph.powertail(True)
 while True:
     currtime = datetime.now()
     if currtime >= start + currdelta:
         current = c.dbdate(currtime)
         if raspi and therm_sens: # If running RPi & thermal sensor is present
-            temp_cen, temp_far = gettemp() # Read temperature
-            temp_c = dbnumber(temp_cen) # Convert to tuple
-            temp_f = dbnumber(temp_far) # Convert to tuple
+            temp_cen, temp_far = cph.gettemp() # Read temperature
+            temp_c = c.dbnumber(temp_cen) # Convert to tuple
+            temp_f = c.dbnumber(temp_far) # Convert to tuple
             c.query('insert into job_data (job_id, moment, temp_c, temp_f) \
                 values ((%s), (%s), (%s))',
                 jobid + current + temp_c + temp_f, '', True)
@@ -246,7 +247,7 @@ while True:
         else:
             print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
     if raspi and currtime >= end: # Powertail off & stop if RasPi
-        c.powertail(False)
+        cph.powertail(False)
         break
     elif currtime >= end: # Otherwise stop when time has ended
         break

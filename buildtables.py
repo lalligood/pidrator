@@ -2,6 +2,7 @@
 __author__ = 'lalligood'
 
 import core as c
+import core.CreatePiTables as cpt
 from datetime import datetime, timedelta
 import getpass
 import glob
@@ -92,12 +93,12 @@ if len(results_list) > 0:
         c.cleanexit(1)
     for result in results_list:
         options = {
-            'devices' : c.create_devices,
-            'foodcomments' : c.create_foodcomments,
-            'foods' : c.create_foods,
-            'job_data' : c.create_job_data,
-            'job_info' : c.create_job_info,
-            'users' : c.create_users,
+            'devices' : cpt.create_devices,
+            'foodcomments' : cpt.create_foodcomments,
+            'foods' : cpt.create_foods,
+            'job_data' : cpt.create_job_data,
+            'job_info' : cpt.create_job_info,
+            'users' : cpt.create_users,
             }
         options[result]()
 else:
