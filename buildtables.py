@@ -1,8 +1,8 @@
 #! python3
 __author__ = 'lalligood'
 
-import core as c
-import core.CreatePiTables as cpt
+from core import DBTrans as cdt
+from core import CreatePiTables as cpt
 from datetime import datetime, timedelta
 import getpass
 import glob
@@ -68,11 +68,11 @@ try:
     logging.info('Connected to database successfully')
 except psycopg2.Error as dberror:
     logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
-    c.cleanexit(1)
+    cleanexit(1)
 
 # Check to see if all tables exists
 schema = ('public', )
-tables = c.query('select \
+tables = cdt.query('select \
     table_name \
     from information_schema.tables \
     where table_schema = (%s) \
@@ -86,11 +86,11 @@ results_list = set(master_list).difference(tables_list)
 # Create any tables that do not exist
 if len(results_list) > 0:
     try:
-        c.query('create extension if not exists "uuid-ossp";', None, '', False)
-        c.query('create extension if not exists "pgcrypto";', None, '', False)
+        cdt.query('create extension if not exists "uuid-ossp";', None, '', False)
+        cdt.query('create extension if not exists "pgcrypto";', None, '', False)
     except psycopg2.Error as dberror:
         logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
-        c.cleanexit(1)
+        cleanexit(1)
     for result in results_list:
         options = {
             'devices' : cpt.create_devices,
@@ -104,4 +104,4 @@ if len(results_list) > 0:
 else:
     print('Confirmed that all tables present & accounted for. Exiting...')
 
-c.cleanexit(0)
+cleanexit(0)

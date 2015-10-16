@@ -1,65 +1,13 @@
 #! python3
 __author__ = 'lalligood'
 
-def cleanexit(exitcode):
-    'Closes database connection & attempts to exit gracefully'
-    cur.close()
-    conn.close()
-    if exitcode == 0: # Log as info when closing normally
-        logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
-    else: # Log as error when closing abnormally
-        logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
-    logging.shutdown()
-    sys.exit(exitcode)
+import psycopg2
+import psycopg2.extras
 
 def errmsgslow(text):
     'Prints message then pauses for 2 seconds'
     print(text)
     time.sleep(2)
-
-def dbinput(text, input_type):
-    'Gets user input & formats input text for use in query as a parameter'
-    response = ''
-    if input_type == 'pswd':
-        response = getpass.getpass(text)
-        dbformat = eval('(\'' + response + '\', )')
-    elif input_type == 'user':
-        response = input(text)
-        dbformat = eval('(\'' + response.lower() + '\', )')
-    else:
-        response = input(text)
-        dbformat = eval('(\'' + response + '\', )')
-    return dbformat
-
-def dbnumber(number):
-    'Gets numeric value & formats for use in query as a parameter'
-    response = eval('(\'' + str(number) + '\', )')
-    return response
-
-def dbdate(date):
-    'Gets date value & formats for use in query as a parameter'
-    response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
-    return response
-
-def query(SQL, params, fetch, commit):
-    '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
-or DELETE queries, with or without parameters.'''
-    try:
-        cur.execute(SQL, params)
-        logging.info("Query '" + SQL + "' executed successfully.")
-        # fetch parameter: all = return many rows, one = return only 1 row, or 0
-        if fetch == 'all':
-            row = cur.fetchall()
-            return row
-        elif fetch == 'one':
-            row = cur.fetchone()
-            return row
-        # commit parameter: True = commit, else not necessary to commit
-        if commit:
-            conn.commit()
-    except psycopg2.Error as dberror:
-        logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        logging.error('Failed query: ' + SQL)
 
 def picklist(listname, colname, tablename, ordername):
     '''Displays a list of items referred as listname from the column name (colname)
@@ -129,6 +77,67 @@ Enter your selection: ''')
             cleanexit(0)
         else:
             errmsgslow('Invalid choice. Please try again...')
+
+class DBTrans:
+    # Responsible for all database interactions
+    def dbinput(text, input_type):
+        'Gets user input & formats input text for use in query as a parameter'
+        response = ''
+        if input_type == 'pswd':
+            response = getpass.getpass(text)
+            dbformat = eval('(\'' + response + '\', )')
+        elif input_type == 'user':
+            response = input(text)
+            dbformat = eval('(\'' + response.lower() + '\', )')
+        else:
+            response = input(text)
+            dbformat = eval('(\'' + response + '\', )')
+        return dbformat
+
+    def dbnumber(number):
+        'Gets numeric value & formats for use in query as a parameter'
+        response = eval('(\'' + str(number) + '\', )')
+        return response
+
+    def dbdate(date):
+        'Gets date value & formats for use in query as a parameter'
+        response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
+        return response
+
+    def query(SQL, params, fetch, commit):
+        '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
+    or DELETE queries, with or without parameters in query.
+    
+    Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
+    and any other value returns none.
+    
+    Commit is boolean to commit transaction. Required True for UPDATE, INSERT,
+    or DELETE. Not needed (False) for SELECT.'''
+        try:
+            cur.execute(SQL, params)
+            logging.info("Query '" + SQL + "' executed successfully.")
+            if fetch == 'all':
+                row = cur.fetchall()
+                return row
+            elif fetch == 'one':
+                row = cur.fetchone()
+                return row
+            if commit:
+                conn.commit()
+        except psycopg2.Error as dberror:
+            logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+            logging.error('Failed query: ' + SQL)
+
+    def cleanexit(exitcode):
+        'Closes database connection & attempts to exit gracefully'
+        cur.close()
+        conn.close()
+        if exitcode == 0: # Log as info when closing normally
+            logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
+        else: # Log as error when closing abnormally
+            logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
+        logging.shutdown()
+        sys.exit(exitcode)
 
 class UserSecurity:
     # Handles user login verification & password resets
