@@ -1,4 +1,4 @@
-#! python3
+#!/usr/bin/python3
 __author__ = 'lalligood'
 
 import core as c
@@ -135,7 +135,7 @@ if tempcheck[0] == None: # No previous cooking data available
     tempset = c.dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
 else: # Previous cooking data available
     while True: # Will food will be cooked at same temp as last time?
-        print('Last job was cooked at temperature/setting: ' + tempcheck[0] + '.')
+        print('Last job was cooked at temperature/setting: {}.'.format(tempcheck[0]))
         response = input('Are you going to cook at the same temperature/setting? [Y/N] ')
         if response.lower() == 'y': # Cook at the same temp
             print('You selected to cook at the same temperature/setting.')
@@ -168,11 +168,11 @@ where jobname = (%s)', jobname, 'one', False)
 # Convert tuple to list
 list(row)
 print('\n\n')
-print('    Job name:            ', row[0])
-print('    Prepared by:         ', row[1])
-print('    Cooking device:      ', row[2])
-print('    Food being prepared: ', row[3])
-print('    At temperature:      ', row[4])
+print('\tJob name:            {}'.format(row[0]))
+print('\tPrepared by:         {}'.format(row[1]))
+print('\tCooking device:      {}'.format(row[2]))
+print('\tFood being prepared: {}'.format(row[3]))
+print('\tAt temperature:      {}'.format(row[4]))
 print('\n\n')
 
 # Get user input to determine how long job should be
@@ -214,7 +214,7 @@ cooktime = c.dbnumber((cookhour * 60) + cookmin)
 end = start + cookdelta
 endtime = c.dbdate(end)
 c.query('update job_info set endtime = (%s), cookminutes = (%s) where id = (%s)', endtime + cooktime + jobid, '', True)
-print('Your job is going to cook for ' + str(cookhour) + ' hour(s) and ' + str(cookmin) + ' minute(s). It will complete at ' + endtime[0] + '.')
+print('Your job is going to cook for {} hour(s) and {} minute(s). It will complete at {}.'.format(cookhour, cookmin, endtime[0]))
 
 # Main cooking loop
 fractmin = 15 # After how many seconds should I log temp to database?
@@ -241,11 +241,11 @@ while True:
         countdown += (fractmin / 60)
         timeleft = int(cooktime[0]) - countdown
         if raspi and therm_sens:
-            print('Job has been active for ' + str(countdown) + ' minutes.')
-            print('There are ' + str(timeleft) + ' minutes left.')
-            print('The current temperature is ' + str(temp_cen) + ' degrees C.')
+            print('Job has been active for {} minutes.'.format(countdown))
+            print('There are {} minutes left.'.format(timeleft))
+            print('The current temperature is {} degrees C.'.format(temp_cen))
         else:
-            print('Job has been active for ' + str(countdown) + ' minutes and there are ' + str(timeleft) + ' minutes left.')
+            print('Job has been active for {} minutes and there are {} minutes left.'.format(countdown, timeleft))
     if raspi and currtime >= end: # Powertail off & stop if RasPi
         cph.powertail(False)
         break

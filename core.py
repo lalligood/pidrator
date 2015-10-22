@@ -15,13 +15,13 @@ from table (tablename) & the list is ordered by ordername is desired.
 It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
-        print('The following ' + listname + ' are available: ')
+        print('The following {} are available: '.format(listname))
         itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', 'all', False)
         count = 0
         for x in itemlist: # Display list
             count += 1
-            print('    ' + str(count) + '. ' + x[0])
-        print('    0. Add an item to the list.')
+            print('\t{}. {}'.format(count, x[0]))
+        print('\t0. Add an item to the list.')
         countlist = count
         itemnbr = int(input('Enter the number of the item that you want to use: '))
         if itemnbr == 0: # Add new item to the table
@@ -35,7 +35,7 @@ list, or return an error if the choice is not valid.'''
                 else: # Insert new item into table
                     query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, '', True)
                     print('Your new item has been added to the list.')
-                    print('Returning to list of available ' + listname + '.')
+                    print('Returning to list of available {}.'.format(listname))
             else:
                 print('Invalid entry. Please try again...')
             time.sleep(2)
@@ -49,7 +49,7 @@ list, or return an error if the choice is not valid.'''
                 count += 1
                 if count == itemnbr:
                     itemname = x
-                    print('You selected: ' + itemname[0] + '.')
+                    print('You selected: {}.'.format(itemname[0]))
                     return itemname
                     break
 
