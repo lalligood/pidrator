@@ -16,7 +16,7 @@ It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
         print('The following {} are available: '.format(listname))
-        itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', 'all', False)
+        itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', False, 'all')
         count = 0
         for x in itemlist: # Display list
             count += 1
@@ -28,12 +28,12 @@ list, or return an error if the choice is not valid.'''
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
-                existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, 'one', False)
+                existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, False, 'one')
                 if newitem == existingitem: # If existing item is found, disallow
                     errmsgslow('That item already exists in the list. Please try again...')
                     continue
                 else: # Insert new item into table
-                    query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, '', True)
+                    query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, True)
                     print('Your new item has been added to the list.')
                     print('Returning to list of available {}.'.format(listname))
             else:
@@ -104,26 +104,26 @@ class DBTrans:
         response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
         return response
 
-    def query(SQL, params, fetch, commit):
+    def query(SQL, params, commit, fetch='none'):
         '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
     or DELETE queries, with or without parameters in query.
     
-    Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
-    and any other value returns none.
-    
     Commit is boolean to commit transaction. Required True for UPDATE, INSERT,
-    or DELETE. Not needed (False) for SELECT.'''
+    or DELETE. Not needed (False) for SELECT.
+
+    Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
+    and any other value returns none.'''
         try:
             cur.execute(SQL, params)
             logging.info("Query '" + SQL + "' executed successfully.")
+            if commit:
+                conn.commit()
             if fetch == 'all':
                 row = cur.fetchall()
                 return row
             elif fetch == 'one':
                 row = cur.fetchone()
                 return row
-            if commit:
-                conn.commit()
         except psycopg2.Error as dberror:
             logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
             logging.error('Failed query: ' + SQL)
@@ -147,8 +147,8 @@ class UserSecurity:
         while True:
             username = dbinput('Enter your username: ', 'user')
             pswd = dbinput('Enter your password: ', 'pswd')
-            userverify = query('select username from users where username = (%s)', username, 'one', False)
-            pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, 'one', False)
+            userverify = query('select username from users where username = (%s)', username, False, 'one')
+            pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, False, 'one')
             if userverify == None: # User not found
                 badlogin += 1
             elif pswdverify[0]: # Allow if username & password successful
@@ -177,12 +177,12 @@ class UserSecurity:
             if len(pswd[0]) < 8: # Make sure passwords are long enough
                 errmsgslow('Your password is not long enough. Must be at least 8 characters. Try again...')
                 continue
-            existinguser = query('select username from users where username = (%s)', username, 'one', False)
+            existinguser = query('select username from users where username = (%s)', username, False, 'one')
             if username == existinguser: # Make sure user doesn't already exist
                 errmsgslow('That username is already in use. Please try again...')
                 continue
             else: # If all conditions met, then add user
-                query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, '', True)
+                query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, True)
                 print('Your username was created successfully.')
                 return username
 
@@ -201,9 +201,9 @@ class UserSecurity:
             if oldpswd[0] == newpswd1[0]:
                 errmsgslow('New password must be different from old password. Try again...')
                 continue
-            pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, 'one', False)
+            pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, False, 'one')
             if pswdverify[0]:
-                query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, 'none', True)
+                query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, True)
                 print('Your password has been updated successfully.')
                 break
             else:
@@ -249,7 +249,7 @@ class CreatePiTables:
         , devicename text not null unique\
         , createdate timestamp with time zone default now()\
         , constraint devices_pkey primary key (id)\
-        );', None, '', True)
+        );', None, True)
         print("'devices' table created successfully.")
 
     def create_foodcomments():
@@ -258,7 +258,7 @@ class CreatePiTables:
         jobinfo_id uuid not null\
         , foodcomments text\
         , createtime timestamp with time zone default now()\
-        );', None, '', True)
+        );', None, True)
         print("'foodcomments' table created successfully.")
 
     def create_foods():
@@ -268,7 +268,7 @@ class CreatePiTables:
         , foodname text not null unique\
         , createdate timestamp with time zone default now()\
         , constraint foods_pkey primary key (id)\
-        );', None, '', True)
+        );', None, True)
         print("'foods' table created successfully.")
 
     def create_job_data():
@@ -280,7 +280,7 @@ class CreatePiTables:
         , temp_c double precision\
         , temp_f double precision\
         , constraint job_data_pkey primary key (id)\
-        );', None, '', True)
+        );', None, True)
         print("'job_data' table created successfully.")
 
     def create_job_info():
@@ -298,7 +298,7 @@ class CreatePiTables:
         , endtime timestamp with time zone\
         , cookminutes int\
         , constraint job_info_pkey primary key (id)\
-        );', None, '', True)
+        );', None, True)
         print("'job_info' table created successfully.")
 
     def create_users():
@@ -311,6 +311,6 @@ class CreatePiTables:
         , "password" text not null\
         , createdate timestamp with time zone default now()\
         , constraint users_pkey primary key (id)\
-        );', None, '', True)
+        );', None, True)
         print("'users' table created successfully.")
 

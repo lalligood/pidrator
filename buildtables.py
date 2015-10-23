@@ -76,7 +76,7 @@ tables = cdt.query('select \
     table_name \
     from information_schema.tables \
     where table_schema = (%s) \
-    order by table_name', schema, 'all', False)
+    order by table_name', schema, False, 'all')
 tables_list = [] # Convert results tuple -> list
 for table in tables:
     tables_list.append(table[0])
@@ -86,8 +86,8 @@ results_list = set(master_list).difference(tables_list)
 # Create any tables that do not exist
 if len(results_list) > 0:
     try:
-        cdt.query('create extension if not exists "uuid-ossp";', None, '', False)
-        cdt.query('create extension if not exists "pgcrypto";', None, '', False)
+        cdt.query('create extension if not exists "uuid-ossp";', None, False)
+        cdt.query('create extension if not exists "pgcrypto";', None, False)
     except psycopg2.Error as dberror:
         logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
         cleanexit(1)
