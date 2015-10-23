@@ -80,7 +80,7 @@ Enter your selection: ''')
 
 class DBTrans:
     # Responsible for all database interactions
-    def dbinput(text, input_type):
+    def dbinput(self, text, input_type):
         'Gets user input & formats input text for use in query as a parameter'
         response = ''
         if input_type == 'pswd':
@@ -94,17 +94,17 @@ class DBTrans:
             dbformat = eval('(\'' + response + '\', )')
         return dbformat
 
-    def dbnumber(number):
+    def dbnumber(self, number):
         'Gets numeric value & formats for use in query as a parameter'
         response = eval('(\'' + str(number) + '\', )')
         return response
 
-    def dbdate(date):
+    def dbdate(self, date):
         'Gets date value & formats for use in query as a parameter'
         response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
         return response
 
-    def query(SQL, params, commit, fetch='none'):
+    def query(self, SQL, params, commit, fetch='none'):
         '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
     or DELETE queries, with or without parameters in query.
     
@@ -128,7 +128,7 @@ class DBTrans:
             logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
             logging.error('Failed query: ' + SQL)
 
-    def cleanexit(exitcode):
+    def cleanexit(self, exitcode):
         'Closes database connection & attempts to exit gracefully'
         cur.close()
         conn.close()
@@ -141,7 +141,7 @@ class DBTrans:
 
 class UserSecurity:
     # Handles user login verification & password resets
-    def userlogin():
+    def userlogin(self):
         'Handles user login by verifying that the user & password are correct.'
         badlogin = 0 # Counter for login attempts; 3 strikes & you're out
         while True:
@@ -163,7 +163,7 @@ class UserSecurity:
             else: # Failed login message & try again
                 errmsgslow('Username and/or password incorrect. Try again...')
 
-    def usercreate():
+    def usercreate(self):
         'Create a new user.'
         while True:
             username = dbinput('Enter your desired username: ', 'user')
@@ -186,7 +186,7 @@ class UserSecurity:
                 print('Your username was created successfully.')
                 return username
 
-    def changepswd(username):
+    def changepswd(self, username):
         'Allows the user to change their password.'
         while True:
             oldpswd = dbinput('Enter your current password: ', 'pswd')
@@ -211,7 +211,7 @@ class UserSecurity:
 
 class PiHardware:
     # Controls hardware attached to Raspberry Pi
-    def powertail(onoff):
+    def powertail(self, onoff):
         'If device if present, it turns Powertail on/off.'
         if raspi:
             if onoff:
@@ -219,7 +219,7 @@ class PiHardware:
             else:
                 GPIO.output(power_pin, False) # Powertail off
 
-    def readtemp():
+    def readtemp(self):
         'If device is present, it will open a connection to thermal sensor.'
         if raspi:
             sensor = open(sensor_file, 'r') # Open thermal sensor "file"
@@ -227,7 +227,7 @@ class PiHardware:
             sensor.close() # Close "file"
             return rawdata
 
-    def gettemp():
+    def gettemp(self):
         'Reads thermal sensor until it gets a valid result.'
         if raspi:
             results = readtemp()                    # Read sensor
@@ -242,7 +242,7 @@ class PiHardware:
 
 class CreatePiTables:
     # Creates any/all database tables
-    def create_devices():
+    def create_devices(self):
         'Create DEVICES table in database if it does not exist.'
         query('create table devices (\
         id uuid not null default uuid_generate_v4()\
@@ -252,7 +252,7 @@ class CreatePiTables:
         );', None, True)
         print("'devices' table created successfully.")
 
-    def create_foodcomments():
+    def create_foodcomments(self):
         'Create FOODCOMMENTS table in database if it does not exist.'
         query('create table foodcomments (\
         jobinfo_id uuid not null\
@@ -261,7 +261,7 @@ class CreatePiTables:
         );', None, True)
         print("'foodcomments' table created successfully.")
 
-    def create_foods():
+    def create_foods(self):
         'Create FOODS table in database if it does not exist.'
         query('create table foods (\
         id uuid not null default uuid_generate_v4()\
@@ -271,7 +271,7 @@ class CreatePiTables:
         );', None, True)
         print("'foods' table created successfully.")
 
-    def create_job_data():
+    def create_job_data(self):
         'Create JOB_DATA table in database if it does not exist.'
         query('create table job_data (\
         id serial\
@@ -283,7 +283,7 @@ class CreatePiTables:
         );', None, True)
         print("'job_data' table created successfully.")
 
-    def create_job_info():
+    def create_job_info(self):
         'Create JOB_INFO table in database if it does not exist.'
         query('create table job_info (\
         id uuid not null default uuid_generate_v4()\
@@ -301,7 +301,7 @@ class CreatePiTables:
         );', None, True)
         print("'job_info' table created successfully.")
 
-    def create_users():
+    def create_users(self):
         'Create USERS table in database if it does not exist.'
         query('create table users (\
         id uuid not null default uuid_generate_v4()\
