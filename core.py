@@ -1,8 +1,10 @@
 #! python3
 __author__ = 'lalligood'
 
+import getpass
 import psycopg2
 import psycopg2.extras
+import time
 
 def errmsgslow(text):
     'Prints message then pauses for 2 seconds'
@@ -25,7 +27,7 @@ list, or return an error if the choice is not valid.'''
         countlist = count
         itemnbr = int(input('Enter the number of the item that you want to use: '))
         if itemnbr == 0: # Add new item to the table
-            newitem = dbinput('Enter the name of the item you would like to add: ', '')
+            newitem = DBTrans.dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
                 existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, False, 'one')
@@ -65,7 +67,7 @@ Select from one of the following choices:
     x. Exit
 Enter your selection: ''')
         if menuopt == '1':
-            user = userlogin()
+            user = UserSecurity.userlogin()
             return user
             break
         elif menuopt == '2':
@@ -80,7 +82,7 @@ Enter your selection: ''')
 
 class DBTrans:
     # Responsible for all database interactions
-    def dbinput(self, text, input_type):
+    def dbinput(text, input_type):
         'Gets user input & formats input text for use in query as a parameter'
         response = ''
         if input_type == 'pswd':
@@ -141,14 +143,14 @@ class DBTrans:
 
 class UserSecurity:
     # Handles user login verification & password resets
-    def userlogin(self):
+    def userlogin():
         'Handles user login by verifying that the user & password are correct.'
         badlogin = 0 # Counter for login attempts; 3 strikes & you're out
         while True:
-            username = dbinput('Enter your username: ', 'user')
-            pswd = dbinput('Enter your password: ', 'pswd')
-            userverify = query('select username from users where username = (%s)', username, False, 'one')
-            pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, False, 'one')
+            username = DBTrans.dbinput('Enter your username: ', 'user')
+            pswd = DBTrans.dbinput('Enter your password: ', 'pswd')
+            userverify = DBTrans.query('select username from users where username = (%s)', username, False, 'one')
+            pswdverify = DBTrans.query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, False, 'one')
             if userverify == None: # User not found
                 badlogin += 1
             elif pswdverify[0]: # Allow if username & password successful

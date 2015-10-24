@@ -2,8 +2,6 @@
 __author__ = 'lalligood'
 
 import core as c
-import core.UserSecurity as cus
-import core.PiHardware as cph
 from datetime import datetime, timedelta
 import getpass
 import glob
