@@ -264,7 +264,7 @@ class CreatePiTables:
         , createdate timestamp with time zone default now()
         , constraint devices_pkey primary key (id)
         );''', None, True)
-        print(r''devices' table created successfully.')
+        print("'devices' table created successfully.")
 
     def create_foodcomments(self):
         'Create FOODCOMMENTS table in database if it does not exist.'
@@ -273,7 +273,7 @@ class CreatePiTables:
         , foodcomments text
         , createtime timestamp with time zone default now()
         );''', None, True)
-        print(r''foodcomments' table created successfully.')
+        print("'foodcomments' table created successfully.")
 
     def create_foods(self):
         'Create FOODS table in database if it does not exist.'
@@ -283,7 +283,7 @@ class CreatePiTables:
         , createdate timestamp with time zone default now()
         , constraint foods_pkey primary key (id)
         );''', None, True)
-        print(r''foods' table created successfully.')
+        print("'foods' table created successfully.")
 
     def create_job_data(self):
         'Create JOB_DATA table in database if it does not exist.'
@@ -295,7 +295,7 @@ class CreatePiTables:
         , temp_f double precision
         , constraint job_data_pkey primary key (id)
         );''', None, True)
-        print(r''job_data' table created successfully.')
+        print("'job_data' table created successfully.")
 
     def create_job_info(self):
         'Create JOB_INFO table in database if it does not exist.'
@@ -313,7 +313,7 @@ class CreatePiTables:
         , cookminutes int
         , constraint job_info_pkey primary key (id)
         );''', None, True)
-        print(r''job_info' table created successfully.')
+        print("'job_info' table created successfully.")
 
     def create_users(self):
         'Create USERS table in database if it does not exist.'
@@ -326,5 +326,5 @@ class CreatePiTables:
         , createdate timestamp with time zone default now()
         , constraint users_pkey primary key (id)
         );''', None, True)
-        print(r''users' table created successfully.')
+        print("'users' table created successfully.")
 
