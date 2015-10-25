@@ -109,7 +109,7 @@ class DBTrans:
     def query(self, SQL, params, commit, fetch='none'):
         '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
     or DELETE queries, with or without parameters in query.
-    
+
     Commit is boolean to commit transaction. Required True for UPDATE, INSERT,
     or DELETE. Not needed (False) for SELECT.
 
@@ -149,8 +149,12 @@ class UserSecurity:
         while True:
             username = DBTrans.dbinput('Enter your username: ', 'user')
             pswd = DBTrans.dbinput('Enter your password: ', 'pswd')
-            userverify = DBTrans.query('select username from users where username = (%s)', username, False, 'one')
-            pswdverify = DBTrans.query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', pswd + username, False, 'one')
+            userverify = DBTrans.query('''select username from users
+                where username = (%s)''', username, False, 'one')
+            pswdverify = DBTrans.query('''select
+                (password = crypt((%s), password)) as userpass
+                from users where username = (%s)''',
+                pswd + username, False, 'one')
             if userverify == None: # User not found
                 badlogin += 1
             elif pswdverify[0]: # Allow if username & password successful
@@ -179,12 +183,16 @@ class UserSecurity:
             if len(pswd[0]) < 8: # Make sure passwords are long enough
                 errmsgslow('Your password is not long enough. Must be at least 8 characters. Try again...')
                 continue
-            existinguser = DBTrans.query('select username from users where username = (%s)', username, False, 'one')
+            existinguser = DBTrans.query('''select username from users
+                where username = (%s)''', username, False, 'one')
             if username == existinguser: # Make sure user doesn't already exist
                 errmsgslow('That username is already in use. Please try again...')
                 continue
             else: # If all conditions met, then add user
-                DBTrans.query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, True)
+                DBTrans.query('''insert into users
+                    (username, fullname, email_address, password) values
+                    ((%s), (%s), (%s), crypt((%s), gen_salt('bf')))''',
+                    username + fullname + emailaddr + pswd, True)
                 print('Your username was created successfully.')
                 return username
 
@@ -203,9 +211,13 @@ class UserSecurity:
             if oldpswd[0] == newpswd1[0]:
                 errmsgslow('New password must be different from old password. Try again...')
                 continue
-            pswdverify = DBTrans.query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, False, 'one')
+            pswdverify = DBTrans.query('''select
+                (password = crypt((%s), password)) as userpass from users
+                where username = (%s)''', oldpswd + user, False, 'one')
             if pswdverify[0]:
-                DBTrans.query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, True)
+                DBTrans.query('''update users set password = crypt((%s),
+                    gen_salt('bf')) where username = (%s)''',
+                    newpswd1 + user, True)
                 print('Your password has been updated successfully.')
                 break
             else:
@@ -246,73 +258,73 @@ class CreatePiTables:
     # Creates any/all database tables
     def create_devices(self):
         'Create DEVICES table in database if it does not exist.'
-        DBTrans.query('create table devices (\
-        id uuid not null default uuid_generate_v4()\
-        , devicename text not null unique\
-        , createdate timestamp with time zone default now()\
-        , constraint devices_pkey primary key (id)\
-        );', None, True)
-        print("'devices' table created successfully.")
+        DBTrans.query('''create table devices (
+        id uuid not null default uuid_generate_v4()
+        , devicename text not null unique
+        , createdate timestamp with time zone default now()
+        , constraint devices_pkey primary key (id)
+        );''', None, True)
+        print(r''devices' table created successfully.')
 
     def create_foodcomments(self):
         'Create FOODCOMMENTS table in database if it does not exist.'
-        DBTrans.query('create table foodcomments (\
-        jobinfo_id uuid not null\
-        , foodcomments text\
-        , createtime timestamp with time zone default now()\
-        );', None, True)
-        print("'foodcomments' table created successfully.")
+        DBTrans.query('''create table foodcomments (
+        jobinfo_id uuid not null
+        , foodcomments text
+        , createtime timestamp with time zone default now()
+        );''', None, True)
+        print(r''foodcomments' table created successfully.')
 
     def create_foods(self):
         'Create FOODS table in database if it does not exist.'
-        DBTrans.query('create table foods (\
-        id uuid not null default uuid_generate_v4()\
-        , foodname text not null unique\
-        , createdate timestamp with time zone default now()\
-        , constraint foods_pkey primary key (id)\
-        );', None, True)
-        print("'foods' table created successfully.")
+        DBTrans.query('''create table foods (
+        id uuid not null default uuid_generate_v4()
+        , foodname text not null unique
+        , createdate timestamp with time zone default now()
+        , constraint foods_pkey primary key (id)
+        );''', None, True)
+        print(r''foods' table created successfully.')
 
     def create_job_data(self):
         'Create JOB_DATA table in database if it does not exist.'
-        DBTrans.query('create table job_data (\
-        id serial\
-        , job_id uuid\
-        , moment timestamp with time zone\
-        , temp_c double precision\
-        , temp_f double precision\
-        , constraint job_data_pkey primary key (id)\
-        );', None, True)
-        print("'job_data' table created successfully.")
+        DBTrans.query('''create table job_data (
+        id serial
+        , job_id uuid
+        , moment timestamp with time zone
+        , temp_c double precision
+        , temp_f double precision
+        , constraint job_data_pkey primary key (id)
+        );''', None, True)
+        print(r''job_data' table created successfully.')
 
     def create_job_info(self):
         'Create JOB_INFO table in database if it does not exist.'
-        DBTrans.query('create table job_info (\
-        id uuid not null default uuid_generate_v4()\
-        , jobname text not null unique\
-        , user_id uuid\
-        , device_id uuid\
-        , food_id uuid\
-        , temperature_deg int\
-        , temperature_setting text\
-        , createtime timestamp with time zone default now()\
-        , starttime timestamp with time zone\
-        , endtime timestamp with time zone\
-        , cookminutes int\
-        , constraint job_info_pkey primary key (id)\
-        );', None, True)
-        print("'job_info' table created successfully.")
+        DBTrans.query('''create table job_info (
+        id uuid not null default uuid_generate_v4()
+        , jobname text not null unique
+        , user_id uuid
+        , device_id uuid
+        , food_id uuid
+        , temperature_deg int
+        , temperature_setting text
+        , createtime timestamp with time zone default now()
+        , starttime timestamp with time zone
+        , endtime timestamp with time zone
+        , cookminutes int
+        , constraint job_info_pkey primary key (id)
+        );''', None, True)
+        print(r''job_info' table created successfully.')
 
     def create_users(self):
         'Create USERS table in database if it does not exist.'
-        DBTrans.query('create table users (\
-        id uuid not null default uuid_generate_v4()\
-        , username text not null unique\
-        , fullname text not null\
-        , email_address text not null unique\
-        , "password" text not null\
-        , createdate timestamp with time zone default now()\
-        , constraint users_pkey primary key (id)\
-        );', None, True)
-        print("'users' table created successfully.")
+        DBTrans.query('''create table users (
+        id uuid not null default uuid_generate_v4()
+        , username text not null unique
+        , fullname text not null
+        , email_address text not null unique
+        , "password" text not null
+        , createdate timestamp with time zone default now()
+        , constraint users_pkey primary key (id)
+        );''', None, True)
+        print(r''users' table created successfully.')
 
