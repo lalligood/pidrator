@@ -18,7 +18,7 @@ It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
         print('The following {} are available: '.format(listname))
-        itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', False, 'all')
+        itemlist = DBTrans.query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', False, 'all')
         count = 0
         for x in itemlist: # Display list
             count += 1
@@ -30,12 +30,12 @@ list, or return an error if the choice is not valid.'''
             newitem = DBTrans.dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
-                existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, False, 'one')
+                existingitem = DBTrans.query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, False, 'one')
                 if newitem == existingitem: # If existing item is found, disallow
                     errmsgslow('That item already exists in the list. Please try again...')
                     continue
                 else: # Insert new item into table
-                    query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, True)
+                    DBTrans.query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, True)
                     print('Your new item has been added to the list.')
                     print('Returning to list of available {}.'.format(listname))
             else:
@@ -71,7 +71,7 @@ Enter your selection: ''')
             return user
             break
         elif menuopt == '2':
-            user = usercreate()
+            user = UserSecurity.usercreate()
             return user
             break
         elif menuopt == 'x':
@@ -165,35 +165,35 @@ class UserSecurity:
             else: # Failed login message & try again
                 errmsgslow('Username and/or password incorrect. Try again...')
 
-    def usercreate(self):
+    def usercreate():
         'Create a new user.'
         while True:
-            username = dbinput('Enter your desired username: ', 'user')
-            fullname = dbinput('Enter your full name: ', '')
-            emailaddr = dbinput('Enter your email address: ', '')
-            pswd = dbinput('Enter your password: ', 'pswd')
-            pswdconfirm = dbinput('Enter your password: ', 'pswd')
+            username = DBTrans.dbinput('Enter your desired username: ', 'user')
+            fullname = DBTrans.dbinput('Enter your full name: ', '')
+            emailaddr = DBTrans.dbinput('Enter your email address: ', '')
+            pswd = DBTrans.dbinput('Enter your password: ', 'pswd')
+            pswdconfirm = DBTrans.dbinput('Enter your password: ', 'pswd')
             if pswd != pswdconfirm: # Make sure passwords match
                 errmsgslow('Your passwords do not match. Please try again...')
                 continue
             if len(pswd[0]) < 8: # Make sure passwords are long enough
                 errmsgslow('Your password is not long enough. Must be at least 8 characters. Try again...')
                 continue
-            existinguser = query('select username from users where username = (%s)', username, False, 'one')
+            existinguser = DBTrans.query('select username from users where username = (%s)', username, False, 'one')
             if username == existinguser: # Make sure user doesn't already exist
                 errmsgslow('That username is already in use. Please try again...')
                 continue
             else: # If all conditions met, then add user
-                query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, True)
+                DBTrans.query('insert into users (username, fullname, email_address, password) values ((%s), (%s), (%s), crypt((%s), gen_salt(\'bf\')))', username + fullname + emailaddr + pswd, True)
                 print('Your username was created successfully.')
                 return username
 
     def changepswd(self, username):
         'Allows the user to change their password.'
         while True:
-            oldpswd = dbinput('Enter your current password: ', 'pswd')
-            newpswd1 = dbinput('Enter your new password: ', 'pswd')
-            newpswd2 = dbinput('Enter your new password again: ', 'pswd')
+            oldpswd = DBTrans.dbinput('Enter your current password: ', 'pswd')
+            newpswd1 = DBTrans.dbinput('Enter your new password: ', 'pswd')
+            newpswd2 = DBTrans.dbinput('Enter your new password again: ', 'pswd')
             if newpswd1[0] != newpswd2[0]:
                 errmsgslow('New passwords do not match. Try again...')
                 continue
@@ -203,9 +203,9 @@ class UserSecurity:
             if oldpswd[0] == newpswd1[0]:
                 errmsgslow('New password must be different from old password. Try again...')
                 continue
-            pswdverify = query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, False, 'one')
+            pswdverify = DBTrans.query('select (password = crypt((%s), password)) as userpass from users where username = (%s)', oldpswd + user, False, 'one')
             if pswdverify[0]:
-                query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, True)
+                DBTrans.query('update users set password = crypt((%s), gen_salt(\'bf\')) where username = (%s)', newpswd1 + user, True)
                 print('Your password has been updated successfully.')
                 break
             else:
@@ -246,7 +246,7 @@ class CreatePiTables:
     # Creates any/all database tables
     def create_devices(self):
         'Create DEVICES table in database if it does not exist.'
-        query('create table devices (\
+        DBTrans.query('create table devices (\
         id uuid not null default uuid_generate_v4()\
         , devicename text not null unique\
         , createdate timestamp with time zone default now()\
@@ -256,7 +256,7 @@ class CreatePiTables:
 
     def create_foodcomments(self):
         'Create FOODCOMMENTS table in database if it does not exist.'
-        query('create table foodcomments (\
+        DBTrans.query('create table foodcomments (\
         jobinfo_id uuid not null\
         , foodcomments text\
         , createtime timestamp with time zone default now()\
@@ -265,7 +265,7 @@ class CreatePiTables:
 
     def create_foods(self):
         'Create FOODS table in database if it does not exist.'
-        query('create table foods (\
+        DBTrans.query('create table foods (\
         id uuid not null default uuid_generate_v4()\
         , foodname text not null unique\
         , createdate timestamp with time zone default now()\
@@ -275,7 +275,7 @@ class CreatePiTables:
 
     def create_job_data(self):
         'Create JOB_DATA table in database if it does not exist.'
-        query('create table job_data (\
+        DBTrans.query('create table job_data (\
         id serial\
         , job_id uuid\
         , moment timestamp with time zone\
@@ -287,7 +287,7 @@ class CreatePiTables:
 
     def create_job_info(self):
         'Create JOB_INFO table in database if it does not exist.'
-        query('create table job_info (\
+        DBTrans.query('create table job_info (\
         id uuid not null default uuid_generate_v4()\
         , jobname text not null unique\
         , user_id uuid\
@@ -305,7 +305,7 @@ class CreatePiTables:
 
     def create_users(self):
         'Create USERS table in database if it does not exist.'
-        query('create table users (\
+        DBTrans.query('create table users (\
         id uuid not null default uuid_generate_v4()\
         , username text not null unique\
         , fullname text not null\
