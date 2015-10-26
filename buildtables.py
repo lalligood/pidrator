@@ -1,17 +1,15 @@
 #! python3
 __author__ = 'lalligood'
 
-from core import DBTrans as cdt
-from core import CreatePiTables as cpt
+from core
 from datetime import datetime, timedelta
 import getpass
 import glob
 import logging
 import os
 import platform
-raspi = False
-if platform.machine() == 'armv6l': # Enable some functionality ONLY if raspi!
-    raspi = True
+# Enable some functionality ONLY if raspi!
+raspi = platform.machine()startswith('armv')
 import psycopg2
 import psycopg2.extras
 if raspi:
@@ -72,11 +70,8 @@ except psycopg2.Error as dberror:
 
 # Check to see if all tables exists
 schema = ('public', )
-tables = cdt.query('select \
-    table_name \
-    from information_schema.tables \
-    where table_schema = (%s) \
-    order by table_name', schema, False, 'all')
+tables = c.query(cur, '''select table_name from information_schema.tables
+    where table_schema = (%s) order by table_name''', schema, False, 'all')
 tables_list = [] # Convert results tuple -> list
 for table in tables:
     tables_list.append(table[0])
@@ -86,19 +81,19 @@ results_list = set(master_list).difference(tables_list)
 # Create any tables that do not exist
 if len(results_list) > 0:
     try:
-        cdt.query('create extension if not exists "uuid-ossp";', None, False)
-        cdt.query('create extension if not exists "pgcrypto";', None, False)
+        c.query(cur, 'create extension if not exists "uuid-ossp";', None, False)
+        c.query(cur, 'create extension if not exists "pgcrypto";', None, False)
     except psycopg2.Error as dberror:
         logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
         cleanexit(1)
     for result in results_list:
         options = {
-            'devices' : cpt.create_devices,
-            'foodcomments' : cpt.create_foodcomments,
-            'foods' : cpt.create_foods,
-            'job_data' : cpt.create_job_data,
-            'job_info' : cpt.create_job_info,
-            'users' : cpt.create_users,
+            'devices' : c.create_devices,
+            'foodcomments' : c.create_foodcomments,
+            'foods' : c.create_foods,
+            'job_data' : c.create_job_data,
+            'job_info' : c.create_job_info,
+            'users' : c.create_users,
             }
         options[result]()
 else:

@@ -106,7 +106,7 @@ class DBTrans:
         response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
         return response
 
-    def query(self, SQL, params, commit, fetch='none'):
+    def query(self, cursor, SQL, params, commit, fetch='none'):
         '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
     or DELETE queries, with or without parameters in query.
 
@@ -116,15 +116,15 @@ class DBTrans:
     Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
     and any other value returns none.'''
         try:
-            cur.execute(SQL, params)
+            cursor.execute(SQL, params)
             logging.info("Query '" + SQL + "' executed successfully.")
             if commit:
                 conn.commit()
             if fetch == 'all':
-                row = cur.fetchall()
+                row = cursor.fetchall()
                 return row
             elif fetch == 'one':
-                row = cur.fetchone()
+                row = cursor.fetchone()
                 return row
         except psycopg2.Error as dberror:
             logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
@@ -132,7 +132,7 @@ class DBTrans:
 
     def cleanexit(self, exitcode):
         'Closes database connection & attempts to exit gracefully'
-        cur.close()
+        cursor.close()
         conn.close()
         if exitcode == 0: # Log as info when closing normally
             logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
