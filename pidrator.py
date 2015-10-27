@@ -26,14 +26,14 @@ psycopg2.extras.register_uuid()
 
 # Database connection information
 # There are 2 sets of DB connection variables below. ONLY USE ONE AT A TIME!
-if raspi: # RASPI DB
-    dbname = 'pi'
-    dbuser = 'pi'
-    dbport = 5432
-else: # NON-RASPI TEST DB
-    dbname = 'postgres'
-    dbuser = 'lalligood'
-    dbport = 5433
+#if raspi: # RASPI DB
+    #dbname = 'pi'
+    #dbuser = 'pi'
+    #dbport = 5432
+#else: # NON-RASPI TEST DB
+    #dbname = 'postgres'
+    #dbuser = 'lalligood'
+    #dbport = 5433
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
@@ -82,14 +82,17 @@ if raspi:
         logging.warning('Unable to record temperature while cooking.')
         therm_sens = False
 
-# Open connection to database
-try:
-    conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
-    cur = conn.cursor()
-    logging.info('Connected to database successfully')
-except psycopg2.Error as dberror:
-    logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
-    c.cleanexit(1)
+#def dbconn():
+    #'Open connection to database'
+    #try:
+        #conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
+        #cur = conn.cursor()
+        #logging.info('Connected to database successfully')
+    #except psycopg2.Error as dberror:
+        #logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
+        #c.cleanexit(1)
+
+c.dbconn()
 
 # User login
 user = c.loginmenu()
