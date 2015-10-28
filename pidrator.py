@@ -3,7 +3,6 @@ __author__ = 'lalligood'
 
 import core as c
 from datetime import datetime, timedelta
-import getpass
 import glob
 import logging
 import os
@@ -24,16 +23,6 @@ psycopg2.extras.register_uuid()
 **** PARAMETERS ****
 '''
 
-# Database connection information
-# There are 2 sets of DB connection variables below. ONLY USE ONE AT A TIME!
-#if raspi: # RASPI DB
-    #dbname = 'pi'
-    #dbuser = 'pi'
-    #dbport = 5432
-#else: # NON-RASPI TEST DB
-    #dbname = 'postgres'
-    #dbuser = 'lalligood'
-    #dbport = 5433
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
@@ -49,15 +38,8 @@ power_pin = 23 # GPIO pin 23
 **** MAIN ROUTINE ****
 '''
 
-# Verify running python 3.x
-(major, minor, patchlevel) = platform.python_version_tuple()
-if int(major) < 3: # Verify running python3
-    logging.error('pidrator is written to run on python version 3.')
-    logging.error("Please update by running 'sudo apt-get install python3'.")
-    sys.exit(1)
-elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
-    logging.error('For proper functionality, pidrator should be run as root (sudo)!')
-    sys.exit(1)
+# Make sure running on python 3.x
+c.pyver()
 
 # Enable all devices attached to RaspPi GPIO
 if raspi:
@@ -82,16 +64,7 @@ if raspi:
         logging.warning('Unable to record temperature while cooking.')
         therm_sens = False
 
-#def dbconn():
-    #'Open connection to database'
-    #try:
-        #conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
-        #cur = conn.cursor()
-        #logging.info('Connected to database successfully')
-    #except psycopg2.Error as dberror:
-        #logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
-        #c.cleanexit(1)
-
+# Open connection to database
 c.dbconn()
 
 # User login

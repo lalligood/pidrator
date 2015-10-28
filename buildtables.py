@@ -1,24 +1,15 @@
 #! python3
 __author__ = 'lalligood'
 
-from core
-from datetime import datetime, timedelta
-import getpass
+import core as c
 import glob
 import logging
 import os
 import platform
 # Enable some functionality ONLY if raspi!
-raspi = platform.machine()startswith('armv')
-import psycopg2
-import psycopg2.extras
+raspi = platform.machine().startswith('armv')
 if raspi:
     from RPi import GPIO
-import sys
-import time
-
-# Following is necessary for handling UUIDs with PostgreSQL
-psycopg2.extras.register_uuid()
 
 '''
 **** PARAMETERS ****
@@ -50,27 +41,14 @@ power_pin = 23 # GPIO pin 23
 '''
 
 # Verify running python 3.x
-(major, minor, patchlevel) = platform.python_version_tuple()
-if int(major) < 3: # Verify running python3
-    logging.error('pidrator is written to run on python version 3.')
-    logging.error("Please update by running 'sudo apt-get install python3'.")
-    sys.exit(1)
-elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
-    logging.error('For proper functionality, pidrator should be run as root (sudo)!')
-    sys.exit(1)
+c.pyver()
 
 # Open connection to database
-try:
-    conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
-    cur = conn.cursor()
-    logging.info('Connected to database successfully')
-except psycopg2.Error as dberror:
-    logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
-    cleanexit(1)
+c.dbconn()
 
 # Check to see if all tables exists
 schema = ('public', )
-tables = c.query(cur, '''select table_name from information_schema.tables
+tables = c.query('''select table_name from information_schema.tables
     where table_schema = (%s) order by table_name''', schema, False, 'all')
 tables_list = [] # Convert results tuple -> list
 for table in tables:
@@ -81,11 +59,11 @@ results_list = set(master_list).difference(tables_list)
 # Create any tables that do not exist
 if len(results_list) > 0:
     try:
-        c.query(cur, 'create extension if not exists "uuid-ossp";', None, False)
-        c.query(cur, 'create extension if not exists "pgcrypto";', None, False)
+        c.query('create extension if not exists "uuid-ossp";', None, False)
+        c.query('create extension if not exists "pgcrypto";', None, False)
     except psycopg2.Error as dberror:
         logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
-        cleanexit(1)
+        c.cleanexit(1)
     for result in results_list:
         options = {
             'devices' : c.create_devices,
@@ -99,4 +77,4 @@ if len(results_list) > 0:
 else:
     print('Confirmed that all tables present & accounted for. Exiting...')
 
-cleanexit(0)
+c.cleanexit(0)

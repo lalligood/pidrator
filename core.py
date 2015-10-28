@@ -11,6 +11,9 @@ import time
 # Enable some functionality ONLY if raspi!
 raspi = platform.machine().startswith('armv')
 
+# Following is necessary for handling UUIDs with PostgreSQL
+psycopg2.extras.register_uuid()
+
 # There are 2 sets of DB connection variables below. ONLY USE ONE AT A TIME!
 if raspi: # RASPI DB
     dbname = 'pi'
@@ -20,6 +23,17 @@ else: # NON-RASPI TEST DB
     dbname = 'postgres'
     dbuser = 'lalligood'
     dbport = 5433
+
+def pyver():
+    'Verify that script is running python 3.x'
+    (major, minor, patchlevel) = platform.python_version_tuple()
+    if int(major) < 3: # Verify running python3
+        logging.error('pidrator is written to run on python version 3.')
+        logging.error("Please update by running 'sudo apt-get install python3'.")
+        sys.exit(1)
+    elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
+        logging.error('For proper functionality, pidrator should be run as root (sudo)!')
+        sys.exit(1)
 
 def dbconn():
     'Open connection to database'
@@ -37,8 +51,8 @@ def errmsgslow(text):
     time.sleep(2)
 
 def picklist(listname, colname, tablename, ordername):
-    '''Displays a list of items referred as listname from the column name (colname)
-from table (tablename) & the list is ordered by ordername is desired.
+    '''Displays a list of items referred as listname from the column name
+(colname) from table (tablename) & the list is ordered by ordername is desired.
 It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
@@ -50,24 +64,27 @@ list, or return an error if the choice is not valid.'''
             print('\t{}. {}'.format(count, x[0]))
         print('\t0. Add an item to the list.')
         countlist = count
-        itemnbr = int(input('Enter the number of the item that you want to use: '))
-        if itemnbr == 0: # Add new item to the table
+        itemnbr = input('Enter the number of the item that you want to use: ')
+        if itemnbr == '0': # Add new item to the table
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
-                existingitem = query('select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)', newitem, False, 'one')
+                existingitem = query('select ' + colname +
+                    ' from ' + tablename + ' where ' + colname + ' = (%s)',
+                    newitem, False, 'one')
                 if newitem == existingitem: # If existing item is found, disallow
                     errmsgslow('That item already exists in the list. Please try again...')
                     continue
                 else: # Insert new item into table
-                    query('insert into ' + tablename + ' (' + colname + ') values ((%s))', newitem, True)
+                    query('insert into ' + tablename + ' (' + colname + ')
+                        values ((%s))', newitem, True)
                     print('Your new item has been added to the list.')
                     print('Returning to list of available {}.'.format(listname))
             else:
                 print('Invalid entry. Please try again...')
             time.sleep(2)
             continue
-        elif itemnbr < 0 or itemnbr > countlist: # Verify input is valid
+        elif int(itemnbr) < 0 or int(itemnbr) > countlist:
             errmsgslow('Invalid selection. Please try again...')
             continue
         else: # Find the item in the list
