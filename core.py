@@ -41,6 +41,7 @@ def dbconn():
         conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
         cur = conn.cursor()
         logging.info('Connected to database successfully')
+        return cur
     except psycopg2.Error as dberror:
         logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
         cleanexit(1)
@@ -57,7 +58,8 @@ It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
         print('The following {} are available: '.format(listname))
-        itemlist = query('select ' + colname + ' from ' + tablename + ' order by ' + ordername, '', False, 'all')
+        itemlist = query('select (%s) from (%s) order by (%s)',
+            colname + tablename + ordername, False, 'all')
         count = 0
         for x in itemlist: # Display list
             count += 1
@@ -69,15 +71,15 @@ list, or return an error if the choice is not valid.'''
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
-                existingitem = query('select ' + colname +
-                    ' from ' + tablename + ' where ' + colname + ' = (%s)',
-                    newitem, False, 'one')
+                existingitem = query('''select (%s) from (%s)
+                    where (%s) = (%s)''',
+                    colname + tablename + colname + newitem, False, 'one')
                 if newitem == existingitem: # If existing item is found, disallow
                     errmsgslow('That item already exists in the list. Please try again...')
                     continue
                 else: # Insert new item into table
-                    query('insert into ' + tablename + ' (' + colname + ')
-                        values ((%s))', newitem, True)
+                    query('''insert into (%s) ((%s))
+                        values ((%s))''', tablename + colname + newitem, True)
                     print('Your new item has been added to the list.')
                     print('Returning to list of available {}.'.format(listname))
             else:
@@ -172,7 +174,7 @@ and any other value returns none.'''
 
 def cleanexit(self, exitcode):
     'Closes database connection & attempts to exit gracefully'
-    cursor.close()
+    cur.close()
     conn.close()
     if exitcode == 0: # Log as info when closing normally
         logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
