@@ -25,7 +25,7 @@ else: # NON-RASPI TEST DB
     dbport = 5433
 
 def pyver():
-    'Verify that script is running python 3.x'
+    'Verify that script is running python 3.x.'
     (major, minor, patchlevel) = platform.python_version_tuple()
     if int(major) < 3: # Verify running python3
         logging.error('pidrator is written to run on python version 3.')
@@ -35,8 +35,32 @@ def pyver():
         logging.error('For proper functionality, pidrator should be run as root (sudo)!')
         sys.exit(1)
 
+def enablepihw():
+    'Enable all devices attached to RaspPi GPIO.'
+    if raspi:
+        # Powertail configuration
+        try:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(power_pin, GPIO.OUT)
+            GPIO.output(power_pin, False) # Make sure powertail is off!
+        except:
+            logging.error('Powertail not found or connected. Cannot cook anything without it!')
+            sysexit(1)
+        # Thermal sensor configuration
+        try:
+            os.system('modprobe w1-gpio')
+            os.system('modprobe w1-therm')
+            base_dir = '/sys/bus/w1/devices/'               # Navigate path to
+            device_folder = glob.glob(base_dir + '28*')[0]  # thermal sensor
+            sensor_file = device_folder + '/w1_slave'       # "file"
+            therm_sens = True
+        except:
+            logging.warning('Thermal sensor not found or connected.')
+            logging.warning('Unable to record temperature while cooking.')
+            therm_sens = False
+
 def dbconn():
-    'Open connection to database'
+    'Open connection to database.'
     try:
         conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
         cur = conn.cursor()
@@ -47,13 +71,14 @@ def dbconn():
         cleanexit(1)
 
 def errmsgslow(text):
-    'Prints message then pauses for 2 seconds'
+    'Prints message then pauses for 2 seconds.'
     print(text)
     time.sleep(2)
 
 def picklist(listname, colname, tablename, ordername):
     '''Displays a list of items referred as listname from the column name
 (colname) from table (tablename) & the list is ordered by ordername is desired.
+
 It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
@@ -100,7 +125,7 @@ list, or return an error if the choice is not valid.'''
                     break
 
 def loginmenu():
-    'Basic Welcome screen to login, create acct, or exit'
+    'Basic Welcome screen to login, create acct, or exit.'
     while True:
         menuopt = input('''
 pidrator Menu
@@ -125,7 +150,7 @@ Enter your selection: ''')
             errmsgslow('Invalid choice. Please try again...')
 
 def dbinput(text, input_type):
-    'Gets user input & formats input text for use in query as a parameter'
+    'Gets user input & formats input text for use in query as a parameter.'
     response = ''
     if input_type == 'pswd':
         response = getpass.getpass(text)
@@ -139,12 +164,12 @@ def dbinput(text, input_type):
     return dbformat
 
 def dbnumber(self, number):
-    'Gets numeric value & formats for use in query as a parameter'
+    'Gets numeric value & formats for use in query as a parameter.'
     response = eval('(\'' + str(number) + '\', )')
     return response
 
 def dbdate(self, date):
-    'Gets date value & formats for use in query as a parameter'
+    'Gets date value & formats for use in query as a parameter.'
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
     return response
 
@@ -172,8 +197,8 @@ and any other value returns none.'''
         logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
         logging.error('Failed query: ' + SQL)
 
-def cleanexit(self, exitcode):
-    'Closes database connection & attempts to exit gracefully'
+def cleanexit(exitcode):
+    'Closes database connection & attempts to exit gracefully.'
     cur.close()
     conn.close()
     if exitcode == 0: # Log as info when closing normally
@@ -236,7 +261,7 @@ def usercreate():
             print('Your username was created successfully.')
             return username
 
-def changepswd(self, username):
+def changepswd(username):
     'Allows the user to change their password.'
     while True:
         oldpswd = dbinput('Enter your current password: ', 'pswd')
@@ -263,7 +288,7 @@ def changepswd(self, username):
         else:
             errmsgslow('Old password incorrect. Try again...')
 
-def powertail(self, onoff):
+def powertail(onoff):
     'If device if present, it turns Powertail on/off.'
     if raspi:
         if onoff:
@@ -271,7 +296,7 @@ def powertail(self, onoff):
         else:
             GPIO.output(power_pin, False) # Powertail off
 
-def readtemp(self):
+def readtemp():
     'If device is present, it will open a connection to thermal sensor.'
     if raspi:
         sensor = open(sensor_file, 'r') # Open thermal sensor "file"
@@ -279,7 +304,7 @@ def readtemp(self):
         sensor.close() # Close "file"
         return rawdata
 
-def gettemp(self):
+def gettemp():
     'Reads thermal sensor until it gets a valid result.'
     if raspi:
         results = readtemp()                    # Read sensor
@@ -292,7 +317,7 @@ def gettemp(self):
             temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
             return temp_c, temp_f # Return temp to 3 decimal places in C & F
 
-def create_devices(self):
+def create_devices():
     'Create DEVICES table in database if it does not exist.'
     query('''create table devices (
         id uuid not null default uuid_generate_v4()
@@ -302,7 +327,7 @@ def create_devices(self):
         );''', None, True)
     print("'devices' table created successfully.")
 
-def create_foodcomments(self):
+def create_foodcomments():
     'Create FOODCOMMENTS table in database if it does not exist.'
     query('''create table foodcomments (
         jobinfo_id uuid not null
@@ -311,7 +336,7 @@ def create_foodcomments(self):
         );''', None, True)
     print("'foodcomments' table created successfully.")
 
-def create_foods(self):
+def create_foods():
     'Create FOODS table in database if it does not exist.'
     query('''create table foods (
         id uuid not null default uuid_generate_v4()
@@ -321,7 +346,7 @@ def create_foods(self):
         );''', None, True)
     print("'foods' table created successfully.")
 
-def create_job_data(self):
+def create_job_data():
     'Create JOB_DATA table in database if it does not exist.'
     query('''create table job_data (
         id serial
@@ -333,7 +358,7 @@ def create_job_data(self):
         );''', None, True)
     print("'job_data' table created successfully.")
 
-def create_job_info(self):
+def create_job_info():
     'Create JOB_INFO table in database if it does not exist.'
     query('''create table job_info (
         id uuid not null default uuid_generate_v4()
@@ -351,7 +376,7 @@ def create_job_info(self):
         );''', None, True)
     print("'job_info' table created successfully.")
 
-def create_users(self):
+def create_users():
     'Create USERS table in database if it does not exist.'
     query('''create table users (
         id uuid not null default uuid_generate_v4()

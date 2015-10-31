@@ -6,18 +6,8 @@ from datetime import datetime, timedelta
 import glob
 import logging
 import os
-import platform
-# Enable some functionality ONLY if raspi!
-raspi = platform.machine().startswith('armv')
-import psycopg2
-import psycopg2.extras
-if raspi:
-    from RPi import GPIO
 import sys
 import time
-
-# Following is necessary for handling UUIDs with PostgreSQL
-psycopg2.extras.register_uuid()
 
 '''
 **** PARAMETERS ****
@@ -41,28 +31,8 @@ power_pin = 23 # GPIO pin 23
 # Make sure running on python 3.x
 c.pyver()
 
-# Enable all devices attached to RaspPi GPIO
-if raspi:
-    # Powertail configuration
-    try:
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(power_pin, GPIO.OUT)
-        GPIO.output(power_pin, False) # Make sure powertail is off!
-    except:
-        logging.error('Powertail not found or connected. Cannot cook anything without it!')
-        sysexit(1)
-    # Thermal sensor configuration
-    try:
-        os.system('modprobe w1-gpio')
-        os.system('modprobe w1-therm')
-        base_dir = '/sys/bus/w1/devices/'               # Navigate path to
-        device_folder = glob.glob(base_dir + '28*')[0]  # thermal sensor
-        sensor_file = device_folder + '/w1_slave'       # "file"
-        therm_sens = True
-    except:
-        logging.warning('Thermal sensor not found or connected.')
-        logging.warning('Unable to record temperature while cooking.')
-        therm_sens = False
+# Enable all hardware attached to RaspPi
+c.enablepihw()
 
 # Open connection to database
 cur = c.dbconn()
