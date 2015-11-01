@@ -15,16 +15,6 @@ if raspi:
 **** PARAMETERS ****
 '''
 
-# Database connection information
-# There are 2 sets of DB connection variables below. ONLY USE ONE AT A TIME!
-if raspi: # RASPI DB
-    dbname = 'pi'
-    dbuser = 'pi'
-    dbport = 5432
-else: # NON-RASPI TEST DB
-    dbname = 'postgres'
-    dbuser = 'lalligood'
-    dbport = 5433
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
@@ -44,11 +34,11 @@ power_pin = 23 # GPIO pin 23
 c.pyver()
 
 # Open connection to database
-c.dbconn()
+thedb = c.DBconn()
 
 # Check to see if all tables exists
 schema = ('public', )
-tables = c.query('''select table_name from information_schema.tables
+tables = thedb.query('''select table_name from information_schema.tables
     where table_schema = (%s) order by table_name''', schema, False, 'all')
 tables_list = [] # Convert results tuple -> list
 for table in tables:
@@ -59,11 +49,11 @@ results_list = set(master_list).difference(tables_list)
 # Create any tables that do not exist
 if len(results_list) > 0:
     try:
-        c.query('create extension if not exists "uuid-ossp";', None, False)
-        c.query('create extension if not exists "pgcrypto";', None, False)
+        thedb.query('create extension if not exists "uuid-ossp";', None, False)
+        thedb.query('create extension if not exists "pgcrypto";', None, False)
     except psycopg2.Error as dberror:
         logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
-        c.cleanexit(1)
+        thedb.cleanexit(1)
     for result in results_list:
         options = {
             'devices' : c.create_devices,
@@ -77,4 +67,4 @@ if len(results_list) > 0:
 else:
     print('Confirmed that all tables present & accounted for. Exiting...')
 
-c.cleanexit(0)
+thedb.cleanexit(0)

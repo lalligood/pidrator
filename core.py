@@ -6,23 +6,71 @@ import logging
 import platform
 import psycopg2
 import psycopg2.extras
+import sys
 import time
 
 # Enable some functionality ONLY if raspi!
 raspi = platform.machine().startswith('armv')
 
-# Following is necessary for handling UUIDs with PostgreSQL
-psycopg2.extras.register_uuid()
+class DBconn:
+    def __init__(self):
+        'Object used to open a connection to database.'
+        # Following is necessary for handling UUIDs with PostgreSQL
+        psycopg2.extras.register_uuid()
+        # Database connection variables
+        if raspi: # RASPI DB
+            dbname = 'pi'
+            dbuser = 'pi'
+            dbport = 5432
+        else: # NON-RASPI TEST DB
+            dbname = 'postgres'
+            dbuser = 'lalligood'
+            dbport = 5433
+        #'Open connection to database.'
+        try:
+            conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
+            cur = conn.cursor()
+            self.conn = conn
+            self.cur = cur
+            logging.info('Connected to database successfully')
+        except psycopg2.Error as dberror:
+            logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
+            self.cleanexit(1)
 
-# There are 2 sets of DB connection variables below. ONLY USE ONE AT A TIME!
-if raspi: # RASPI DB
-    dbname = 'pi'
-    dbuser = 'pi'
-    dbport = 5432
-else: # NON-RASPI TEST DB
-    dbname = 'postgres'
-    dbuser = 'lalligood'
-    dbport = 5433
+    def query(self, SQL, params, commit, fetch='none'):
+        '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
+    or DELETE queries, with or without parameters in query.
+
+    Commit is boolean to commit transaction. Required True for UPDATE, INSERT,
+    or DELETE. Not needed (False) for SELECT.
+
+    Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
+    and any other value returns none.'''
+        try:
+            self.cur.execute(SQL, params)
+            logging.info("Query '" + SQL + "' executed successfully.")
+            if commit:
+                conn.commit()
+            if fetch == 'all':
+                row = self.cur.fetchall()
+                return row
+            elif fetch == 'one':
+                row = self.cur.fetchone()
+                return row
+        except psycopg2.Error as dberror:
+            logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+            logging.error('Failed query: ' + SQL)
+
+    def cleanexit(self, exitcode):
+        'Closes database connection & attempts to exit gracefully.'
+        self.cur.close()
+        self.conn.close()
+        if exitcode == 0: # Log as info when closing normally
+            logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
+        else: # Log as error when closing abnormally
+            logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
+        logging.shutdown()
+        sys.exit(exitcode)
 
 def pyver():
     'Verify that script is running python 3.x.'
@@ -59,17 +107,6 @@ def enablepihw():
             logging.warning('Unable to record temperature while cooking.')
             therm_sens = False
 
-def dbconn():
-    'Open connection to database.'
-    try:
-        conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
-        cur = conn.cursor()
-        logging.info('Connected to database successfully')
-        return cur
-    except psycopg2.Error as dberror:
-        logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
-        cleanexit(1)
-
 def errmsgslow(text):
     'Prints message then pauses for 2 seconds.'
     print(text)
@@ -83,7 +120,7 @@ It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
         print('The following {} are available: '.format(listname))
-        itemlist = query('select (%s) from (%s) order by (%s)',
+        itemlist = DBconn.query('select (%s) from (%s) order by (%s)',
             colname + tablename + ordername, False, 'all')
         count = 0
         for x in itemlist: # Display list
@@ -96,14 +133,14 @@ list, or return an error if the choice is not valid.'''
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
-                existingitem = query('''select (%s) from (%s)
+                existingitem = DBconn.query('''select (%s) from (%s)
                     where (%s) = (%s)''',
                     colname + tablename + colname + newitem, False, 'one')
                 if newitem == existingitem: # If existing item is found, disallow
                     errmsgslow('That item already exists in the list. Please try again...')
                     continue
                 else: # Insert new item into table
-                    query('''insert into (%s) ((%s))
+                    DBconn.query('''insert into (%s) ((%s))
                         values ((%s))''', tablename + colname + newitem, True)
                     print('Your new item has been added to the list.')
                     print('Returning to list of available {}.'.format(listname))
@@ -163,50 +200,15 @@ def dbinput(text, input_type):
         dbformat = eval('(\'' + response + '\', )')
     return dbformat
 
-def dbnumber(self, number):
+def dbnumber(number):
     'Gets numeric value & formats for use in query as a parameter.'
     response = eval('(\'' + str(number) + '\', )')
     return response
 
-def dbdate(self, date):
+def dbdate(date):
     'Gets date value & formats for use in query as a parameter.'
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
     return response
-
-def query(SQL, params, commit, fetch='none'):
-    '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
-or DELETE queries, with or without parameters in query.
-
-Commit is boolean to commit transaction. Required True for UPDATE, INSERT,
-or DELETE. Not needed (False) for SELECT.
-
-Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
-and any other value returns none.'''
-    try:
-        cur.execute(SQL, params)
-        logging.info("Query '" + SQL + "' executed successfully.")
-        if commit:
-            conn.commit()
-        if fetch == 'all':
-            row = cur.fetchall()
-            return row
-        elif fetch == 'one':
-            row = cur.fetchone()
-            return row
-    except psycopg2.Error as dberror:
-        logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        logging.error('Failed query: ' + SQL)
-
-def cleanexit(exitcode):
-    'Closes database connection & attempts to exit gracefully.'
-    cur.close()
-    conn.close()
-    if exitcode == 0: # Log as info when closing normally
-        logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
-    else: # Log as error when closing abnormally
-        logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
-    logging.shutdown()
-    sys.exit(exitcode)
 
 def userlogin():
     'Handles user login by verifying that the user & password are correct.'
@@ -214,9 +216,9 @@ def userlogin():
     while True:
         username = dbinput('Enter your username: ', 'user')
         pswd = dbinput('Enter your password: ', 'pswd')
-        userverify = query('''select username from users
+        userverify = DBconn.query('''select username from users
             where username = (%s)''', username, False, 'one')
-        pswdverify = query('''select
+        pswdverify = DBconn.query('''select
             (password = crypt((%s), password)) as userpass
             from users where username = (%s)''',
             pswd + username, False, 'one')
@@ -248,13 +250,13 @@ def usercreate():
         if len(pswd[0]) < 8: # Make sure passwords are long enough
             errmsgslow('Your password is not long enough. Must be at least 8 characters. Try again...')
             continue
-        existinguser = query('''select username from users
+        existinguser = DBconn.query('''select username from users
             where username = (%s)''', username, False, 'one')
         if username == existinguser: # Make sure user doesn't already exist
             errmsgslow('That username is already in use. Please try again...')
             continue
         else: # If all conditions met, then add user
-            query('''insert into users
+            DBconn.query('''insert into users
                 (username, fullname, email_address, password) values
                 ((%s), (%s), (%s), crypt((%s), gen_salt('bf')))''',
                 username + fullname + emailaddr + pswd, True)
@@ -276,11 +278,11 @@ def changepswd(username):
         if oldpswd[0] == newpswd1[0]:
             errmsgslow('New password must be different from old password. Try again...')
             continue
-        pswdverify = query('''select
+        pswdverify = DBconn.query('''select
             (password = crypt((%s), password)) as userpass from users
             where username = (%s)''', oldpswd + user, False, 'one')
         if pswdverify[0]:
-            query('''update users set password = crypt((%s),
+            DBconn.query('''update users set password = crypt((%s),
                 gen_salt('bf')) where username = (%s)''',
                 newpswd1 + user, True)
             print('Your password has been updated successfully.')
@@ -319,7 +321,7 @@ def gettemp():
 
 def create_devices():
     'Create DEVICES table in database if it does not exist.'
-    query('''create table devices (
+    DBconn.query('''create table devices (
         id uuid not null default uuid_generate_v4()
         , devicename text not null unique
         , createdate timestamp with time zone default now()
@@ -329,7 +331,7 @@ def create_devices():
 
 def create_foodcomments():
     'Create FOODCOMMENTS table in database if it does not exist.'
-    query('''create table foodcomments (
+    DBconn.query('''create table foodcomments (
         jobinfo_id uuid not null
         , foodcomments text
         , createtime timestamp with time zone default now()
@@ -338,7 +340,7 @@ def create_foodcomments():
 
 def create_foods():
     'Create FOODS table in database if it does not exist.'
-    query('''create table foods (
+    DBconn.query('''create table foods (
         id uuid not null default uuid_generate_v4()
         , foodname text not null unique
         , createdate timestamp with time zone default now()
@@ -348,7 +350,7 @@ def create_foods():
 
 def create_job_data():
     'Create JOB_DATA table in database if it does not exist.'
-    query('''create table job_data (
+    DBconn.query('''create table job_data (
         id serial
         , job_id uuid
         , moment timestamp with time zone
@@ -360,7 +362,7 @@ def create_job_data():
 
 def create_job_info():
     'Create JOB_INFO table in database if it does not exist.'
-    query('''create table job_info (
+    DBconn.query('''create table job_info (
         id uuid not null default uuid_generate_v4()
         , jobname text not null unique
         , user_id uuid
@@ -378,7 +380,7 @@ def create_job_info():
 
 def create_users():
     'Create USERS table in database if it does not exist.'
-    query('''create table users (
+    DBconn.query('''create table users (
         id uuid not null default uuid_generate_v4()
         , username text not null unique
         , fullname text not null

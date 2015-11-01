@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import glob
 import logging
 import os
-import sys
 import time
 
 '''
@@ -35,7 +34,7 @@ c.pyver()
 c.enablepihw()
 
 # Open connection to database
-cur = c.dbconn()
+thedb = c.DBconn()
 
 # User login
 user = c.loginmenu()
@@ -55,24 +54,24 @@ print('\n\n')
 
 # Pick job from list
 jobname = c.picklist('job names', 'jobname', 'job_info', 'createtime')
-jobid = c.query('select id from job_info where jobname = (%s)', jobname, False, 'one')
+jobid = thedb.query('select id from job_info where jobname = (%s)', jobname, False, 'one')
 print('\n\n')
 
 # Pick cooking device from list
 devname = c.picklist('cooking devices', 'devicename', 'devices', 'devicename')
-deviceid = c.query('select id from devices where devicename = (%s)', devname, False, 'one')
+deviceid = thedb.query('select id from devices where devicename = (%s)', devname, False, 'one')
 print('\n\n')
 
 # Pick food from list
 foodname = c.picklist('foods', 'foodname', 'foods', 'foodname')
-foodid = c.query('select id from foods where foodname = (%s)', foodname, False, 'one')
+foodid = thedb.query('select id from foods where foodname = (%s)', foodname, False, 'one')
 print('\n\n')
 
 # Get user_id
-userid = c.query('select id from users where username = (%s)', user, False, 'one')
+userid = thedb.query('select id from users where username = (%s)', user, False, 'one')
 
 # Get temperature setting
-tempcheck = c.query('select temperature from job_info where id = (%s)', jobid, False, 'one')
+tempcheck = thedb.query('select temperature from job_info where id = (%s)', jobid, False, 'one')
 if tempcheck[0] == None: # No previous cooking data available
     print('No previous temperature found.')
     tempset = c.dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
@@ -92,12 +91,12 @@ else: # Previous cooking data available
 print('\n\n')
 
 # Update user_id, device_id, & food_id in job_info
-c.query('''update job_info set user_id = (%s), device_id = (%s),
+thedb.query('''update job_info set user_id = (%s), device_id = (%s),
     food_id = (%s), temperature = (%s) where id = (%s)''',
     userid + deviceid + foodid + tempset + jobid, True)
 
 # Now make sure it worked...!
-row = c.query('''select
+row = thedb.query('''select
     jobname
     , users.fullname
     , devices.devicename
@@ -141,7 +140,7 @@ while True:
     response = input('Enter \'y\' when you are ready to start your job or \'x\' to exit without cooking. ')
     if response.lower() == 'x':
         print('You have chosen to exit without cooking.')
-        c.cleanexit(0)
+        thedb.cleanexit(0)
     elif response.lower() == 'y':
         break
 print('\n\n')
@@ -149,7 +148,7 @@ print('\n\n')
 # Update job_info row with start time
 start = datetime.now()
 starttime = c.dbdate(start)
-c.query('update job_info set starttime = (%s) where id = (%s)',
+thedb.query('update job_info set starttime = (%s) where id = (%s)',
     starttime + jobid, True)
 
 # Calculate job run time
@@ -157,7 +156,7 @@ cookdelta = timedelta(hours=cookhour, minutes=cookmin)
 cooktime = c.dbnumber((cookhour * 60) + cookmin)
 end = start + cookdelta
 endtime = c.dbdate(end)
-c.query('''update job_info set endtime = (%s), cookminutes = (%s)
+thedb.query('''update job_info set endtime = (%s), cookminutes = (%s)
     where id = (%s)''', endtime + cooktime + jobid, True)
 print('Your job is going to cook for {} hour(s) and {} minute(s). It will complete at {}.'.format(cookhour, cookmin, endtime[0]))
 
@@ -175,11 +174,11 @@ while True:
             temp_cen, temp_far = cph.gettemp() # Read temperature
             temp_c = c.dbnumber(temp_cen) # Convert to tuple
             temp_f = c.dbnumber(temp_far) # Convert to tuple
-            c.query('''insert into job_data (job_id, moment, temp_c, temp_f)
+            thedb.query('''insert into job_data (job_id, moment, temp_c, temp_f)
                 values ((%s), (%s), (%s))''',
                 jobid + current + temp_c + temp_f, True)
         else: # If running on test, then don't read temperature
-            c.query('''insert into job_data (job_id, moment)
+            thedb.query('''insert into job_data (job_id, moment)
                 values ((%s), (%s), (%s))''', jobid + current, True)
         start = datetime.now()
         countdown += (fractmin / 60)
@@ -198,4 +197,4 @@ while True:
 
 print('\n\n')
 print('Job complete!')
-c.cleanexit(0)
+thedb.cleanexit(0)
