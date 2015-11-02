@@ -1,4 +1,4 @@
-#! python3
+#!/usr/bin/python3
 __author__ = 'lalligood'
 
 import getpass

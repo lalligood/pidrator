@@ -165,13 +165,13 @@ fractmin = 15 # After how many seconds should I log temp to database?
 currdelta = timedelta(seconds=fractmin) # How often it should log data while cooking
 countdown = 0
 if raspi:
-    cph.powertail(True)
+    c.powertail(True)
 while True:
     currtime = datetime.now()
     if currtime >= start + currdelta:
         current = c.dbdate(currtime)
         if raspi and therm_sens: # If running RPi & thermal sensor is present
-            temp_cen, temp_far = cph.gettemp() # Read temperature
+            temp_cen, temp_far = c.gettemp() # Read temperature
             temp_c = c.dbnumber(temp_cen) # Convert to tuple
             temp_f = c.dbnumber(temp_far) # Convert to tuple
             thedb.query('''insert into job_data (job_id, moment, temp_c, temp_f)
@@ -190,7 +190,7 @@ while True:
         else:
             print('Job has been active for {} minutes and there are {} minutes left.'.format(countdown, timeleft))
     if raspi and currtime >= end: # Powertail off & stop if RasPi
-        cph.powertail(False)
+        c.powertail(False)
         break
     elif currtime >= end: # Otherwise stop when time has ended
         break
