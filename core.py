@@ -26,12 +26,10 @@ class DBconn:
             dbname = 'postgres'
             dbuser = 'lalligood'
             dbport = 5433
-        #'Open connection to database.'
+        # Open connection to database.
         try:
-            conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
-            cur = conn.cursor()
-            self.conn = conn
-            self.cur = cur
+            self.conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
+            self.cur = self.conn.cursor()
             logging.info('Connected to database successfully')
         except psycopg2.Error as dberror:
             logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
@@ -50,13 +48,11 @@ class DBconn:
             self.cur.execute(SQL, params)
             logging.info("Query '" + SQL + "' executed successfully.")
             if commit:
-                conn.commit()
+                self.conn.commit()
             if fetch == 'all':
-                row = self.cur.fetchall()
-                return row
+                return self.cur.fetchall()
             elif fetch == 'one':
-                row = self.cur.fetchone()
-                return row
+                return self.cur.fetchone()
         except psycopg2.Error as dberror:
             logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
             logging.error('Failed query: ' + SQL)
