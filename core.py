@@ -5,7 +5,7 @@ import getpass
 import logging
 import platform
 import psycopg2
-import psycopg2.extras
+from psycopg2 import extras
 import sys
 import time
 
@@ -14,7 +14,7 @@ raspi = platform.machine().startswith('armv')
 
 class DBconn:
     # Following is necessary for handling UUIDs with PostgreSQL
-    psycopg2.extras.register_uuid()
+    extras.register_uuid()
     # Database connection variables
     if raspi: # RASPI DB
         dbname = 'pi'
@@ -33,7 +33,7 @@ class DBconn:
         logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
         cleanexit(1)
 
-def query(SQL, params, commit=False, fetch='none'):
+def query(SQL, params='', commit=False, fetch='none'):
     '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
 or DELETE queries, with or without parameters in query.
 
@@ -66,7 +66,7 @@ def cleanexit(exitcode):
     logging.shutdown()
     sys.exit(exitcode)
 
-def pyver():
+def python_ver():
     'Verify that script is running python 3.x.'
     (major, minor, patchlevel) = platform.python_version_tuple()
     if int(major) < 3: # Verify running python3

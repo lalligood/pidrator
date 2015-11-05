@@ -31,7 +31,7 @@ power_pin = 23 # GPIO pin 23
 '''
 
 # Verify running python 3.x
-c.pyver()
+c.python_ver()
 
 # Open connection to database
 thedb = c.DBconn()
@@ -49,10 +49,11 @@ results_list = set(master_list).difference(tables_list)
 # Create any tables that do not exist
 if len(results_list) > 0:
     try:
-        thedb.query('create extension if not exists "uuid-ossp";', None, False)
-        thedb.query('create extension if not exists "pgcrypto";', None, False)
+        thedb.query('create extension if not exists "uuid-ossp";')
+        thedb.query('create extension if not exists "pgcrypto";')
     except psycopg2.Error as dberror:
         logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
+        logging.critical("Then re-run buildtables.py.")
         thedb.cleanexit(1)
     for result in results_list:
         options = {

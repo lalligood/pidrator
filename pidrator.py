@@ -28,7 +28,7 @@ power_pin = 23 # GPIO pin 23
 '''
 
 # Make sure running on python 3.x
-c.pyver()
+c.python_ver()
 
 # Enable all hardware attached to RaspPi
 c.enablepihw()
