@@ -30,42 +30,48 @@ power_pin = 23 # GPIO pin 23
 **** MAIN ROUTINE ****
 '''
 
-# Verify running python 3.x
-c.python_ver()
+def main():
+    '''Main routine for connecting to database, checking to see if all necessary
+extensions are loaded & all tables exist, otherwise create any/all that are
+missing.'''
+    # Verify running python 3.x
+    c.python_ver()
 
-# Open connection to database
-thedb = c.DBconn()
+    # Open connection to database
+    thedb = c.DBconn()
 
-# Check to see if all tables exists
-schema = ('public', )
-tables = thedb.query('''select table_name from information_schema.tables
-    where table_schema = (%s) order by table_name''', schema, False, 'all')
-tables_list = [] # Convert results tuple -> list
-for table in tables:
-    tables_list.append(table[0])
-master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
-# Get difference of master_list & tables_list
-results_list = set(master_list).difference(tables_list)
-# Create any tables that do not exist
-if len(results_list) > 0:
-    try:
-        thedb.query('create extension if not exists "uuid-ossp";')
-        thedb.query('create extension if not exists "pgcrypto";')
-    except psycopg2.Error as dberror:
-        logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
-        logging.critical("Then re-run buildtables.py.")
-        thedb.cleanexit(1)
-    for result in results_list:
-        options = {
-            'devices' : c.create_devices,
-            'foodcomments' : c.create_foodcomments,
-            'foods' : c.create_foods,
-            'job_data' : c.create_job_data,
-            'job_info' : c.create_job_info,
-            'users' : c.create_users,
-            }
-        options[result]()
-else:
-    print('Confirmed that all tables present & accounted for. Exiting...')
+    # Check to see if all tables exists
+    schema = ('public', )
+    tables = thedb.query('''select table_name from information_schema.tables
+        where table_schema = (%s) order by table_name''', schema, False, 'all')
+    tables_list = [] # Convert results tuple -> list
+    for table in tables:
+        tables_list.append(table[0])
+    master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
+    # Get difference of master_list & tables_list
+    results_list = set(master_list).difference(tables_list)
+    # Create any tables that do not exist
+    if len(results_list) > 0:
+        try:
+            thedb.query('create extension if not exists "uuid-ossp";')
+            thedb.query('create extension if not exists "pgcrypto";')
+        except psycopg2.Error as dberror:
+            logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
+            logging.critical("Then re-run buildtables.py.")
+            c.cleanexit(1)
+        for result in results_list:
+            options = {
+                'devices' : c.create_devices,
+                'foodcomments' : c.create_foodcomments,
+                'foods' : c.create_foods,
+                'job_data' : c.create_job_data,
+                'job_info' : c.create_job_info,
+                'users' : c.create_users,
+                }
+            options[result]()
+    else:
+        print('Confirmed that all tables present & accounted for. Exiting...')
+    c.cleanexit(0)
 
-thedb.cleanexit(0)
+if __name__ == "__main__":
+    main()

@@ -140,7 +140,7 @@ while True:
     response = input('Enter \'y\' when you are ready to start your job or \'x\' to exit without cooking. ')
     if response.lower() == 'x':
         print('You have chosen to exit without cooking.')
-        thedb.cleanexit(0)
+        c.cleanexit(0)
     elif response.lower() == 'y':
         break
 print('\n\n')
