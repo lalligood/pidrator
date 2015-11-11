@@ -197,4 +197,4 @@ while True:
 
 print('\n\n')
 print('Job complete!')
-thedb.cleanexit(0)
+c.cleanexit(0)
