@@ -9,6 +9,42 @@ import os
 import time
 
 '''
+**** FUNCTIONS ****
+'''
+
+def getjobtime():
+    'Get user input to determine how long job should run.'
+    while True:
+        cookhour = int(input('Enter the number of hours that you want to cook (0-12): '))
+        if cookhour < 0 or cookhour > 12:
+            c.errmsgslow('Invalid selection. Please try again...')
+            continue
+        cookmin = int(input('Enter the number of minutes that you want to cook (0-59): '))
+        if cookmin < 0 or cookmin > 59:
+            c.errmsgslow('Invalid selection. Please try again...')
+            continue
+        if cookhour == 0 and cookmin == 0:
+            c.errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
+            continue
+        response = input('You entered {} hours and {} minutes. Is this correct? [Y/N] '.format(cookhour, cookmin))
+        if response.lower() == 'y':
+            break
+    print('\n\n')
+
+def confirmjob():
+    'Prompt user before starting the job.'
+    while True:
+        response = input('Enter \'y\' when you are ready to start your job or \'x\' to exit without cooking. ')
+        if response.lower() == 'x':
+            print('You have chosen to exit without cooking.')
+            c.cleanexit(0)
+        elif response.lower() == 'y':
+            break
+        else:
+            c.errmsgslow('Invalid selection. Please try again...')
+    print('\n\n')
+
+'''
 **** PARAMETERS ****
 '''
 
@@ -117,33 +153,8 @@ print('\tFood being prepared: {}'.format(row[3]))
 print('\tAt temperature:      {}'.format(row[4]))
 print('\n\n')
 
-# Get user input to determine how long job should be
-while True:
-    cookhour = int(input('Enter the number of hours that you want to cook (0-12): '))
-    if cookhour < 0 or cookhour > 12:
-        c.errmsgslow('Invalid selection. Please try again...')
-        continue
-    cookmin = int(input('Enter the number of minutes that you want to cook (0-59): '))
-    if cookmin < 0 or cookmin > 59:
-        c.errmsgslow('Invalid selection. Please try again...')
-        continue
-    if cookhour == 0 and cookmin == 0:
-        c.errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
-        continue
-    response = input('You entered ' + str(cookhour) + ' hours and ' + str(cookmin) + ' minutes. Is this correct? [Y/N] ')
-    if response.lower() == 'y':
-        break
-print('\n\n')
-
-# Prompt before continuing with the job
-while True:
-    response = input('Enter \'y\' when you are ready to start your job or \'x\' to exit without cooking. ')
-    if response.lower() == 'x':
-        print('You have chosen to exit without cooking.')
-        c.cleanexit(0)
-    elif response.lower() == 'y':
-        break
-print('\n\n')
+getjobtime()
+confirmjob()
 
 # Update job_info row with start time
 start = datetime.now()
