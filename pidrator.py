@@ -44,6 +44,19 @@ def confirmjob():
             c.errmsgslow('Invalid selection. Please try again...')
     print('\n\n')
 
+def changepswdprompt():
+    'Prompt user to change password & handle (in)correct responses.'
+    while True:
+        response = input('Do you want to change your password? [Y/N] ')
+        if response.lower() == 'y':
+            c.changepswd(user)
+            break
+        elif response.lower() == 'n':
+            break
+        else:
+            errmsgslow('Invalid selection. Please try again...')
+    print('\n\n')
+
 '''
 **** PARAMETERS ****
 '''
@@ -77,16 +90,7 @@ user = c.loginmenu()
 print('\n\n')
 
 # User password change (optional)
-while True:
-    response = input('Do you want to change your password? [Y/N] ')
-    if response.lower() == 'y':
-        c.changepswd(user)
-        break
-    elif response.lower() == 'n':
-        break
-    else:
-        errmsgslow('Invalid selection. Please try again...')
-print('\n\n')
+changepswdprompt()
 
 # Pick job from list
 jobname = c.picklist('job names', 'jobname', 'job_info', 'createtime')

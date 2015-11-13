@@ -17,13 +17,13 @@ class DBconn:
     extras.register_uuid()
     # Database connection variables
     if raspi: # RASPI DB
-        dbname = 'pi'
-        dbuser = 'pi'
-        dbport = 5432
+        self.dbname = 'pi'
+        self.dbuser = 'pi'
+        self.dbport = 5432
     else: # NON-RASPI TEST DB
-        dbname = 'postgres'
-        dbuser = 'lalligood'
-        dbport = 5433
+        self.dbname = 'postgres'
+        self.dbuser = 'lalligood'
+        self.dbport = 5433
     # Open connection to database.
     try:
         conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
