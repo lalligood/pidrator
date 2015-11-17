@@ -26,8 +26,8 @@ class DBconn:
         self.dbport = 5433
     # Open connection to database.
     try:
-        conn = psycopg2.connect(database=dbname, user=dbuser, port=dbport)
-        cur = conn.cursor()
+        self.conn = psycopg2.connect(database=self.dbname, user=self.dbuser, port=self.dbport)
+        self.cur = self.conn.cursor()
         logging.info('Connected to database successfully')
     except psycopg2.Error as dberror:
         logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
