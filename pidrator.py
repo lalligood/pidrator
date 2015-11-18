@@ -37,7 +37,7 @@ c.enablepihw()
 thedb = c.DBconn()
 
 # User login
-user = c.loginmenu()
+user = c.loginmenu(thedb)
 print('\n\n')
 
 # User password change (optional)

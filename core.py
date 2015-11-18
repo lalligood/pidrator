@@ -15,56 +15,58 @@ raspi = platform.machine().startswith('armv')
 class DBconn:
     # Following is necessary for handling UUIDs with PostgreSQL
     extras.register_uuid()
-    # Database connection variables
-    if raspi: # RASPI DB
-        self.dbname = 'pi'
-        self.dbuser = 'pi'
-        self.dbport = 5432
-    else: # NON-RASPI TEST DB
-        self.dbname = 'postgres'
-        self.dbuser = 'lalligood'
-        self.dbport = 5433
-    # Open connection to database.
-    try:
-        self.conn = psycopg2.connect(database=self.dbname, user=self.dbuser, port=self.dbport)
-        self.cur = self.conn.cursor()
-        logging.info('Connected to database successfully')
-    except psycopg2.Error as dberror:
-        logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
-        cleanexit(1)
+    def __init__(self):
+        'Declare database connection variables'
+        if raspi: # RASPI DB
+            self.dbname = 'pi'
+            self.dbuser = 'pi'
+            self.dbport = 5432
+        else: # NON-RASPI TEST DB
+            self.dbname = 'postgres'
+            self.dbuser = 'lalligood'
+            self.dbport = 5433
 
-def query(SQL, params='', commit=False, fetch='none'):
-    '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
-or DELETE queries, with or without parameters in query.
+        # Open connection to database.
+        try:
+            self.conn = psycopg2.connect(database=self.dbname, user=self.dbuser, port=self.dbport)
+            self.cur = self.conn.cursor()
+            logging.info('Connected to database successfully')
+        except psycopg2.Error as dberror:
+            logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
+            cleanexit(1)
 
-Commit is boolean to commit transaction. Required True for UPDATE, INSERT,
-or DELETE. Not needed (False) for SELECT.
+    def query(self, SQL, params='', commit=False, fetch='none'):
+        '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
+        or DELETE queries, with or without parameters in query.
 
-Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
-and any other value returns none.'''
-    try:
-        cur.execute(SQL, params)
-        logging.info("Query '" + SQL + "' executed successfully.")
-        if commit:
-            conn.commit()
-        if fetch == 'all':
-            return cur.fetchall()
-        elif fetch == 'one':
-            return cur.fetchone()
-    except psycopg2.Error as dberror:
-        logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-        logging.error('Failed query: ' + SQL)
+        Commit is boolean to commit transaction. Required True for UPDATE, INSERT,
+        or DELETE. Not needed (False) for SELECT.
 
-def cleanexit(exitcode):
-    'Closes database connection & attempts to exit gracefully.'
-    cur.close()
-    conn.close()
-    if exitcode == 0: # Log as info when closing normally
-        logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
-    else: # Log as error when closing abnormally
-        logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
-    logging.shutdown()
-    sys.exit(exitcode)
+        Fetch parameter: 'all' returns multiple rows, 'one' returns one row,
+        and any other value returns none.'''
+        try:
+            self.cur.execute(SQL, params)
+            logging.info("Query '" + SQL + "' executed successfully.")
+            if commit:
+                self.conn.commit()
+            if fetch == 'all':
+                return self.cur.fetchall()
+            elif fetch == 'one':
+                return self.cur.fetchone()
+        except psycopg2.Error as dberror:
+            logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
+            logging.error('Failed query: ' + SQL)
+
+    def cleanexit(self, exitcode):
+        'Closes database connection & attempts to exit gracefully.'
+        self.cur.close()
+        self.conn.close()
+        if exitcode == 0: # Log as info when closing normally
+            logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
+        else: # Log as error when closing abnormally
+            logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
+        logging.shutdown()
+        sys.exit(exitcode)
 
 def python_ver():
     'Verify that script is running python 3.x.'
@@ -155,7 +157,7 @@ list, or return an error if the choice is not valid.'''
                     return itemname
                     break
 
-def loginmenu():
+def loginmenu(userdb):
     'Basic Welcome screen to login, create acct, or exit.'
     while True:
         menuopt = input('''
@@ -167,11 +169,11 @@ Select from one of the following choices:
     x. Exit
 Enter your selection: ''')
         if menuopt == '1':
-            user = userlogin()
+            user = userlogin(userdb)
             return user
             break
         elif menuopt == '2':
-            user = usercreate()
+            user = usercreate(userdb)
             return user
             break
         elif menuopt == 'x':
@@ -249,15 +251,15 @@ def dbdate(date):
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
     return response
 
-def userlogin():
+def userlogin(userdb):
     'Handles user login by verifying that the user & password are correct.'
     badlogin = 0 # Counter for login attempts; 3 strikes & you're out
     while True:
         username = dbinput('Enter your username: ', 'user')
         pswd = dbinput('Enter your password: ', 'pswd')
-        userverify = query('''select username from users
+        userverify = userdb.query('''select username from users
             where username = (%s)''', username, False, 'one')
-        pswdverify = query('''select
+        pswdverify = userdb.query('''select
             (password = crypt((%s), password)) as userpass
             from users where username = (%s)''',
             pswd + username, False, 'one')
