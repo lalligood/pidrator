@@ -360,9 +360,9 @@ def gettemp():
             temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
             return temp_c, temp_f # Return temp to 3 decimal places in C & F
 
-def create_devices():
+def create_devices(userdb):
     'Create DEVICES table in database if it does not exist.'
-    query('''create table devices (
+    userdb.query('''create table devices (
         id uuid not null default uuid_generate_v4()
         , devicename text not null unique
         , createdate timestamp with time zone default now()
@@ -370,18 +370,18 @@ def create_devices():
         );''', None, True)
     print("'devices' table created successfully.")
 
-def create_foodcomments():
+def create_foodcomments(userdb):
     'Create FOODCOMMENTS table in database if it does not exist.'
-    query('''create table foodcomments (
+    userdb.query('''create table foodcomments (
         jobinfo_id uuid not null
         , foodcomments text
         , createtime timestamp with time zone default now()
         );''', None, True)
     print("'foodcomments' table created successfully.")
 
-def create_foods():
+def create_foods(userdb):
     'Create FOODS table in database if it does not exist.'
-    query('''create table foods (
+    userdb.query('''create table foods (
         id uuid not null default uuid_generate_v4()
         , foodname text not null unique
         , createdate timestamp with time zone default now()
@@ -389,9 +389,9 @@ def create_foods():
         );''', None, True)
     print("'foods' table created successfully.")
 
-def create_job_data():
+def create_job_data(userdb):
     'Create JOB_DATA table in database if it does not exist.'
-    query('''create table job_data (
+    userdb.query('''create table job_data (
         id serial
         , job_id uuid
         , moment timestamp with time zone
@@ -401,9 +401,9 @@ def create_job_data():
         );''', None, True)
     print("'job_data' table created successfully.")
 
-def create_job_info():
+def create_job_info(userdb):
     'Create JOB_INFO table in database if it does not exist.'
-    query('''create table job_info (
+    userdb.query('''create table job_info (
         id uuid not null default uuid_generate_v4()
         , jobname text not null unique
         , user_id uuid
@@ -419,9 +419,9 @@ def create_job_info():
         );''', None, True)
     print("'job_info' table created successfully.")
 
-def create_users():
+def create_users(userdb):
     'Create USERS table in database if it does not exist.'
-    query('''create table users (
+    userdb.query('''create table users (
         id uuid not null default uuid_generate_v4()
         , username text not null unique
         , fullname text not null

@@ -68,10 +68,10 @@ missing.'''
                 'job_info' : c.create_job_info,
                 'users' : c.create_users,
                 }
-            options[result]()
+            options[result](thedb)
     else:
         print('Confirmed that all tables present & accounted for. Exiting...')
-    c.cleanexit(0)
+    thedb.cleanexit(0)
 
 if __name__ == "__main__":
     main()
