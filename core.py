@@ -108,7 +108,7 @@ def errmsgslow(text):
     print(text)
     time.sleep(2)
 
-def picklist(listname, colname, tablename, ordername):
+def picklist(userdb, listname, colname, tablename, ordername):
     '''Displays a list of items referred as listname from the column name
 (colname) from table (tablename) & the list is ordered by ordername is desired.
 
@@ -214,12 +214,12 @@ def confirmjob():
             c.errmsgslow('Invalid selection. Please try again...')
     print('\n\n')
 
-def changepswdprompt():
+def changepswdprompt(userdb):
     'Prompt user to change password & handle (in)correct responses.'
     while True:
         response = input('Do you want to change your password? [Y/N] ')
         if response.lower() == 'y':
-            c.changepswd(user)
+            c.changepswd(userdb, user)
             break
         elif response.lower() == 'n':
             break
@@ -304,7 +304,7 @@ def usercreate():
             print('Your username was created successfully.')
             return username
 
-def changepswd(username):
+def changepswd(userdb, username):
     'Allows the user to change their password.'
     while True:
         oldpswd = dbinput('Enter your current password: ', 'pswd')
