@@ -116,7 +116,7 @@ It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
         print('The following {} are available: '.format(listname))
-        itemlist = query('select (%s) from (%s) order by (%s)',
+        itemlist = userdb.query('select (%s) from (%s) order by (%s)',
             colname + tablename + ordername, False, 'all')
         count = 0
         for x in itemlist: # Display list
@@ -129,14 +129,14 @@ list, or return an error if the choice is not valid.'''
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
-                existingitem = query('''select (%s) from (%s)
+                existingitem = userdb.query('''select (%s) from (%s)
                     where (%s) = (%s)''',
                     colname + tablename + colname + newitem, False, 'one')
                 if newitem == existingitem: # If existing item is found, disallow
                     errmsgslow('That item already exists in the list. Please try again...')
                     continue
                 else: # Insert new item into table
-                    query('''insert into (%s) ((%s))
+                    userdb.query('''insert into (%s) ((%s))
                         values ((%s))''', tablename + colname + newitem, True)
                     print('Your new item has been added to the list.')
                     print('Returning to list of available {}.'.format(listname))
@@ -214,12 +214,12 @@ def confirmjob():
             c.errmsgslow('Invalid selection. Please try again...')
     print('\n\n')
 
-def changepswdprompt(userdb):
+def changepswdprompt(userdb, user):
     'Prompt user to change password & handle (in)correct responses.'
     while True:
         response = input('Do you want to change your password? [Y/N] ')
         if response.lower() == 'y':
-            c.changepswd(userdb, user)
+            changepswd(userdb, user)
             break
         elif response.lower() == 'n':
             break
@@ -277,7 +277,7 @@ def userlogin(userdb):
         else: # Failed login message & try again
             errmsgslow('Username and/or password incorrect. Try again...')
 
-def usercreate():
+def usercreate(userdb):
     'Create a new user.'
     while True:
         username = dbinput('Enter your desired username: ', 'user')
@@ -291,13 +291,13 @@ def usercreate():
         if len(pswd[0]) < 8: # Make sure passwords are long enough
             errmsgslow('Your password is not long enough. Must be at least 8 characters. Try again...')
             continue
-        existinguser = query('''select username from users
+        existinguser = userdb.query('''select username from users
             where username = (%s)''', username, False, 'one')
         if username == existinguser: # Make sure user doesn't already exist
             errmsgslow('That username is already in use. Please try again...')
             continue
         else: # If all conditions met, then add user
-            query('''insert into users
+            userdb.query('''insert into users
                 (username, fullname, email_address, password) values
                 ((%s), (%s), (%s), crypt((%s), gen_salt('bf')))''',
                 username + fullname + emailaddr + pswd, True)
@@ -319,13 +319,13 @@ def changepswd(userdb, username):
         if oldpswd[0] == newpswd1[0]:
             errmsgslow('New password must be different from old password. Try again...')
             continue
-        pswdverify = query('''select
+        pswdverify = userdb.query('''select
             (password = crypt((%s), password)) as userpass from users
-            where username = (%s)''', oldpswd + user, False, 'one')
+            where username = (%s)''', oldpswd + username, False, 'one')
         if pswdverify[0]:
-            query('''update users set password = crypt((%s),
+            userdb.query('''update users set password = crypt((%s),
                 gen_salt('bf')) where username = (%s)''',
-                newpswd1 + user, True)
+                newpswd1 + username, True)
             print('Your password has been updated successfully.')
             break
         else:

@@ -46,7 +46,7 @@ def main():
     print('\n\n')
 
     # User password change (optional)
-    c.changepswdprompt(thedb)
+    c.changepswdprompt(thedb, user)
 
     # Pick job from list
     jobname = c.picklist(thedb, 'job names', 'jobname', 'job_info', 'createtime')
