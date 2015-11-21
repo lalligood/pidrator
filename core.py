@@ -116,46 +116,50 @@ It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
         print('The following {} are available: '.format(listname))
+        col = eval('(\'' + colname + '\', )')
+        table = eval('(\'' + tablename + '\', )')
+        order = eval('(\'' + ordername + '\', )')
         itemlist = userdb.query('select (%s) from (%s) order by (%s)',
-            colname + tablename + ordername, False, 'all')
+            col + table + order, False, 'all')
         count = 0
-        for x in itemlist: # Display list
-            count += 1
-            print('\t{}. {}'.format(count, x[0]))
-        print('\t0. Add an item to the list.')
-        countlist = count
-        itemnbr = input('Enter the number of the item that you want to use: ')
-        if itemnbr == '0': # Add new item to the table
-            newitem = dbinput('Enter the name of the item you would like to add: ', '')
-            confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
-            if confirm.lower() == 'y': # Confirm this is what they want to add
-                existingitem = userdb.query('''select (%s) from (%s)
-                    where (%s) = (%s)''',
-                    colname + tablename + colname + newitem, False, 'one')
-                if newitem == existingitem: # If existing item is found, disallow
-                    errmsgslow('That item already exists in the list. Please try again...')
-                    continue
-                else: # Insert new item into table
-                    userdb.query('''insert into (%s) ((%s))
-                        values ((%s))''', tablename + colname + newitem, True)
-                    print('Your new item has been added to the list.')
-                    print('Returning to list of available {}.'.format(listname))
-            else:
-                print('Invalid entry. Please try again...')
-            time.sleep(2)
-            continue
-        elif int(itemnbr) < 0 or int(itemnbr) > countlist:
-            errmsgslow('Invalid selection. Please try again...')
-            continue
-        else: # Find the item in the list
-            count = 0
-            for x in itemlist: # Iterate & find selected value
+        if itemlist != None:
+            for x in itemlist: # Display list
                 count += 1
-                if count == itemnbr:
-                    itemname = x
-                    print('You selected: {}.'.format(itemname[0]))
-                    return itemname
-                    break
+                print('\t{}. {}'.format(count, x[0]))
+            print('\t0. Add an item to the list.')
+            countlist = count
+            itemnbr = input('Enter the number of the item that you want to use: ')
+            if itemnbr == '0': # Add new item to the table
+                newitem = dbinput('Enter the name of the item you would like to add: ', '')
+                confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
+                if confirm.lower() == 'y': # Confirm this is what they want to add
+                    existingitem = userdb.query('''select (%s) from (%s)
+                        where (%s) = (%s)''',
+                        col + table + col + newitem, False, 'one')
+                    if newitem == existingitem: # If existing item is found, disallow
+                        errmsgslow('That item already exists in the list. Please try again...')
+                        continue
+                    else: # Insert new item into table
+                        userdb.query('''insert into (%s) ((%s))
+                            values ((%s))''', table + col + newitem, True)
+                        print('Your new item has been added to the list.')
+                        print('Returning to list of available {}.'.format(listname))
+                else:
+                    print('Invalid entry. Please try again...')
+                time.sleep(2)
+                continue
+            elif int(itemnbr) < 0 or int(itemnbr) > countlist:
+                errmsgslow('Invalid selection. Please try again...')
+                continue
+            else: # Find the item in the list
+                count = 0
+                for x in itemlist: # Iterate & find selected value
+                    count += 1
+                    if count == itemnbr:
+                        itemname = x
+                        print('You selected: {}.'.format(itemname[0]))
+                        return itemname
+                        break
 
 def loginmenu(userdb):
     'Basic Welcome screen to login, create acct, or exit.'
