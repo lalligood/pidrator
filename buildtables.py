@@ -46,6 +46,7 @@ missing.'''
         where table_schema = (%s) order by table_name''', schema, False, 'all')
     tables_list = [] # Convert results tuple -> list
     for table in tables:
+        print(table[0] + ' table found.')
         tables_list.append(table[0])
     master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
     # Get difference of master_list & tables_list
