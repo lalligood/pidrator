@@ -134,7 +134,8 @@ list, or return an error if the choice is not valid.'''
             itemnbr = '0'
         if itemnbr == '0': # Add new item to the table
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
-# NEED TO ADD CHECK FOR EMPTY STRING HERE
+            if len(newitem[0]) == 0:
+                errmsgslow('Invalid entry. Please try again...')
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
             if confirm.lower() == 'y': # Confirm this is what they want to add
                 existingitem = userdb.query('''select (%s) from (%s)
@@ -149,12 +150,10 @@ list, or return an error if the choice is not valid.'''
                     print('Your new item has been added to the list.')
                     print('Returning to list of available {}.'.format(listname))
             elif confirm.lower() == 'n':
-                print('Entry refused. Please try again...')
-                time.sleep(2)
+                errmsgslow('Entry refused. Please try again...')
                 continue
             else:
-                print('Invalid entry. Please try again...')
-                time.sleep(2)
+                errmsgslow('Invalid entry. Please try again...')
                 continue
         elif int(itemnbr) < 0 or int(itemnbr) > countlist:
             errmsgslow('Invalid selection. Please try again...')
