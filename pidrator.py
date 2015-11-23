@@ -175,7 +175,7 @@ def main():
 
     print('\n\n')
     print('Job complete!')
-    c.cleanexit(0)
+    thedb.cleanexit(0)
 
 if __name__ == "__main__":
     main()

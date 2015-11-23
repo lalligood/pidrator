@@ -16,7 +16,7 @@ class DBconn:
     # Following is necessary for handling UUIDs with PostgreSQL
     extras.register_uuid()
     def __init__(self):
-        'Declare database connection variables'
+        'Declare database connection variables.'
         if raspi: # RASPI DB
             self.dbname = 'pi'
             self.dbuser = 'pi'
@@ -198,14 +198,14 @@ def getjobtime():
     while True:
         cookhour = int(input('Enter the number of hours that you want to cook (0-12): '))
         if cookhour < 0 or cookhour > 12:
-            c.errmsgslow('Invalid selection. Please try again...')
+            errmsgslow('Invalid selection. Please try again...')
             continue
         cookmin = int(input('Enter the number of minutes that you want to cook (0-59): '))
         if cookmin < 0 or cookmin > 59:
-            c.errmsgslow('Invalid selection. Please try again...')
+            errmsgslow('Invalid selection. Please try again...')
             continue
         if cookhour == 0 and cookmin == 0:
-            c.errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
+            errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
             continue
         response = input('You entered {} hours and {} minutes. Is this correct? [Y/N] '.format(cookhour, cookmin))
         if response.lower() == 'y':
@@ -215,14 +215,14 @@ def getjobtime():
 def confirmjob():
     'Prompt user before starting the job.'
     while True:
-        response = input('Enter \'y\' when you are ready to start your job or \'x\' to exit without cooking. ')
+        response = input(r'''Enter 'y' when you are ready to start your job or 'x' to exit without cooking. ''')
         if response.lower() == 'x':
             print('You have chosen to exit without cooking.')
             c.cleanexit(0)
         elif response.lower() == 'y':
             break
         else:
-            c.errmsgslow('Invalid selection. Please try again...')
+            errmsgslow('Invalid selection. Please try again...')
     print('\n\n')
 
 def changepswdprompt(userdb, user):

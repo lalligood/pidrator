@@ -59,7 +59,7 @@ missing.'''
         except psycopg2.Error as dberror:
             logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
             logging.critical("Then re-run buildtables.py.")
-            c.cleanexit(1)
+            thedb.cleanexit(1)
         for result in results_list:
             options = {
                 'devices' : c.create_devices,
@@ -71,7 +71,7 @@ missing.'''
                 }
             options[result](thedb)
     else:
-        print('Confirmed that all tables present & accounted for. Exiting...')
+        print('\nConfirmed that all tables present & accounted for. Exiting...')
     thedb.cleanexit(0)
 
 if __name__ == "__main__":
