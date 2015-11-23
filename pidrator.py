@@ -48,10 +48,10 @@ def main():
     # User password change (optional)
     c.changepswdprompt(thedb, user)
 
-    # Pick job from list
-    jobname = c.picklist(thedb, 'job names', 'jobname', 'job_info', 'createtime')
-    jobid = thedb.query('select id from job_info where jobname = (%s)',
-        jobname, False, 'one')
+    # Pick food from list
+    foodname = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
+    foodid = thedb.query('select id from foods where foodname = (%s)',
+        foodname, False, 'one')
     print('\n\n')
 
     # Pick cooking device from list
@@ -60,10 +60,10 @@ def main():
         devname, False, 'one')
     print('\n\n')
 
-    # Pick food from list
-    foodname = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
-    foodid = thedb.query('select id from foods where foodname = (%s)',
-        foodname, False, 'one')
+    # Pick job from list
+    jobname = c.picklist(thedb, 'job names', 'jobname', 'job_info', 'createtime')
+    jobid = thedb.query('select id from job_info where jobname = (%s)',
+        jobname, False, 'one')
     print('\n\n')
 
     # Get user_id
