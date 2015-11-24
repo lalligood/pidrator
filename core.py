@@ -118,9 +118,12 @@ list, or return an error if the choice is not valid.'''
         col = eval('(\'' + colname + '\', )')
         table = eval('(\'' + tablename + '\', )')
         order = eval('(\'' + ordername + '\', )')
+        itemnbr = ''
         itemlist = userdb.query('select (%s) from (%s) order by (%s)',
             col + table + order, False, 'all')
-        if itemlist != None: # If list has row(s) in table
+        if itemlist == None: # If table is empty
+            print('No items found. Please add a new item to the {} list...'.format(listname))
+        else: # If any existing row(s) in table
             print('The following {} are available: '.format(listname))
             count = 0
             for x in itemlist: # Display list of items
@@ -129,14 +132,13 @@ list, or return an error if the choice is not valid.'''
             print('\t0. Add a new item to the {} list.'.format(listname))
             countlist = count
             itemnbr = input('Enter the number of the item that you want to use: ')
-        else: # If table is empty
-            print('No items found. Please add a new item to the {} list...'.format(listname))
         if itemnbr == '0' or itemlist == None: # Add new item to the table
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
-            if len(newitem[0]) == 0: # Make sure user input contains something (not empty)
+            if len(newitem[0]) == 0: # Make sure user input is not empty
                 errmsgslow('Invalid entry. Please try again...')
+                continue
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
-            if confirm.lower() == 'y': # Confirm this is what they want to add
+            if confirm.lower() == 'y': # User confirmed what they want to add
                 if itemlist != None:
                     existingitem = userdb.query('''select (%s) from (%s)
                         where (%s) = (%s)''',
@@ -145,8 +147,8 @@ list, or return an error if the choice is not valid.'''
                         errmsgslow('That item already exists in the list. Please try again...')
                         continue
                 # Insert new item into table
-                userdb.query('''insert into (%s) ((%s))
-                    values ((%s))''', table + col + newitem, True)
+                userdb.query('insert into (%s) ((%s)) values ((%s))',
+                    table + col + newitem, True)
                 print('Your new item has been added to the list.')
                 print('Returning to list of available {}.'.format(listname))
             elif confirm.lower() == 'n':
