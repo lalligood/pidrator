@@ -31,14 +31,17 @@ power_pin = 23 # GPIO pin 23
 '''
 
 def main():
-    '''Main routine for connecting to database, checking to see if all necessary
-extensions are loaded & all tables exist, otherwise create any/all that are
-missing.'''
+    '''Main routine connects to database, checks to see if all necessary
+extensions are loaded, and that all tables exist. Otherwise it will attempt to
+create any missing extensions or tables in the database.'''
     # Verify running python 3.x
     c.python_ver()
 
     # Open connection to database
     thedb = c.DBconn()
+
+    # Verify database extensions have been installed
+    c.verify_pgextensions(thedb)
 
     # Check to see if all tables exists
     schema = ('public', )
@@ -51,15 +54,8 @@ missing.'''
     master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
     # Get difference of master_list & tables_list
     results_list = set(master_list).difference(tables_list)
-    # Create any tables that do not exist
     if len(results_list) > 0:
-        try:
-            thedb.query('create extension if not exists "uuid-ossp";')
-            thedb.query('create extension if not exists "pgcrypto";')
-        except psycopg2.Error as dberror:
-            logging.critical("Unable to create PostgreSQL extensions. Run 'apt-get install postgresql-contrib-9.4'.")
-            logging.critical("Then re-run buildtables.py.")
-            thedb.cleanexit(1)
+        # Create any missing table(s) in the database
         for result in results_list:
             options = {
                 'devices' : c.create_devices,

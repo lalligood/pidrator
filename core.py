@@ -373,15 +373,38 @@ def gettemp():
             temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
             return temp_c, temp_f # Return temp to 3 decimal places in C & F
 
+def verify_pgextensions(userdb):
+    '''Attempts to install all necessary PostgreSQL database extensions for the
+proper operation of the pidrator.py script.'''
+    extensions = {
+        'uuid-ossp': 'create extension if not exists "uuid-ossp";',
+        'pgcrupto': 'create extension if not exists "pgcrypto";'
+        }
+    for extension_name, extension_SQL in extensions:
+        try:
+            userdb.query(extension_SQL)
+        except psycopg2.Error as dberror:
+            logging.critical("Unable to create " + extension_name + " extension.")
+            logging.critical("Run 'apt-get install postgresql-contrib-9.4' then re-run buildtables.py.")
+            userdb.cleanexit(1)
+        else:
+            print(extension_name + ' database extension installed.')
+
 def create_devices(userdb):
     'Create DEVICES table in database if it does not exist.'
-    userdb.query('''create table devices (
-        id uuid not null default uuid_generate_v4()
-        , devicename text not null unique
-        , createdate timestamp with time zone default now()
-        , constraint devices_pkey primary key (id)
-        );''', None, True)
-    print("'devices' table created successfully.")
+    try:
+        userdb.query('''create table devices (
+            id uuid not null default uuid_generate_v4()
+            , devicename text not null unique
+            , createdate timestamp with time zone default now()
+            , constraint devices_pkey primary key (id)
+            );''', None, True)
+    except psycopg2.Error as dberror:
+        logging.critical("Unable to create 'devices' table.")
+        logging.critical("Verify you can connect to database and run buildtables.py again.")
+        userdb.cleanexit(1)
+    else:
+        print("'devices' table created successfully.")
 
 def create_foodcomments(userdb):
     'Create FOODCOMMENTS table in database if it does not exist.'
