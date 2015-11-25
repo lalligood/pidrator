@@ -35,7 +35,7 @@ class DBconn:
             logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
             cleanexit(1)
 
-    def query(self, SQL, params='', commit=False, fetch='none'):
+    def query(self, SQL, params=None, commit=False, fetch=None):
         '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
         or DELETE queries, with or without parameters in query.
 
@@ -118,7 +118,7 @@ list, or return an error if the choice is not valid.'''
         itemnbr = ''
         order = eval('(\'' + ordername + '\', )')
         selectorder = 'select ' + colname + ' from ' + tablename + ' order by ' + ordername
-        itemlist = userdb.query(selectorder, '', False, 'all')
+        itemlist = userdb.query(selectorder, None, False, 'all')
         print(selectorder, itemlist)
         if itemlist == []: # If table is empty
             print('No items found. Please add a new item to the {} list...'.format(listname))
@@ -146,7 +146,7 @@ list, or return an error if the choice is not valid.'''
                         continue
                 # Insert new item into table
                 insertrow = 'insert into ' + tablename + ' (' + colname + ') values (' + newitem[0] + ')'
-                userdb.query(insertrow, '', True)
+                userdb.query(insertrow, None, True)
                 print('{} has been added to the list of {}.'.format(newitem[0], listname))
                 print('Returning to list of available {}.'.format(listname))
             elif confirm.lower() == 'n':

@@ -49,22 +49,15 @@ def main():
     c.changepswdprompt(thedb, user)
 
     # Pick food from list
-    #foodname = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
-    #foodid = thedb.query('select id from foods where foodname = (%s)',
-        #foodname, False, 'one')
     foodid = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
     print('\n\n')
 
     # Pick cooking device from list
-    devname = c.picklist(thedb, 'cooking devices', 'devicename', 'devices', 'devicename')
-    deviceid = thedb.query('select id from devices where devicename = (%s)',
-        devname, False, 'one')
+    deviceid = c.picklist(thedb, 'cooking devices', 'devicename', 'devices', 'devicename')
     print('\n\n')
 
     # Pick job from list
-    jobname = c.picklist(thedb, 'job names', 'jobname', 'job_info', 'createtime')
-    jobid = thedb.query('select id from job_info where jobname = (%s)',
-        jobname, False, 'one')
+    jobid = c.picklist(thedb, 'job names', 'jobname', 'job_info', 'createtime')
     print('\n\n')
 
     # Get user_id
