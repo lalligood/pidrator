@@ -388,83 +388,60 @@ proper operation of the pidrator.py script.'''
             logging.critical("Run 'apt-get install postgresql-contrib-9.4' then re-run buildtables.py.")
             userdb.cleanexit(1)
         else:
-            print(extension_name + ' database extension installed.')
+            print('{} database extension installed.'.format(extension_name ))
 
-def create_devices(userdb):
-    'Create DEVICES table in database if it does not exist.'
-    try:
-        userdb.query('''create table devices (
+def create_tables(userdb, table):
+    'Create table(s) in database for pidrator if any do not exist.'
+    tables = {
+        'devices': '''create table devices (
             id uuid not null default uuid_generate_v4()
             , devicename text not null unique
             , createdate timestamp with time zone default now()
-            , constraint devices_pkey primary key (id)
-            );''', None, True)
-    except psycopg2.Error as dberror:
-        logging.critical("Unable to create 'devices' table.")
-        logging.critical("Verify you can connect to database and run buildtables.py again.")
-        userdb.cleanexit(1)
-    else:
-        print("'devices' table created successfully.")
-
-def create_foodcomments(userdb):
-    'Create FOODCOMMENTS table in database if it does not exist.'
-    userdb.query('''create table foodcomments (
-        jobinfo_id uuid not null
-        , foodcomments text
-        , createtime timestamp with time zone default now()
-        );''', None, True)
-    print("'foodcomments' table created successfully.")
-
-def create_foods(userdb):
-    'Create FOODS table in database if it does not exist.'
-    userdb.query('''create table foods (
-        id uuid not null default uuid_generate_v4()
-        , foodname text not null unique
-        , createdate timestamp with time zone default now()
-        , constraint foods_pkey primary key (id)
-        );''', None, True)
-    print("'foods' table created successfully.")
-
-def create_job_data(userdb):
-    'Create JOB_DATA table in database if it does not exist.'
-    userdb.query('''create table job_data (
-        id serial
-        , job_id uuid
-        , moment timestamp with time zone
-        , temp_c double precision
-        , temp_f double precision
-        , constraint job_data_pkey primary key (id)
-        );''', None, True)
-    print("'job_data' table created successfully.")
-
-def create_job_info(userdb):
-    'Create JOB_INFO table in database if it does not exist.'
-    userdb.query('''create table job_info (
-        id uuid not null default uuid_generate_v4()
-        , jobname text not null unique
-        , user_id uuid
-        , device_id uuid
-        , food_id uuid
-        , temperature_deg int
-        , temperature_setting text
-        , createtime timestamp with time zone default now()
-        , starttime timestamp with time zone
-        , endtime timestamp with time zone
-        , cookminutes int
-        , constraint job_info_pkey primary key (id)
-        );''', None, True)
-    print("'job_info' table created successfully.")
-
-def create_users(userdb):
-    'Create USERS table in database if it does not exist.'
-    userdb.query('''create table users (
-        id uuid not null default uuid_generate_v4()
-        , username text not null unique
-        , fullname text not null
-        , email_address text not null unique
-        , "password" text not null
-        , createdate timestamp with time zone default now()
-        , constraint users_pkey primary key (id)
-        );''', None, True)
-    print("'users' table created successfully.")
-
+            , constraint devices_pkey primary key (id));''',
+        'foodcomments': '''create table foodcomments (
+            jobinfo_id uuid not null
+            , foodcomments text
+            , createtime timestamp with time zone default now());''',
+        'foods': '''create table foods (
+            id uuid not null default uuid_generate_v4()
+            , foodname text not null unique
+            , createdate timestamp with time zone default now()
+            , constraint foods_pkey primary key (id));''',
+        'job_data': '''create table job_data (
+            id serial
+            , job_id uuid
+            , moment timestamp with time zone
+            , temp_c double precision
+            , temp_f double precision
+            , constraint job_data_pkey primary key (id));''',
+        'job_info': '''create table job_info (
+            id uuid not null default uuid_generate_v4()
+            , jobname text not null unique
+            , user_id uuid
+            , device_id uuid
+            , food_id uuid
+            , temperature_deg int
+            , temperature_setting text
+            , createtime timestamp with time zone default now()
+            , starttime timestamp with time zone
+            , endtime timestamp with time zone
+            , cookminutes int
+            , constraint job_info_pkey primary key (id));''',
+        'users': '''create table users (
+            id uuid not null default uuid_generate_v4()
+            , username text not null unique
+            , fullname text not null
+            , email_address text not null unique
+            , "password" text not null
+            , createdate timestamp with time zone default now()
+            , constraint users_pkey primary key (id));'''}
+    for table_name, table_SQL in tables:
+        if table_name == table:
+            try:
+                userdb.query(table_SQL, None, True)
+            except psycopg2.Error as dberror:
+                logging.critical("Unable to create " + table_name.upper() + " table.")
+                logging.critical("Verify database is running and re-run buildtables.py.")
+                userdb.cleanexit(1)
+            else:
+                print('{} table created successfully.'.format(table_name.upper()))

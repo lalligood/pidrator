@@ -57,17 +57,9 @@ create any missing extensions or tables in the database.'''
     if len(results_list) > 0:
         # Create any missing table(s) in the database
         for result in results_list:
-            options = {
-                'devices' : c.create_devices,
-                'foodcomments' : c.create_foodcomments,
-                'foods' : c.create_foods,
-                'job_data' : c.create_job_data,
-                'job_info' : c.create_job_info,
-                'users' : c.create_users,
-                }
-            options[result](thedb)
+            c.create_table(thedb, result)
     else:
-        print('\nConfirmed that all tables present & accounted for. Exiting...')
+        print('\nAll tables are present in the database. Exiting...')
     thedb.cleanexit(0)
 
 if __name__ == "__main__":
