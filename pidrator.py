@@ -49,9 +49,10 @@ def main():
     c.changepswdprompt(thedb, user)
 
     # Pick food from list
-    foodname = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
-    foodid = thedb.query('select id from foods where foodname = (%s)',
-        foodname, False, 'one')
+    #foodname = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
+    #foodid = thedb.query('select id from foods where foodname = (%s)',
+        #foodname, False, 'one')
+    foodid = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
     print('\n\n')
 
     # Pick cooking device from list
