@@ -144,8 +144,8 @@ list, or return an error if the choice is not valid.'''
                         errmsgslow('That item already exists in the list. Please try again...')
                         continue
                 # Insert new item into table
-                insertrow = 'insert into ' + tablename + ' (' + colname + ') values (' + newitem[0] + ')'
-                userdb.query(insertrow, None, True)
+                insertrow = 'insert into ' + tablename + ' (' + colname + ') values ((%s))'
+                userdb.query(insertrow, newitem, True)
                 print('{} has been added to the list of {}.'.format(newitem[0], listname))
                 print('Returning to list of available {}.'.format(listname))
             elif confirm.lower() == 'n':
