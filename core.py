@@ -115,34 +115,20 @@ def pick_list(userdb, listname, colname, tablename, ordername):
 It then asks if you want to add item(s) to the list, select an item from the
 list, or return an error if the choice is not valid.'''
     while True:
-        itemnbr = ''
-        order = eval('(\'' + ordername + '\', )')
-        selectorder = 'select ' + colname + ' from ' + tablename + ' order by ' + ordername
-        itemlist = userdb.query(selectorder, None, False, 'all')
-        if itemlist == []: # If table is empty
-            print('No items found. Please add a new item to the {} list...'.format(listname))
-        else: # If any existing row(s) in table
-            print('The following {} are available: '.format(listname))
-            count = 0
-            for x in itemlist: # Display list of items
-                count += 1
-                print('\t{}. {}'.format(count, x[0]))
-            print('\t0. Add a new item to the {} list.'.format(listname))
-            countlist = count
-            itemnbr = input('Enter the number of the item that you want to use: ')
+        # Display all item(s) in list or state that the list is empty
+        itemlist, itemnbr, countlist = show_pick_list(userdb, listname, colname, tablename, ordername)
+        # Enter item(s) into the list
         if itemnbr == '0' or itemlist == []: # Add new item to the table
             newitem = dbinput('Enter the name of the item you would like to add: ', '')
             if len(newitem[0]) == 0: # Make sure user input is not empty
                 errmsgslow('Invalid entry. Please try again...')
                 continue
             confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
-            if confirm.lower() == 'y': # User confirmed what they want to add
-                if itemlist != None:
-                    selectname = 'select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)'
-                    existingitem = userdb.query(selectname, newitem, False, 'one')
-                    if newitem == existingitem: # If existing item is found, disallow
-                        errmsgslow('That item already exists in the list. Please try again...')
-                        continue
+            if confirm.lower() == 'y':
+                # Verify the new item does not match any existing item(s)
+                isamatch = match_item_check(userdb, colname, tablename, itemlist, itemnbr, newitem)
+                if isamatch:
+                    continue
                 # Insert new item into table
                 insertrow = 'insert into ' + tablename + ' (' + colname + ') values ((%s))'
                 userdb.query(insertrow, newitem, True)
@@ -168,6 +154,39 @@ list, or return an error if the choice is not valid.'''
                     itemid = userdb.query(selectid, itemname, False, 'one')
                     return itemid
                     break
+
+def show_pick_list(userdb, listname, colname, tablename, ordername):
+    '''Displays item(s) in the list. If the list is empty, it returns a message
+that item(s) need to be added to the list.'''
+    itemnbr = ''
+    order = eval('(\'' + ordername + '\', )')
+    selectorder = 'select ' + colname + ' from ' + tablename + ' order by ' + ordername
+    itemlist = userdb.query(selectorder, None, False, 'all')
+    if itemlist == []: # Inform that table is empty
+        print('No items found. Please add a new item to the {} list...'.format(listname))
+    else: # Show any row(s) exist in table
+        print('The following {} are available: '.format(listname))
+        count = 0
+        for x in itemlist: # Display list of items
+            count += 1
+            print('\t{}. {}'.format(count, x[0]))
+        print('\t0. Add a new item to the {} list.'.format(listname))
+        countlist = count
+        itemnbr = input('Enter the number of the item that you want to use: ')
+        return itemlist, itemnbr, countlist
+
+def match_item_check(userdb, colname, tablename, itemlist, itemnbr, newitem):
+    '''Once the user has input a new item, this verifies that it does not match
+an existing item in the list.'''
+    if itemlist != None:
+        selectname = 'select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)'
+        existingitem = userdb.query(selectname, newitem, False, 'one')
+        if newitem == existingitem: # If existing item is found, disallow
+            matchfound = True
+            errmsgslow('That item already exists in the list. Please try again...')
+        else:
+            matchfound = False
+        return matchfound
 
 def login_menu(userdb):
     'Basic Welcome screen to login, create acct, or exit.'
