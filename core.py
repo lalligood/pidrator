@@ -380,7 +380,7 @@ proper operation of the pidrator.py script.'''
         'uuid-ossp': 'create extension if not exists "uuid-ossp";',
         'pgcrupto': 'create extension if not exists "pgcrypto";'
         }
-    for extension_name, extension_SQL in extensions:
+    for extension_name, extension_SQL in extensions.items():
         try:
             userdb.query(extension_SQL)
         except psycopg2.Error as dberror:
@@ -389,6 +389,26 @@ proper operation of the pidrator.py script.'''
             userdb.cleanexit(1)
         else:
             print('{} database extension installed.'.format(extension_name ))
+
+def verify_schema(userdb):
+    'Query database to see which table(s) exist.'
+    schema = ('public', )
+    tables = userdb.query('''select table_name from information_schema.tables
+        where table_schema = (%s) order by table_name''', schema, False, 'all')
+    # Convert results tuple -> list
+    tables_list = []
+    for table in tables:
+        print('{} table found.'.format(table[0].upper()))
+        tables_list.append(table[0])
+    master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
+    # Get difference(s) between master_list and tables_list
+    results_list = set(master_list).difference(tables_list)
+    if len(results_list) > 0:
+        # Create any missing table(s) in the database
+        for result in results_list:
+            c.create_table(userdb, result)
+    else:
+        print('\nAll tables are present in the database. Exiting...')
 
 def create_tables(userdb, table):
     'Create table(s) in database for pidrator if any do not exist.'
@@ -435,7 +455,7 @@ def create_tables(userdb, table):
             , "password" text not null
             , createdate timestamp with time zone default now()
             , constraint users_pkey primary key (id));'''}
-    for table_name, table_SQL in tables:
+    for table_name, table_SQL in tables.items():
         if table_name == table:
             try:
                 userdb.query(table_SQL, None, True)

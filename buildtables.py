@@ -43,23 +43,9 @@ create any missing extensions or tables in the database.'''
     # Verify database extensions have been installed
     c.verify_pgextensions(thedb)
 
-    # Check to see if all tables exists
-    schema = ('public', )
-    tables = thedb.query('''select table_name from information_schema.tables
-        where table_schema = (%s) order by table_name''', schema, False, 'all')
-    tables_list = [] # Convert results tuple -> list
-    for table in tables:
-        print(table[0] + ' table found.')
-        tables_list.append(table[0])
-    master_list = ['devices', 'foodcomments', 'foods', 'job_data', 'job_info', 'users']
-    # Get difference of master_list & tables_list
-    results_list = set(master_list).difference(tables_list)
-    if len(results_list) > 0:
-        # Create any missing table(s) in the database
-        for result in results_list:
-            c.create_table(thedb, result)
-    else:
-        print('\nAll tables are present in the database. Exiting...')
+    # Verify database tables exist or create them if they do not
+    c.verify_schema(thedb)
+
     thedb.cleanexit(0)
 
 if __name__ == "__main__":
