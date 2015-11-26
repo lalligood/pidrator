@@ -35,7 +35,7 @@ def main():
 extensions are loaded, and that all tables exist. Otherwise it will attempt to
 create any missing extensions or tables in the database.'''
     # Verify running python 3.x
-    c.python_ver()
+    c.verify_python_version()
 
     # Open connection to database
     thedb = c.DBconn()
@@ -46,7 +46,7 @@ create any missing extensions or tables in the database.'''
     # Verify database tables exist or create them if they do not
     c.verify_schema(thedb)
 
-    thedb.cleanexit(0)
+    thedb.clean_exit(0)
 
 if __name__ == "__main__":
     main()

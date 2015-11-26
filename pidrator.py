@@ -33,31 +33,31 @@ def main():
     Before running this application, you should run buildtables.py to set up the
     database.'''
     # Make sure running on python 3.x
-    c.python_ver()
+    c.verify_python_version()
 
     # Enable all hardware attached to RaspPi
-    c.enablepihw()
+    c.enable_pi_hardware()
 
     # Open connection to database
     thedb = c.DBconn()
 
     # User login
-    user = c.loginmenu(thedb)
+    user = c.login_menu(thedb)
     print('\n\n')
 
     # User password change (optional)
-    c.changepswdprompt(thedb, user)
+    c.change_pswd_prompt(thedb, user)
 
     # Pick food from list
-    foodid = c.picklist(thedb, 'foods', 'foodname', 'foods', 'foodname')
+    foodid = c.pick_list(thedb, 'foods', 'foodname', 'foods', 'foodname')
     print('\n\n')
 
     # Pick cooking device from list
-    deviceid = c.picklist(thedb, 'cooking devices', 'devicename', 'devices', 'devicename')
+    deviceid = c.pick_list(thedb, 'cooking devices', 'devicename', 'devices', 'devicename')
     print('\n\n')
 
     # Pick job from list
-    jobid = c.picklist(thedb, 'job names', 'jobname', 'job_info', 'createtime')
+    jobid = c.pick_list(thedb, 'job names', 'jobname', 'job_info', 'createtime')
     print('\n\n')
 
     # Get user_id
@@ -112,8 +112,8 @@ def main():
     print('\tAt temperature:      {}'.format(row[4]))
     print('\n\n')
 
-    c.getjobtime()
-    c.confirmjob()
+    c.get_job_time()
+    c.confirm_job(thedb)
 
     # Update job_info row with start time
     start = datetime.now()
@@ -142,7 +142,7 @@ def main():
         if currtime >= start + currdelta:
             current = c.dbdate(currtime)
             if raspi and therm_sens: # If running RPi & thermal sensor is present
-                temp_cen, temp_far = c.gettemp() # Read temperature
+                temp_cen, temp_far = c.get_temp() # Read temperature
                 temp_c = c.dbnumber(temp_cen) # Convert to tuple
                 temp_f = c.dbnumber(temp_far) # Convert to tuple
                 thedb.query('''insert into job_data
@@ -169,7 +169,7 @@ def main():
 
     print('\n\n')
     print('Job complete!')
-    thedb.cleanexit(0)
+    thedb.clean_exit(0)
 
 if __name__ == "__main__":
     main()

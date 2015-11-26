@@ -33,7 +33,7 @@ class DBconn:
             logging.info('Connected to database successfully')
         except psycopg2.Error as dberror:
             logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
-            cleanexit(1)
+            self.clean_exit(1)
 
     def query(self, SQL, params=None, commit=False, fetch=None):
         '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
@@ -57,7 +57,7 @@ class DBconn:
             logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
             logging.error('Failed query: ' + SQL)
 
-    def cleanexit(self, exitcode):
+    def clean_exit(self, exitcode):
         'Closes database connection & attempts to exit gracefully.'
         self.cur.close()
         self.conn.close()
@@ -68,7 +68,7 @@ class DBconn:
         logging.shutdown()
         sys.exit(exitcode)
 
-def python_ver():
+def verify_python_version():
     'Verify that script is running python 3.x.'
     (major, minor, patchlevel) = platform.python_version_tuple()
     if int(major) < 3: # Verify running python3
@@ -79,7 +79,7 @@ def python_ver():
         logging.error('For proper functionality, pidrator should be run as root (sudo)!')
         sys.exit(1)
 
-def enablepihw():
+def enable_pi_hardware():
     'Enable all devices attached to RaspPi GPIO.'
     if raspi:
         # Powertail configuration
@@ -108,7 +108,7 @@ def errmsgslow(text):
     print(text)
     time.sleep(2)
 
-def picklist(userdb, listname, colname, tablename, ordername):
+def pick_list(userdb, listname, colname, tablename, ordername):
     '''Displays a list of items referred as listname from the column name
 (colname) from table (tablename) & the list is ordered by ordername is desired.
 
@@ -119,7 +119,6 @@ list, or return an error if the choice is not valid.'''
         order = eval('(\'' + ordername + '\', )')
         selectorder = 'select ' + colname + ' from ' + tablename + ' order by ' + ordername
         itemlist = userdb.query(selectorder, None, False, 'all')
-        print(selectorder, itemlist)
         if itemlist == []: # If table is empty
             print('No items found. Please add a new item to the {} list...'.format(listname))
         else: # If any existing row(s) in table
@@ -170,7 +169,7 @@ list, or return an error if the choice is not valid.'''
                     return itemid
                     break
 
-def loginmenu(userdb):
+def login_menu(userdb):
     'Basic Welcome screen to login, create acct, or exit.'
     while True:
         menuopt = input('''
@@ -182,20 +181,20 @@ Select from one of the following choices:
     x. Exit
 Enter your selection: ''')
         if menuopt == '1':
-            user = userlogin(userdb)
+            user = user_login(userdb)
             return user
             break
         elif menuopt == '2':
-            user = usercreate(userdb)
+            user = user_create(userdb)
             return user
             break
         elif menuopt == 'x':
             print('Exiting pidrator...')
-            cleanexit(0)
+            userdb.clean_exit(0)
         else:
             errmsgslow('Invalid choice. Please try again...')
 
-def getjobtime():
+def get_job_time():
     'Get user input to determine how long job should run.'
     while True:
         cookhour = int(input('Enter the number of hours that you want to cook (0-12): '))
@@ -214,20 +213,20 @@ def getjobtime():
             break
     print('\n\n')
 
-def confirmjob():
+def confirm_job(userdb):
     'Prompt user before starting the job.'
     while True:
         response = input(r'''Enter 'y' when you are ready to start your job or 'x' to exit without cooking. ''')
         if response.lower() == 'x':
             print('You have chosen to exit without cooking.')
-            c.cleanexit(0)
+            userdb.clean_exit(0)
         elif response.lower() == 'y':
             break
         else:
             errmsgslow('Invalid selection. Please try again...')
     print('\n\n')
 
-def changepswdprompt(userdb, user):
+def change_pswd_prompt(userdb, user):
     'Prompt user to change password & handle (in)correct responses.'
     while True:
         response = input('Do you want to change your password? [Y/N] ')
@@ -264,7 +263,7 @@ def dbdate(date):
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
     return response
 
-def userlogin(userdb):
+def user_login(userdb):
     'Handles user login by verifying that the user & password are correct.'
     badlogin = 0 # Counter for login attempts; 3 strikes & you're out
     while True:
@@ -286,11 +285,11 @@ def userlogin(userdb):
             badlogin += 1
         if badlogin == 3: # Quit after 3 failed logins
             print('Too many incorrect login attempts.')
-            cleanexit(1)
+            userdb.clean_exit(1)
         else: # Failed login message & try again
             errmsgslow('Username and/or password incorrect. Try again...')
 
-def usercreate(userdb):
+def user_create(userdb):
     'Create a new user.'
     while True:
         username = dbinput('Enter your desired username: ', 'user')
@@ -317,7 +316,7 @@ def usercreate(userdb):
             print('Your username was created successfully.')
             return username
 
-def changepswd(userdb, username):
+def change_pswd(userdb, username):
     'Allows the user to change their password.'
     while True:
         oldpswd = dbinput('Enter your current password: ', 'pswd')
@@ -352,7 +351,7 @@ def powertail(onoff):
         else:
             GPIO.output(power_pin, False) # Powertail off
 
-def readtemp():
+def read_temp():
     'If device is present, it will open a connection to thermal sensor.'
     if raspi:
         sensor = open(sensor_file, 'r') # Open thermal sensor "file"
@@ -360,7 +359,7 @@ def readtemp():
         sensor.close() # Close "file"
         return rawdata
 
-def gettemp():
+def get_temp():
     'Reads thermal sensor until it gets a valid result.'
     if raspi:
         results = readtemp()                    # Read sensor
@@ -386,7 +385,7 @@ proper operation of the pidrator.py script.'''
         except psycopg2.Error as dberror:
             logging.critical("Unable to create " + extension_name + " extension.")
             logging.critical("Run 'apt-get install postgresql-contrib-9.4' then re-run buildtables.py.")
-            userdb.cleanexit(1)
+            userdb.clean_exit(1)
         else:
             print('{} database extension installed.'.format(extension_name ))
 
@@ -462,6 +461,6 @@ def create_tables(userdb, table):
             except psycopg2.Error as dberror:
                 logging.critical("Unable to create " + table_name.upper() + " table.")
                 logging.critical("Verify database is running and re-run buildtables.py.")
-                userdb.cleanexit(1)
+                userdb.clean_exit(1)
             else:
                 print('{} table created successfully.'.format(table_name.upper()))
