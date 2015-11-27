@@ -20,8 +20,6 @@ loglevel = logging.WARNING # Available logging levels, from low to high: DEBUG, 
 logformat = '%(asctime)s [%(levelname)s] %(message)s'
 logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
 logging.info('Initializing application & attempting to connect to database.')
-# Hardware configuration
-power_pin = 23 # GPIO pin 23
 
 '''
 **** MAIN ROUTINE ****
@@ -98,8 +96,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         fractmin = 15 # Log temp to database in seconds
         currdelta = timedelta(seconds=fractmin)
         countdown = 0
-        if raspi:
-            c.powertail(True)
+        c.powertail(userdb, True)
         while True:
             currtime = datetime.now()
             if currtime >= start + currdelta:
@@ -114,7 +111,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                         jobid + current + temp_c + temp_f, True)
                 else: # If running on test, then don't read temperature
                     thedb.query('''insert into job_data (job_id, moment)
-                        values ((%s), (%s), (%s))''', jobid + current, True)
+                        values ((%s), (%s))''', jobid + current, True)
                 start = datetime.now()
                 countdown += (fractmin / 60)
                 timeleft = int(cooktime[0]) - countdown
@@ -127,7 +124,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             # Quit when job has completed
             if currtime >= end: # Otherwise stop when time has ended
                 if raspi: # Turn Powertail off
-                    c.powertail(False)
+                    c.powertail(userdb, False)
                 print('\n\n')
                 print('Job complete!')
                 break

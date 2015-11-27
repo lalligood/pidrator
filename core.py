@@ -21,6 +21,7 @@ class DatabaseConnection:
             self.dbname = 'pi'
             self.dbuser = 'pi'
             self.dbport = 5432
+            self.power_pin = 23 # GPIO pin 23
         else: # NON-RASPI TEST DB
             self.dbname = 'postgres'
             self.dbuser = 'lalligood'
@@ -85,8 +86,8 @@ def enable_raspi_hardware():
         # Powertail configuration
         try:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(power_pin, GPIO.OUT)
-            GPIO.output(power_pin, False) # Make sure powertail is off!
+            GPIO.setup(thedb.power_pin, GPIO.OUT)
+            GPIO.output(thedb.power_pin, False) # Make sure powertail is off!
         except:
             logging.error('Powertail not found or connected. Cannot cook anything without it!')
             sysexit(1)
@@ -189,7 +190,7 @@ an existing item in the list.'''
         return matchfound
 
 def get_temp_setting(userdb, jobid):
-    'Check database to see if temperature setting exists. If it does not, get user
+    '''Check database to see if temperature setting exists. If it does not, get user
 input. Return temperature setting to be used.'''
     while True: # Will food will be cooked at same temp as last time?
         tempcheck = userdb.query('''select temperature from job_info
@@ -212,7 +213,7 @@ input. Return temperature setting to be used.'''
                 return tempsetting
                 break
             else:
-                c.errmsgslow('Invalid selection. Please try again...')
+                errmsgslow('Invalid selection. Please try again...')
 
 def login_menu(userdb):
     'Basic Welcome screen to login, create acct, or exit.'
@@ -423,13 +424,13 @@ def change_pswd(userdb, username):
         else:
             errmsgslow('Old password incorrect. Try again...')
 
-def powertail(onoff):
+def powertail(userdb, onoff):
     'If device if present, it turns Powertail on/off.'
     if raspi:
         if onoff:
-            GPIO.output(power_pin, True) # Powertail on
+            GPIO.output(userdb.power_pin, True) # Powertail on
         else:
-            GPIO.output(power_pin, False) # Powertail off
+            GPIO.output(userdb.power_pin, False) # Powertail off
 
 def read_temp():
     'If device is present, it will open a connection to thermal sensor.'
@@ -496,7 +497,7 @@ def verify_schema(userdb):
     if len(results_list) > 0:
         # Create any missing table(s) in the database
         for result in results_list:
-            c.create_table(userdb, result)
+            create_table(userdb, result)
     else:
         print('''\nAll extensions and tables are present in the database.
 Returning to pidrator menu...''')
