@@ -192,11 +192,12 @@ def login_menu(userdb):
     'Basic Welcome screen to login, create acct, or exit.'
     while True:
         menuopt = input('''
-pidrator Menu
+pidrator menu
 
 Select from one of the following choices:
-    1. Login (must have an account)
-    2. Create a new account
+    1. Login
+    2. Create account
+    9. Create necessary extensions and tables in database.
     x. Exit
 Enter your selection: ''')
         if menuopt == '1':
@@ -207,6 +208,8 @@ Enter your selection: ''')
             user = user_create(userdb)
             return user
             break
+        elif menuopt == '9':
+            build_tables(userdb)
         elif menuopt == 'x':
             print('Exiting pidrator...')
             userdb.clean_exit(0)
@@ -218,11 +221,11 @@ def get_job_time():
     while True:
         cookhour = int(input('Enter the number of hours that you want to cook (0-12): '))
         if cookhour < 0 or cookhour > 12:
-            errmsgslow('Invalid selection. Please try again...')
+            errmsgslow('Invalid selection. Value must be between 1 and 12. Please try again...')
             continue
         cookmin = int(input('Enter the number of minutes that you want to cook (0-59): '))
         if cookmin < 0 or cookmin > 59:
-            errmsgslow('Invalid selection. Please try again...')
+            errmsgslow('Invalid selection. Value must be between 0 and 59. Please try again...')
             continue
         if cookhour == 0 and cookmin == 0:
             errmsgslow('You cannot cook something for 0 hours & 0 minutes! Please try again...')
@@ -230,6 +233,8 @@ def get_job_time():
         response = input('You entered {} hours and {} minutes. Is this correct? [Y/N] '.format(cookhour, cookmin))
         if response.lower() == 'y':
             break
+        elif response.lower() == 'n':
+            errmsgslow('Time selection declined. Exiting')
     print('\n\n')
 
 def confirm_job(userdb):
@@ -391,6 +396,17 @@ def get_temp():
             temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
             return temp_c, temp_f # Return temp to 3 decimal places in C & F
 
+def build_tables(userdb):
+    '''Checks to see if all necessary extensions are loaded, and that all tables exist.
+Otherwise it will attempt to create any missing extensions or tables in
+the database.'''
+    print('\n\n')
+    # Verify database extensions have been installed
+    verify_pgextensions(userdb)
+
+    # Verify database tables exist or create them if they do not
+    verify_schema(userdb)
+
 def verify_pgextensions(userdb):
     '''Attempts to install all necessary PostgreSQL database extensions for the
 proper operation of the pidrator.py script.'''
@@ -426,7 +442,8 @@ def verify_schema(userdb):
         for result in results_list:
             c.create_table(userdb, result)
     else:
-        print('\nAll tables are present in the database. Exiting...')
+        print('''\nAll extensions and tables are present in the database.
+Returning to pidrator menu...''')
 
 def create_tables(userdb, table):
     'Create table(s) in database for pidrator if any do not exist.'
