@@ -12,7 +12,7 @@ import time
 # Enable some functionality ONLY if raspi!
 raspi = platform.machine().startswith('armv')
 
-class DBconn:
+class DatabaseConnection:
     # Following is necessary for handling UUIDs with PostgreSQL
     extras.register_uuid()
     def __init__(self):
@@ -79,7 +79,7 @@ def verify_python_version():
         logging.error('For proper functionality, pidrator should be run as root (sudo)!')
         sys.exit(1)
 
-def enable_pi_hardware():
+def enable_raspi_hardware():
     'Enable all devices attached to RaspPi GPIO.'
     if raspi:
         # Powertail configuration
@@ -188,6 +188,32 @@ an existing item in the list.'''
             matchfound = False
         return matchfound
 
+def get_temp_setting(userdb, jobid):
+    'Check database to see if temperature setting exists. If it does not, get user
+input. Return temperature setting to be used.'''
+    while True: # Will food will be cooked at same temp as last time?
+        tempcheck = userdb.query('''select temperature from job_info
+            where id = (%s)''', jobid, False, 'one')
+        if tempcheck == None: # No previous cooking data available
+            print('No previous temperature found.')
+            tempset = dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
+            return tempsetting
+            break
+        else: # Previous cooking data available
+            print('Last job was cooked at temperature/setting: {}.'.format(tempcheck[0]))
+            response = input('Are you going to cook at the same temperature/setting? [Y/N] ')
+            if response.lower() == 'y': # Cook at the same temp
+                print('You selected to cook at the same temperature/setting.')
+                tempset = tempcheck
+                return tempsetting
+                break
+            elif response.lower() == 'n': # Cook at a different temp
+                tempset = dbinput('What temperature/setting are you going to use this time? ', '')
+                return tempsetting
+                break
+            else:
+                c.errmsgslow('Invalid selection. Please try again...')
+
 def login_menu(userdb):
     'Basic Welcome screen to login, create acct, or exit.'
     while True:
@@ -249,6 +275,36 @@ def confirm_job(userdb):
         else:
             errmsgslow('Invalid selection. Please try again...')
     print('\n\n')
+
+def describe_job(userdb, jobname):
+    'Retrieve all facts about the job and display in pretty format.'
+    row = thedb.query('''select
+            jobname
+            , users.fullname
+            , devices.devicename
+            , foods.foodname
+            , temperature
+        from job_info
+            left outer join users on job_info.user_id = users.id
+            left outer join devices on job_info.device_id = devices.id
+            left outer join foods on job_info.food_id = foods.id
+        where jobname = (%s)''', jobname, False, 'one')
+    # Convert tuple to list
+    list(row)
+    print('\n\n')
+    print('\tJob name:            {}'.format(row[0]))
+    print('\tPrepared by:         {}'.format(row[1]))
+    print('\tCooking device:      {}'.format(row[2]))
+    print('\tFood being prepared: {}'.format(row[3]))
+    print('\tAt temperature:      {}'.format(row[4]))
+    print('\n\n')
+
+def set_job_start_time(userdb, jobid):
+    'Update job_info row in database with start time.'
+    start = datetime.now()
+    starttime = dbdate(start)
+    userdb.query('update job_info set starttime = (%s) where id = (%s)',
+        starttime + jobid, True)
 
 def change_pswd_prompt(userdb, user):
     'Prompt user to change password & handle (in)correct responses.'
