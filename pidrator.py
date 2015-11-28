@@ -34,10 +34,7 @@ def main():
     c.verify_python_version()
 
     # Open connection to database
-    thedb = c.DatabaseConnection()
-
-    # Enable all hardware attached to RaspPi
-    c.enable_raspi_hardware(thedb)
+    thedb = c.RasPiDatabase()
 
     while True:
         # Main menu
@@ -93,15 +90,15 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         fractmin = 15 # Log temp to database in seconds
         currdelta = timedelta(seconds=fractmin)
         countdown = 0
-        c.powertail(thedb, True)
+        thedb.powertail(True) # Turn Powertail on
         while True:
             currtime = datetime.now()
             if currtime >= start + currdelta:
                 current = c.dbdate(currtime)
                 if raspi and therm_sens:
                     temp_cen, temp_far = c.get_temp() # Read temperature
-                    temp_c = c.dbnumber(temp_cen) # Convert to tuple
-                    temp_f = c.dbnumber(temp_far) # Convert to tuple
+                    temp_c = c.dbnumber(temp_cen)
+                    temp_f = c.dbnumber(temp_far)
                     thedb.query('''insert into job_data
                         (job_id, moment, temp_c, temp_f)
                         values ((%s), (%s), (%s))''',
@@ -120,8 +117,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                     print('Job has been active for {} minutes and there are {} minutes left.'.format(countdown, timeleft))
             # Quit when job has completed
             if currtime >= end: # Otherwise stop when time has ended
-                if raspi: # Turn Powertail off
-                    c.powertail(thedb, False)
+                thedb.powertail(False) # Turn Powertail off
                 print('\n\n')
                 print('Job complete!')
                 break

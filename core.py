@@ -10,25 +10,27 @@ from psycopg2 import extras
 import sys
 import time
 
-# Enable some functionality ONLY if raspi!
-raspi = platform.machine().startswith('armv')
 
-class DatabaseConnection:
-    # Following is necessary for handling UUIDs with PostgreSQL
+class RasPiDatabase:
+    # Enable proper handling of UUIDs with PostgreSQL
     extras.register_uuid()
     def __init__(self):
         'Declare database connection variables.'
-        if raspi: # RASPI DB
-            self.dbname = 'pi'
+        # Enable functionality ONLY if running on RasPi!
+        raspi = platform.machine().startswith('armv')
+        if raspi and getpass.getuser() != 'root': # RasPi should only run as root
+            logging.error('For proper functionality, pidrator should be run as root (sudo)!')
+            sys.exit(1)
+        # Database connection info
+        if raspi:
+            self.dbname = 'pi' # RASPI DB
             self.dbuser = 'pi'
             self.dbport = 5432
-            self.power_pin = 23 # GPIO pin 23
-        else: # NON-RASPI TEST DB
-            self.dbname = 'postgres'
+        else:
+            self.dbname = 'postgres' # TEST DB
             self.dbuser = 'lalligood'
             self.dbport = 5433
-
-        # Open connection to database.
+        # Open connection to database
         try:
             self.conn = psycopg2.connect(database=self.dbname, user=self.dbuser, port=self.dbport)
             self.cur = self.conn.cursor()
@@ -36,6 +38,30 @@ class DatabaseConnection:
         except psycopg2.Error as dberror:
             logging.critical('UNABLE TO CONNECT TO DATABASE. Is it running?')
             self.clean_exit(1)
+        # Enable all devices attached to RaspPi GPIO
+        if raspi:
+            # Powertail configuration
+            try:
+                self.power_pin = 23 # GPIO pin 23
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setup(self.power_pin, GPIO.OUT)
+                GPIO.output(self.power_pin, False) # Make sure powertail is off!
+            except:
+                logging.error('Powertail not found or connected. Cannot cook anything without it!')
+                sysexit(1)
+            # Thermal sensor configuration
+            try:
+                os.system('modprobe w1-gpio')
+                os.system('modprobe w1-therm')
+                # Navigate path to thermal sensor "file"
+                base_dir = '/sys/bus/w1/devices/'
+                device_folder = glob.glob(base_dir + '28*')[0]
+                sensor_file = device_folder + '/w1_slave'
+                self.therm_sens = True
+            except:
+                logging.warning('Thermal sensor not found or connected.')
+                logging.warning('Unable to record temperature while cooking.')
+                self.therm_sens = False
 
     def query(self, SQL, params=None, commit=False, fetch=None):
         '''General purpose query submission. Can be used for SELECT, UPDATE, INSERT,
@@ -70,6 +96,14 @@ class DatabaseConnection:
         logging.shutdown()
         sys.exit(exitcode)
 
+    def powertail(self, onoff):
+        'If device if present, it turns Powertail on/off.'
+        if raspi:
+            if onoff:
+                GPIO.output(self.power_pin, True) # Powertail on
+            else:
+                GPIO.output(self.power_pin, False) # Powertail off
+
 def verify_python_version():
     'Verify that script is running python 3.x.'
     (major, minor, patchlevel) = platform.python_version_tuple()
@@ -77,33 +111,6 @@ def verify_python_version():
         logging.error('pidrator is written to run on python version 3.')
         logging.error("Please update by running 'sudo apt-get install python3'.")
         sys.exit(1)
-    elif raspi and getpass.getuser() != 'root': # RasPi should only run as root
-        logging.error('For proper functionality, pidrator should be run as root (sudo)!')
-        sys.exit(1)
-
-def enable_raspi_hardware(userdb):
-    'Enable all devices attached to RaspPi GPIO.'
-    if raspi:
-        # Powertail configuration
-        try:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup(userdb.power_pin, GPIO.OUT)
-            GPIO.output(userdb.power_pin, False) # Make sure powertail is off!
-        except:
-            logging.error('Powertail not found or connected. Cannot cook anything without it!')
-            sysexit(1)
-        # Thermal sensor configuration
-        try:
-            os.system('modprobe w1-gpio')
-            os.system('modprobe w1-therm')
-            base_dir = '/sys/bus/w1/devices/'               # Navigate path to
-            device_folder = glob.glob(base_dir + '28*')[0]  # thermal sensor
-            sensor_file = device_folder + '/w1_slave'       # "file"
-            therm_sens = True
-        except:
-            logging.warning('Thermal sensor not found or connected.')
-            logging.warning('Unable to record temperature while cooking.')
-            therm_sens = False
 
 def errmsgslow(text):
     'Prints message then pauses for 2 seconds.'
@@ -431,14 +438,6 @@ def change_pswd(userdb, username):
             break
         else:
             errmsgslow('Old password incorrect. Try again...')
-
-def powertail(userdb, onoff):
-    'If device if present, it turns Powertail on/off.'
-    if raspi:
-        if onoff:
-            GPIO.output(userdb.power_pin, True) # Powertail on
-        else:
-            GPIO.output(userdb.power_pin, False) # Powertail off
 
 def read_temp():
     'If device is present, it will open a connection to thermal sensor.'
