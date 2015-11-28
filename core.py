@@ -148,7 +148,7 @@ list, or return an error if the choice is not valid.'''
             count = 0
             for x in itemlist: # Iterate & find selected value
                 count += 1
-                if count == itemnbr:
+                if count == int(itemnbr):
                     itemname = x
                     print('You selected: {}.'.format(itemname[0]))
                     selectid = 'select id from ' + tablename + ' where ' + colname + ' = (%s)'
@@ -197,7 +197,7 @@ input. Return temperature setting to be used.'''
             where id = (%s)''', jobid, False, 'one')
         if tempcheck == None: # No previous cooking data available
             print('No previous temperature found.')
-            tempset = dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
+            tempsetting = dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
             return tempsetting
             break
         else: # Previous cooking data available
@@ -205,11 +205,11 @@ input. Return temperature setting to be used.'''
             response = input('Are you going to cook at the same temperature/setting? [Y/N] ')
             if response.lower() == 'y': # Cook at the same temp
                 print('You selected to cook at the same temperature/setting.')
-                tempset = tempcheck
+                tempsetting = tempcheck
                 return tempsetting
                 break
             elif response.lower() == 'n': # Cook at a different temp
-                tempset = dbinput('What temperature/setting are you going to use this time? ', '')
+                tempsetting = dbinput('What temperature/setting are you going to use this time? ', '')
                 return tempsetting
                 break
             else:
@@ -224,7 +224,7 @@ pidrator menu
 Select from one of the following choices:
     1. Login
     2. Create account
-    9. Create necessary extensions and tables in database.
+    9. Create necessary extensions and tables in database
     x. Exit
 Enter your selection: ''')
         if menuopt == '1':
@@ -476,7 +476,8 @@ proper operation of the pidrator.py script.'''
             userdb.query(extension_SQL)
         except psycopg2.Error as dberror:
             logging.critical("Unable to create " + extension_name + " extension.")
-            logging.critical("Run 'apt-get install postgresql-contrib-9.4' then re-run buildtables.py.")
+            logging.critical("""Run 'apt-get install postgresql-contrib-9.4' then re-run 'Create
+necessary extensions and tables in database'.""")
             userdb.clean_exit(1)
         else:
             print('{} database extension installed.'.format(extension_name ))
@@ -553,7 +554,8 @@ def create_tables(userdb, table):
                 userdb.query(table_SQL, None, True)
             except psycopg2.Error as dberror:
                 logging.critical("Unable to create " + table_name.upper() + " table.")
-                logging.critical("Verify database is running and re-run buildtables.py.")
+                logging.critical("""Verify database is running and re-run 'Create necessary extensions
+and tables in database'.""")
                 userdb.clean_exit(1)
             else:
                 print('{} table created successfully.'.format(table_name.upper()))

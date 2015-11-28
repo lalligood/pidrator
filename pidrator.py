@@ -66,7 +66,7 @@ def main():
             user, False, 'one')
 
         # Get temperature setting
-        tempset = get_temp_setting(thedb, jobid)
+        tempset = c.get_temp_setting(thedb, jobid)
         print('\n\n')
 
         # Update user_id, device_id, & food_id in job_info
