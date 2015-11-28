@@ -38,7 +38,7 @@ def main():
 
     while True:
         # Main menu
-        user = c.login_menu(thedb)
+        user = thedb.login_menu()
         print('\n\n')
 
         # Pick food from list

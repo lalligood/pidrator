@@ -104,6 +104,54 @@ class RasPiDatabase:
             else:
                 GPIO.output(self.power_pin, False) # Powertail off
 
+    def login_menu(self):
+        'Basic Welcome screen to login, create acct, or exit.'
+        while True:
+            menuopt = input('''
+pidrator menu
+
+Select from one of the following choices:
+\t1. Login and start cooking job
+\t2. Create account
+\t3. Change password
+\t9. Create necessary extensions and tables in database
+\tx. Exit
+Enter your selection: ''')
+            if menuopt == '1':
+                user = self.user_login()
+                return user
+                break
+            elif menuopt == '2':
+                user = self.user_create()
+                return user
+                break
+            elif menuopt == '3':
+                try:
+                    change_pswd_prompt(userdb, user)
+                except UnboundLocalError:
+                    errmsgslow('You must login first. Returning to pidrator menu...')
+                    continue
+            elif menuopt == '9':
+                build_tables(userdb)
+            elif menuopt == 'x':
+                print('Exiting pidrator...')
+                self.clean_exit(0)
+            else:
+                errmsgslow('Invalid choice. Please try again...')
+
+    def confirm_job(self):
+        'Prompt user before starting the job.'
+        while True:
+            response = input(r'''Enter 's' when you are ready to start your job or 'x' to exit without cooking. ''')
+            if response.lower() == 'x':
+                print('You have chosen to exit without cooking.')
+                self.clean_exit(0)
+            elif response.lower() == 's':
+                break
+            else:
+                errmsgslow('Invalid selection. Please try again...')
+        print('\n\n')
+
 def verify_python_version():
     'Verify that script is running python 3.x.'
     (major, minor, patchlevel) = platform.python_version_tuple()
@@ -223,41 +271,6 @@ input. Return temperature setting to be used.'''
             else:
                 errmsgslow('Invalid selection. Please try again...')
 
-def login_menu(userdb):
-    'Basic Welcome screen to login, create acct, or exit.'
-    while True:
-        menuopt = input('''
-pidrator menu
-
-Select from one of the following choices:
-    1. Login
-    2. Create account
-    3. Change password
-    9. Create necessary extensions and tables in database
-    x. Exit
-Enter your selection: ''')
-        if menuopt == '1':
-            user = user_login(userdb)
-            return user
-            break
-        elif menuopt == '2':
-            user = user_create(userdb)
-            return user
-            break
-        elif menuopt == '3':
-            try:
-                change_pswd_prompt(userdb, user)
-            except UnboundLocalError:
-                errmsgslow('You must login first. Returning to pidrator menu...')
-                continue
-        elif menuopt == '9':
-            build_tables(userdb)
-        elif menuopt == 'x':
-            print('Exiting pidrator...')
-            userdb.clean_exit(0)
-        else:
-            errmsgslow('Invalid choice. Please try again...')
-
 def get_job_time():
     'Get user input to determine how long job should run.'
     while True:
@@ -279,19 +292,6 @@ def get_job_time():
             errmsgslow('Time selection declined. Exiting')
     print('\n\n')
 
-def confirm_job(userdb):
-    'Prompt user before starting the job.'
-    while True:
-        response = input(r'''Enter 's' when you are ready to start your job or 'x' to exit without cooking. ''')
-        if response.lower() == 'x':
-            print('You have chosen to exit without cooking.')
-            userdb.clean_exit(0)
-        elif response.lower() == 's':
-            break
-        else:
-            errmsgslow('Invalid selection. Please try again...')
-    print('\n\n')
-
 def describe_job(userdb, jobid):
     'Retrieve all facts about the job and display in pretty format.'
     row = userdb.query('''select
@@ -306,8 +306,6 @@ def describe_job(userdb, jobid):
             left outer join foods on job_info.food_id = foods.id
         where job_info.id = (%s)''', jobid, False, 'one')
     # Convert tuple to list
-    list(row)
-    print('\n\n')
     print('\tJob name:            {}'.format(row[0]))
     print('\tPrepared by:         {}'.format(row[1]))
     print('\tCooking device:      {}'.format(row[2]))
@@ -362,6 +360,7 @@ def dbdate(date):
 def user_login(userdb):
     'Handles user login by verifying that the user & password are correct.'
     badlogin = 0 # Counter for login attempts; 3 strikes & you're out
+    print('\nLogin to create and run a cooking job.\n')
     while True:
         username = dbinput('Enter your username: ', 'user')
         pswd = dbinput('Enter your password: ', 'pswd')
