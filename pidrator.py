@@ -33,19 +33,16 @@ def main():
     # Make sure running on python 3.x
     c.verify_python_version()
 
-    # Enable all hardware attached to RaspPi
-    c.enable_raspi_hardware()
-
     # Open connection to database
     thedb = c.DatabaseConnection()
 
+    # Enable all hardware attached to RaspPi
+    c.enable_raspi_hardware(thedb)
+
     while True:
-        # User login
+        # Main menu
         user = c.login_menu(thedb)
         print('\n\n')
-
-        # User password change (optional)
-        c.change_pswd_prompt(thedb, user)
 
         # Pick food from list
         foodid = c.pick_list(thedb, 'foods', 'foodname', 'foods', 'foodname')
@@ -75,7 +72,7 @@ def main():
             userid + deviceid + foodid + tempset + jobid, True)
 
         # Now make sure it worked...!
-        c.describe_job(thedb, jobname)
+        c.describe_job(thedb, jobid)
         c.get_job_time()
         c.confirm_job(thedb)
 
@@ -96,7 +93,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         fractmin = 15 # Log temp to database in seconds
         currdelta = timedelta(seconds=fractmin)
         countdown = 0
-        c.powertail(userdb, True)
+        c.powertail(thedb, True)
         while True:
             currtime = datetime.now()
             if currtime >= start + currdelta:
@@ -124,7 +121,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             # Quit when job has completed
             if currtime >= end: # Otherwise stop when time has ended
                 if raspi: # Turn Powertail off
-                    c.powertail(userdb, False)
+                    c.powertail(thedb, False)
                 print('\n\n')
                 print('Job complete!')
                 break

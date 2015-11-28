@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 __author__ = 'lalligood'
 
+from datetime import datetime, timedelta
 import getpass
 import logging
 import platform
@@ -80,14 +81,14 @@ def verify_python_version():
         logging.error('For proper functionality, pidrator should be run as root (sudo)!')
         sys.exit(1)
 
-def enable_raspi_hardware():
+def enable_raspi_hardware(userdb):
     'Enable all devices attached to RaspPi GPIO.'
     if raspi:
         # Powertail configuration
         try:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(thedb.power_pin, GPIO.OUT)
-            GPIO.output(thedb.power_pin, False) # Make sure powertail is off!
+            GPIO.setup(userdb.power_pin, GPIO.OUT)
+            GPIO.output(userdb.power_pin, False) # Make sure powertail is off!
         except:
             logging.error('Powertail not found or connected. Cannot cook anything without it!')
             sysexit(1)
@@ -224,6 +225,7 @@ pidrator menu
 Select from one of the following choices:
     1. Login
     2. Create account
+    3. Change password
     9. Create necessary extensions and tables in database
     x. Exit
 Enter your selection: ''')
@@ -235,6 +237,12 @@ Enter your selection: ''')
             user = user_create(userdb)
             return user
             break
+        elif menuopt == '3':
+            try:
+                change_pswd_prompt(userdb, user)
+            except UnboundLocalError:
+                errmsgslow('You must login first. Returning to pidrator menu...')
+                continue
         elif menuopt == '9':
             build_tables(userdb)
         elif menuopt == 'x':
@@ -267,19 +275,19 @@ def get_job_time():
 def confirm_job(userdb):
     'Prompt user before starting the job.'
     while True:
-        response = input(r'''Enter 'y' when you are ready to start your job or 'x' to exit without cooking. ''')
+        response = input(r'''Enter 's' when you are ready to start your job or 'x' to exit without cooking. ''')
         if response.lower() == 'x':
             print('You have chosen to exit without cooking.')
             userdb.clean_exit(0)
-        elif response.lower() == 'y':
+        elif response.lower() == 's':
             break
         else:
             errmsgslow('Invalid selection. Please try again...')
     print('\n\n')
 
-def describe_job(userdb, jobname):
+def describe_job(userdb, jobid):
     'Retrieve all facts about the job and display in pretty format.'
-    row = thedb.query('''select
+    row = userdb.query('''select
             jobname
             , users.fullname
             , devices.devicename
@@ -289,7 +297,7 @@ def describe_job(userdb, jobname):
             left outer join users on job_info.user_id = users.id
             left outer join devices on job_info.device_id = devices.id
             left outer join foods on job_info.food_id = foods.id
-        where jobname = (%s)''', jobname, False, 'one')
+        where job_info.id = (%s)''', jobid, False, 'one')
     # Convert tuple to list
     list(row)
     print('\n\n')
