@@ -38,30 +38,25 @@ def main():
 
     while True:
         # Main menu
-        user = thedb.login_menu()
-        print('\n\n')
+        user = thedb.main_menu()
 
         # Pick food from list
         foodid = c.pick_list(thedb, 'foods', 'foodname', 'foods', 'foodname')
-        print('\n\n')
 
         # Pick cooking device from list
         deviceid = c.pick_list(thedb, 'cooking devices', 'devicename',
             'devices', 'devicename')
-        print('\n\n')
 
         # Pick job from list
         jobid = c.pick_list(thedb, 'job names', 'jobname', 'job_info',
             'createtime')
-        print('\n\n')
 
         # Get user_id
         userid = thedb.query('select id from users where username = (%s)',
             user, False, 'one')
 
         # Get temperature setting
-        tempset = c.get_temp_setting(thedb, jobid)
-        print('\n\n')
+        tempset = thedb.get_temp_setting(jobid)
 
         # Update user_id, device_id, & food_id in job_info
         thedb.query('''update job_info set user_id = (%s), device_id = (%s),
@@ -69,22 +64,15 @@ def main():
             userid + deviceid + foodid + tempset + jobid, True)
 
         # Now make sure it worked...!
-        c.describe_job(thedb, jobid)
+        thedb.describe_job(jobid)
         c.get_job_time()
-        c.confirm_job(thedb)
+        thedb.confirm_job()
 
         # Set job start time
-        c.set_job_start_time(thedb, jobid)
+        thedb.set_job_start_time(jobid)
 
         # Calculate job run time
-        cookdelta = timedelta(hours=cookhour, minutes=cookmin)
-        cooktime = c.dbnumber((cookhour * 60) + cookmin)
-        end = start + cookdelta
-        endtime = c.dbdate(end)
-        thedb.query('''update job_info set endtime = (%s), cookminutes = (%s)
-            where id = (%s)''', endtime + cooktime + jobid, True)
-        print('''Your job is going to cook for {} hour(s) and {} minute(s).
-It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
+        thedb.calculate_job_time(jobid)
 
         # Main cooking loop
         fractmin = 15 # Log temp to database in seconds
