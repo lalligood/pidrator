@@ -41,14 +41,14 @@ def main():
         user = thedb.main_menu()
 
         # Pick food from list
-        foodid = c.pick_list(thedb, 'foods', 'foodname', 'foods', 'foodname')
+        foodid = thedb.pick_list('foods', 'foodname', 'foods', 'foodname')
 
         # Pick cooking device from list
-        deviceid = c.pick_list(thedb, 'cooking devices', 'devicename',
+        deviceid = thedb.pick_list('cooking devices', 'devicename',
             'devices', 'devicename')
 
         # Pick job from list
-        jobid = c.pick_list(thedb, 'job names', 'jobname', 'job_info',
+        jobid = thedb.pick_list('job names', 'jobname', 'job_info',
             'createtime')
 
         # Get user_id
