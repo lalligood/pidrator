@@ -83,8 +83,8 @@ def main():
             currtime = datetime.now()
             if currtime >= start + currdelta:
                 current = c.dbdate(currtime)
-                if raspi and therm_sens:
-                    temp_cen, temp_far = c.get_temp() # Read temperature
+                if thedb.raspi and thedb.therm_sens:
+                    temp_cen, temp_far = c.format_temp() # Read temperature
                     temp_c = c.dbnumber(temp_cen)
                     temp_f = c.dbnumber(temp_far)
                     thedb.query('''insert into job_data
@@ -97,7 +97,7 @@ def main():
                 start = datetime.now()
                 countdown += (fractmin / 60)
                 timeleft = int(cooktime[0]) - countdown
-                if raspi and therm_sens:
+                if thedb.raspi and thedb.therm_sens:
                     print('Job has been active for {} minutes.'.format(countdown))
                     print('There are {} minutes left.'.format(timeleft))
                     print('The current temperature is {} degrees C.'.format(temp_cen))

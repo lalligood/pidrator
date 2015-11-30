@@ -564,7 +564,7 @@ def dbdate(date):
     response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
     return response
 
-def read_temp():
+def read_raw_temp():
     'If device is present, it will open a connection to thermal sensor.'
     if raspi:
         sensor = open(sensor_file, 'r') # Open thermal sensor "file"
@@ -572,12 +572,12 @@ def read_temp():
         sensor.close() # Close "file"
         return rawdata
 
-def get_temp():
+def format_temp():
     'Reads thermal sensor until it gets a valid result.'
     if raspi:
-        results = readtemp()                    # Read sensor
+        results = read_raw_temp()                    # Read sensor
         while results[0].strip()[-3:] != 'YES': # Continues until result
-            results = readtemp()                # is valid, just in case
+            results = read_raw_temp()                # is valid, just in case
         validate = results[1].find('t=')
         if validate != -1:
             parse_temp = lines[1][equals_pos + 2:]
