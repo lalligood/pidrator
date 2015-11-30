@@ -506,6 +506,45 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 matchfound = False
             return matchfound
 
+    def main_cooking_loop(self, jobid, end):
+        fractmin = 15 # Log temp to database in seconds
+        currdelta = timedelta(seconds=fractmin)
+        countdown = 0
+        thedb.powertail(True) # Turn Powertail on
+        while True:
+            currtime = datetime.now()
+            # Take action every fractmin seconds
+            if currtime >= start + currdelta:
+                current = c.dbdate(currtime)
+                # First write a record to database
+                if thedb.raspi and thedb.therm_sens:
+                    temp_cen, temp_far = c.format_temp() # Read temperature
+                    temp_c = c.dbnumber(temp_cen)
+                    temp_f = c.dbnumber(temp_far)
+                    thedb.query('''insert into job_data
+                        (job_id, moment, temp_c, temp_f)
+                        values ((%s), (%s), (%s))''',
+                        jobid + current + temp_c + temp_f, True)
+                else: # If running on test, then don't read temperature
+                    thedb.query('''insert into job_data (job_id, moment)
+                        values ((%s), (%s))''', jobid + current, True)
+                start = datetime.now()
+                countdown += (fractmin / 60)
+                timeleft = int(cooktime[0]) - countdown
+                # Then print information to screen
+                if thedb.raspi and thedb.therm_sens:
+                    print('Job has been active for {} minutes.'.format(countdown))
+                    print('There are {} minutes left.'.format(timeleft))
+                    print('The current temperature is {} degrees C.'.format(temp_cen))
+                else:
+                    print('Job has been active for {} minutes and there are {} minutes left.'.format(countdown, timeleft))
+            # Quit when job has completed
+            if currtime >= end:
+                thedb.powertail(False) # Turn Powertail off
+                print('\n\n')
+                print('Job complete!')
+                break
+
 def verify_python_version():
     'Verify that script is running python 3.x.'
     (major, minor, patchlevel) = platform.python_version_tuple()

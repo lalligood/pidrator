@@ -72,44 +72,10 @@ def main():
         thedb.set_job_start_time(jobid)
 
         # Calculate job run time
-        thedb.calculate_job_time(jobid)
+        finish_time = thedb.calculate_job_time(jobid)
 
         # Main cooking loop
-        fractmin = 15 # Log temp to database in seconds
-        currdelta = timedelta(seconds=fractmin)
-        countdown = 0
-        thedb.powertail(True) # Turn Powertail on
-        while True:
-            currtime = datetime.now()
-            if currtime >= start + currdelta:
-                current = c.dbdate(currtime)
-                if thedb.raspi and thedb.therm_sens:
-                    temp_cen, temp_far = c.format_temp() # Read temperature
-                    temp_c = c.dbnumber(temp_cen)
-                    temp_f = c.dbnumber(temp_far)
-                    thedb.query('''insert into job_data
-                        (job_id, moment, temp_c, temp_f)
-                        values ((%s), (%s), (%s))''',
-                        jobid + current + temp_c + temp_f, True)
-                else: # If running on test, then don't read temperature
-                    thedb.query('''insert into job_data (job_id, moment)
-                        values ((%s), (%s))''', jobid + current, True)
-                start = datetime.now()
-                countdown += (fractmin / 60)
-                timeleft = int(cooktime[0]) - countdown
-                if thedb.raspi and thedb.therm_sens:
-                    print('Job has been active for {} minutes.'.format(countdown))
-                    print('There are {} minutes left.'.format(timeleft))
-                    print('The current temperature is {} degrees C.'.format(temp_cen))
-                else:
-                    print('Job has been active for {} minutes and there are {} minutes left.'.format(countdown, timeleft))
-            # Quit when job has completed
-            if currtime >= end: # Otherwise stop when time has ended
-                thedb.powertail(False) # Turn Powertail off
-                print('\n\n')
-                print('Job complete!')
-                break
-
+        main_cooking_loop(jobid, finish_time)
 
 if __name__ == "__main__":
     main()
