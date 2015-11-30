@@ -475,12 +475,13 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
     def show_pick_list(self, listname, colname, tablename, ordername):
         '''Displays item(s) in the list. If the list is empty, it returns a message
     that item(s) need to be added to the list.'''
-        itemnbr = ''
         order = eval('(\'' + ordername + '\', )')
         selectorder = 'select ' + colname + ' from ' + tablename + ' order by ' + ordername
         itemlist = self.query(selectorder, None, False, 'all')
         if itemlist == []: # Inform that table is empty
             print('No items found. Please add a new item to the {} list...'.format(listname))
+            itemnbr = ''
+            countlist = 0
         else: # Show any row(s) exist in table
             print('The following {} are available: '.format(listname))
             count = 0
@@ -490,7 +491,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             print('\t0. Add a new item to the {} list.'.format(listname))
             countlist = count
             itemnbr = input('Enter the number of the item that you want to use: ')
-            return itemlist, itemnbr, countlist
+        return itemlist, itemnbr, countlist
 
     def match_item_check(self, colname, tablename, itemlist, itemnbr, newitem):
         '''Once the user has input a new item, this verifies that it does not match
