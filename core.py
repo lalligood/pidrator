@@ -74,7 +74,7 @@ class RasPiDatabase:
         and any other value returns none.'''
         try:
             self.cur.execute(SQL, params)
-            logging.info("Query '" + SQL + "' executed successfully.")
+            logging.info("Query '{}' executed successfully.".format(SQL))
             if commit:
                 self.conn.commit()
             if fetch == 'all':
@@ -82,27 +82,34 @@ class RasPiDatabase:
             elif fetch == 'one':
                 return self.cur.fetchone()
         except psycopg2.Error as dberror:
-            logging.error(dberror.diag.severity + ' - ' + dberror.diag.message_primary)
-            logging.error('Failed query: ' + SQL)
+            logging.error('{} - {}'.format(dberror.diag.severity, dberror.diag.message_primary))
+            logging.error('Failed query: {}'.format(SQL))
 
     def clean_exit(self, exitcode):
         'Closes database connection & attempts to exit gracefully.'
         self.cur.close()
         self.conn.close()
         if exitcode == 0: # Log as info when closing normally
-            logging.info('Shutting down application with exit status ' + str(exitcode) + '.')
+            logging.info('Shutting down application with exit status {}.'.format(exitcode))
         else: # Log as error when closing abnormally
-            logging.error('Shutting down application prematurely with exit status ' + str(exitcode) + '.')
+            logging.error('Shutting down application prematurely with exit status {}.'.format(exitcode))
         logging.shutdown()
         sys.exit(exitcode)
 
     def powertail(self, onoff):
         'If device if present, it turns Powertail on/off.'
-        if raspi:
+        try:
             if onoff:
+                state = 'on'
                 GPIO.output(self.power_pin, True) # Powertail on
             else:
+                state = 'off'
                 GPIO.output(self.power_pin, False) # Powertail off
+        except:
+            logging.critical('Unable to turn Powertail {}. Check hardware connectivity!'.format(state))
+            self.clean_exit(1)
+        else:
+            logging.info('Powertail turned {} successfully.'.format(state))
 
     def main_menu(self):
         'Basic Welcome screen to login, create acct, or exit.'
@@ -176,7 +183,7 @@ Enter your selection: ''')
             try:
                 self.query(extension_SQL)
             except psycopg2.Error as dberror:
-                logging.critical("Unable to create " + extension_name + " extension.")
+                logging.critical('Unable to create {} extension.'.format(extension_name))
                 logging.critical("""Run 'apt-get install postgresql-contrib-9.4' then re-run 'Create
     necessary extensions and tables in database'.""")
                 self.clean_exit(1)
@@ -254,7 +261,7 @@ Enter your selection: ''')
                 try:
                     self.query(table_SQL, None, True)
                 except psycopg2.Error as dberror:
-                    logging.critical("Unable to create " + table_name.upper() + " table.")
+                    logging.critical('Unable to create {} table.'.format(table_name.upper()))
                     logging.critical("""Verify database is running and re-run 'Create necessary extensions
     and tables in database'.""")
                     self.clean_exit(1)
@@ -475,7 +482,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         '''Displays item(s) in the list. If the list is empty, it returns a message
     that item(s) need to be added to the list.'''
         order = eval('(\'' + ordername + '\', )')
-        selectorder = 'select ' + colname + ' from ' + tablename + ' order by ' + ordername
+        selectorder = 'select {} from {} order by {}'.format(colname, tablename, ordername)
         itemlist = self.query(selectorder, None, False, 'all')
         if itemlist == []: # Inform that table is empty
             print('No items found. Please add a new item to the {} list...'.format(listname))
@@ -496,7 +503,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         '''Once the user has input a new item, this verifies that it does not match
     an existing item in the list.'''
         if itemlist != None:
-            selectname = 'select ' + colname + ' from ' + tablename + ' where ' + colname + ' = (%s)'
+            selectname = 'select {} from {} where {} = (%s)'.format(colname, tablename, colname)
             existingitem = self.query(selectname, newitem, False, 'one')
             if newitem == existingitem: # If existing item is found, disallow
                 matchfound = True
