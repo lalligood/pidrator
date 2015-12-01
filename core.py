@@ -130,9 +130,7 @@ Enter your selection: ''')
                 return user
                 break
             elif menuopt == '2':
-                # MAIN COOKING ROUTINE GOES HERE
-                get_attention('Nothing to see here yet. Please move along...')
-                continue
+                self.cooking_job()
             elif menuopt == '7':
                 user = self.user_create()
                 return user
@@ -419,7 +417,7 @@ Enter your selection: ''')
                 else:
                     get_attention('Invalid selection. Please try again...')
 
-    def calculate_job_time(jobid):
+    def calculate_job_time(self, jobid):
         'Calculates the time that the job will end.'
         cookdelta = timedelta(hours=cookhour, minutes=cookmin)
         cooktime = c.dbnumber((cookhour * 60) + cookmin)
@@ -516,29 +514,29 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         fractmin = 15 # Log temp to database in seconds
         currdelta = timedelta(seconds=fractmin)
         countdown = 0
-        thedb.powertail(True) # Turn Powertail on
+        self.powertail(True) # Turn Powertail on
         while True:
             currtime = datetime.now()
             # Take action every fractmin seconds
             if currtime >= start + currdelta:
                 current = c.dbdate(currtime)
                 # First write a record to database
-                if thedb.raspi and thedb.therm_sens:
+                if self.raspi and self.therm_sens:
                     temp_cen, temp_far = c.format_temp() # Read temperature
                     temp_c = c.dbnumber(temp_cen)
                     temp_f = c.dbnumber(temp_far)
-                    thedb.query('''insert into job_data
+                    self.query('''insert into job_data
                         (job_id, moment, temp_c, temp_f)
                         values ((%s), (%s), (%s))''',
                         jobid + current + temp_c + temp_f, True)
                 else: # If running on test, then don't read temperature
-                    thedb.query('''insert into job_data (job_id, moment)
+                    self.query('''insert into job_data (job_id, moment)
                         values ((%s), (%s))''', jobid + current, True)
                 start = datetime.now()
                 countdown += (fractmin / 60)
                 timeleft = int(cooktime[0]) - countdown
                 # Then print information to screen
-                if thedb.raspi and thedb.therm_sens:
+                if self.raspi and self.therm_sens:
                     print('Job has been active for {} minutes.'.format(countdown))
                     print('There are {} minutes left.'.format(timeleft))
                     print('The current temperature is {} degrees C.'.format(temp_cen))
@@ -546,10 +544,49 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                     print('Job has been active for {} minutes and there are {} minutes left.'.format(countdown, timeleft))
             # Quit when job has completed
             if currtime >= end:
-                thedb.powertail(False) # Turn Powertail off
+                self.powertail(False) # Turn Powertail off
                 print('\n\n')
                 print('Job complete!')
                 break
+
+    def cooking_job(self):
+        while True:
+            # Pick food from list
+            foodid = self.pick_list('foods', 'foodname', 'foods', 'foodname')
+
+            # Pick cooking device from list
+            deviceid = self.pick_list('cooking devices', 'devicename',
+                'devices', 'devicename')
+
+            # Pick job from list
+            jobid = self.pick_list('job names', 'jobname', 'job_info',
+                'createtime')
+
+            # Get user_id
+            userid = self.query('select id from users where username = (%s)',
+                user, False, 'one')
+
+            # Get temperature setting
+            tempset = self.get_temp_setting(jobid)
+
+            # Update user_id, device_id, & food_id in job_info
+            self.query('''update job_info set user_id = (%s), device_id = (%s),
+                food_id = (%s), temperature = (%s) where id = (%s)''',
+                userid + deviceid + foodid + tempset + jobid, True)
+
+            # Now make sure it worked...!
+            self.describe_job(jobid)
+            c.get_job_time()
+            self.confirm_job()
+
+            # Set job start time
+            self.set_job_start_time(jobid)
+
+            # Calculate job run time
+            finish_time = self.calculate_job_time(jobid)
+
+            # Main cooking loop
+            main_cooking_loop(jobid, finish_time)
 
 def verify_python_version():
     'Verify that script is running python 3.x.'

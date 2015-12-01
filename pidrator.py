@@ -36,46 +36,8 @@ def main():
     # Open connection to database
     thedb = c.RasPiDatabase()
 
-    while True:
-        # Main menu
-        user = thedb.main_menu()
-
-        # Pick food from list
-        foodid = thedb.pick_list('foods', 'foodname', 'foods', 'foodname')
-
-        # Pick cooking device from list
-        deviceid = thedb.pick_list('cooking devices', 'devicename',
-            'devices', 'devicename')
-
-        # Pick job from list
-        jobid = thedb.pick_list('job names', 'jobname', 'job_info',
-            'createtime')
-
-        # Get user_id
-        userid = thedb.query('select id from users where username = (%s)',
-            user, False, 'one')
-
-        # Get temperature setting
-        tempset = thedb.get_temp_setting(jobid)
-
-        # Update user_id, device_id, & food_id in job_info
-        thedb.query('''update job_info set user_id = (%s), device_id = (%s),
-            food_id = (%s), temperature = (%s) where id = (%s)''',
-            userid + deviceid + foodid + tempset + jobid, True)
-
-        # Now make sure it worked...!
-        thedb.describe_job(jobid)
-        c.get_job_time()
-        thedb.confirm_job()
-
-        # Set job start time
-        thedb.set_job_start_time(jobid)
-
-        # Calculate job run time
-        finish_time = thedb.calculate_job_time(jobid)
-
-        # Main cooking loop
-        main_cooking_loop(jobid, finish_time)
+    # Main menu
+    user = thedb.main_menu()
 
 if __name__ == "__main__":
     main()
