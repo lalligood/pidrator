@@ -439,14 +439,14 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 if len(newitem[0]) == 0: # Make sure user input is not empty
                     get_attention('Invalid entry. Please try again...')
                     continue
-                confirm = input('You entered: ' + newitem[0] + '. Is that correct? [Y/N] ')
+                confirm = input('You entered: {}. Is that correct? [Y/N] '.format(newitem[0]))
                 if confirm.lower() == 'y':
                     # Verify the new item does not match any existing item(s)
                     isamatch = self.match_item_check(colname, tablename, itemlist, itemnbr, newitem)
                     if isamatch:
                         continue
                     # Insert new item into table
-                    insertrow = 'insert into ' + tablename + ' (' + colname + ') values ((%s))'
+                    insertrow = 'insert into {} ({}) values ((%s))'.format(tablename, colname)
                     self.query(insertrow, newitem, True)
                     print('{} has been added to the list of {}.'.format(newitem[0], listname))
                     print('Returning to list of available {}.'.format(listname))
@@ -461,15 +461,14 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 continue
             else: # Find the item in the list
                 count = 0
-                for x in itemlist: # Iterate & find selected value
+                for itemname in itemlist: # Iterate & find selected value
                     count += 1
                     if count == int(itemnbr):
-                        itemname = x
                         print('You selected: {}.'.format(itemname[0]))
-                        selectid = 'select id from ' + tablename + ' where ' + colname + ' = (%s)'
+                        selectid = 'select id from {} where {} = (%s)'.format(tablename, colname)
                         itemid = self.query(selectid, itemname, False, 'one')
-                        return itemid
                         print('\n\n')
+                        return itemid
                         break
 
     def show_pick_list(self, listname, colname, tablename, ordername):
