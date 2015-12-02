@@ -2,11 +2,7 @@
 __author__ = 'lalligood'
 
 import core as c
-from datetime import datetime, timedelta
-import glob
 import logging
-import os
-import time
 
 '''
 **** PARAMETERS ****
