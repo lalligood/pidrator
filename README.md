@@ -3,17 +3,24 @@ Using a Raspberry Pi, I want to be able to control & monitor either a slow cooke
 
 The Raspberry Pi will be controlled one of two ways: either a web interface for remote access and/or a GUI (access by a screen hardwired to the Raspberry Pi). Since I am new to programming with python, I am trying to leave my options open but will reassess this decision later in the project.
 
+## Warning (as of 3-Dec-2015) ##
+**This project is very much a work in progress.**
+
+The overwhelming majority of commits thus far have all sorts of problems that prevent it from working as I would like for it to. This project was my reason to learn python. There were some working commits a couple of months ago (should be obvious by the commit messages) where I was able to get it working using python procedurally.
+
+Since that time I have rewritten the majority of the code to be object oriented. This approach has dramatically improved the flexibility of the code but has introduced problems as I work out the kinks while learning a new mindset when it comes to programming. While I do not have a target completion date, I think it's pretty obvious from my commits that I work on this project almost daily & have no plans to alter that behavior. 
+
 ## Hardware & Software Needed ##
 * Raspberry Pi (based on the scope of this project, any Pi should be acceptable)
 * USB Wifi adapter
-* High-speed (Class 10 preferred) SD/MicroSD card
-* high temp waterproof DS18B20 Digital temperature sensor (purchased from Adafruit)
-* Powertail 2 (purchased from Adafruit)
-* Debian-based Linux distro for Rapsberry Pi (I prefer Raspbian)
+* High-speed (Class 10 preferred) SD/MicroSD card, at least 4GB
+* [High temp waterproof DS18B20 digital temperature sensor](https://www.adafruit.com/products/642), purchased from Adafruit *(Do NOT use the standard DS18B20 sensor!)*
+* [Powerswitch tail 2](https://www.adafruit.com/products/268), purchased from Adafruit
+* Debian-based Linux distro for Rapsberry Pi (I prefer [Raspbian](https://www.raspberrypi.org/downloads/raspbian/))
 * Python version 3.4+
 * PostgreSQL version 9.1+
-* RPi.GPIO python class (for communicating with GPIO pins on Raspberry Pi)
-* psycopg2 python class (for interacting with PostgreSQL database)
+* [RPi.GPIO](https://github.com/adafruit/Adafruit_Python_GPIO) python class (for communicating with GPIO pins on Raspberry Pi)
+* [psycopg2](http://initd.org/psycopg/) python class (for interacting with PostgreSQL database)
 * TBD: A web interface requires a http (or https) server, ergo Apache or nginx. PHP will then be required for interacting with the database.
 * TBD: If a GUI is ever implemented, some kind of screen & input method will be required. (The official touchscreen display was recently released & would be an excellent candidate for this project.)
 
