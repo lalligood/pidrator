@@ -32,8 +32,9 @@ def main():
     # Open connection to database
     thedb = c.RasPiDatabase()
 
-    # Main menu
-    user = thedb.main_menu()
+    while True:
+        # Main menu
+        user = thedb.main_menu()
 
 if __name__ == "__main__":
     main()
