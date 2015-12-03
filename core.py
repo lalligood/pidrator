@@ -125,14 +125,24 @@ Select from one of the following choices:
 \t7. Create account
 \t8. Change password
 \t9. Create necessary extensions and tables in database
+\th. Help
 \tx. Exit
 Enter your selection: ''')
             if menuopt == '1':
                 user = self.user_login()
                 return user
-                break
             elif menuopt == '2':
+            # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
+            #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
+            #    HOWEVER, PIDRATOR SHOULD NEVER BE RUN WITHOUT LOGGING A USER IN FIRST! '''
                 self.cooking_job()
+# Following 4 lines are the production version code which forces user login
+# before creating a cooking job.
+                #try:
+                    #if user != []:
+                        #self.cooking_job()
+                #except UnboundLocalError:
+                    #get_attention('You must login first. Returning to pidrator menu...')
             elif menuopt == '7':
                 user = self.user_create()
                 return user
@@ -143,7 +153,9 @@ Enter your selection: ''')
                     get_attention('You must login first. Returning to pidrator menu...')
             elif menuopt == '9':
                 self.build_tables()
-            elif menuopt == 'x':
+            elif menuopt.lower() == 'h':
+                help_screen()
+            elif menuopt.lower() == 'x':
                 print('Exiting pidrator...')
                 self.clean_exit(0)
             else:
@@ -376,7 +388,6 @@ Enter your selection: ''')
                 left outer join devices on job_info.device_id = devices.id
                 left outer join foods on job_info.food_id = foods.id
             where job_info.id = (%s)''', jobid, False, 'one')
-        # Convert tuple to list
         print('\tJob name:            {}'.format(row[0]))
         print('\tPrepared by:         {}'.format(row[1]))
         print('\tCooking device:      {}'.format(row[2]))
@@ -401,21 +412,18 @@ Enter your selection: ''')
                 print('No previous temperature found.')
                 tempsetting = dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
                 return tempsetting
-                break
             else: # Previous cooking data available
                 print('Last job was cooked at temperature/setting: {}.'.format(tempcheck[0]))
                 response = input('Are you going to cook at the same temperature/setting? [Y/N] ')
                 if response.lower() == 'y': # Cook at the same temp
                     print('You selected to cook at the same temperature/setting.')
                     tempsetting = tempcheck
-                    return tempsetting
                     print('\n\n')
-                    break
+                    return tempsetting
                 elif response.lower() == 'n': # Cook at a different temp
                     tempsetting = dbinput('What temperature/setting are you going to use this time? ', '')
-                    return tempsetting
                     print('\n\n')
-                    break
+                    return tempsetting
                 else:
                     get_attention('Invalid selection. Please try again...')
 
@@ -476,7 +484,6 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                         itemid = self.query(selectid, itemname, False, 'one')
                         print('\n\n')
                         return itemid
-                        break
 
     def show_pick_list(self, listname, colname, tablename, ordername):
         '''Displays item(s) in the list. If the list is empty, it returns a message
@@ -669,3 +676,12 @@ def format_temp():
             temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
             return temp_c, temp_f # Return temp to 3 decimal places in C & F
 
+def help_screen():
+    'Display useful information about using pidrator'
+    #clear screen goes here
+    print("""
+pidrator was designed to be used with any model/version of Raspberry Pi. It
+needs a Powertail & thermal sensor to perform all of the designed functionality.
+
+ipsum lorem blah blah blah....
+""")
