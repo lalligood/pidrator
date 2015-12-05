@@ -311,8 +311,8 @@ Enter your selection: ''')
         'Create a new user.'
         while True:
             username = dbinput('Enter your desired username: ', 'user')
-            fullname = dbinput('Enter your full name: ', '')
-            emailaddr = dbinput('Enter your email address: ', '')
+            fullname = dbinput('Enter your full name: ')
+            emailaddr = dbinput('Enter your email address: ')
             pswd = dbinput('Enter your desired password: ', 'pswd')
             pswdconfirm = dbinput('Confirm your password: ', 'pswd')
             if pswd != pswdconfirm: # Make sure passwords match
@@ -410,7 +410,7 @@ Enter your selection: ''')
                 where id = (%s)''', jobid, False, 'one')
             if tempcheck == None: # No previous cooking data available
                 print('No previous temperature found.')
-                tempsetting = dbinput('What temperature (degrees or setting) are you going to cook your job at? ', '')
+                tempsetting = dbinput('What temperature (degrees or setting) are you going to cook your job at? ')
                 return tempsetting
             else: # Previous cooking data available
                 print('Last job was cooked at temperature/setting: {}.'.format(tempcheck[0]))
@@ -421,7 +421,7 @@ Enter your selection: ''')
                     print('\n\n')
                     return tempsetting
                 elif response.lower() == 'n': # Cook at a different temp
-                    tempsetting = dbinput('What temperature/setting are you going to use this time? ', '')
+                    tempsetting = dbinput('What temperature/setting are you going to use this time? ')
                     print('\n\n')
                     return tempsetting
                 else:
@@ -448,9 +448,10 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         while True:
             # Display all item(s) in list or state that the list is empty
             itemlist, itemnbr, countlist = self.show_pick_list(listname, colname, tablename, ordername)
+            itemid = ()
             # Enter item(s) into the list
             if itemnbr == '0' or itemlist == []: # Add new item to the table
-                newitem = dbinput('Enter the name of the item you would like to add: ', '')
+                newitem = dbinput('Enter the name of the item you would like to add: ')
                 if len(newitem[0]) == 0: # Make sure user input is not empty
                     get_attention('Invalid entry. Please try again...')
                     continue
@@ -631,7 +632,7 @@ def get_job_time():
             get_attention('Time selection declined. Exiting')
     print('\n\n')
 
-def dbinput(text, input_type):
+def dbinput(text, input_type=None):
     'Gets user input & formats input text for use in query as a parameter.'
     response = ''
     if input_type == 'pswd':
