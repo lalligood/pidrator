@@ -1,5 +1,16 @@
 #!/usr/bin/python3
-__author__ = 'lalligood'
+
+'''pidrator is a designed to be run on a Raspberry Pi (any model) to control and
+monitor the progress of a slow cooker or food dehydrator. All data collected
+before & during the cooking procedure is logged to a PostgreSQL database.
+
+This project is stored and maintained at
+    https://gitlab.com/lalligood/pidrator'''
+
+__author__ = 'Lance Alligood'
+__email__ = 'lalligood@gmail.com'
+#__version__ = 'TBD'
+__status__ = 'Prototype'
 
 import core as c
 import logging
@@ -20,6 +31,7 @@ logging.info('Initializing application & attempting to connect to database.')
 '''
 **** MAIN ROUTINE ****
 '''
+
 def main():
     '''This is the main routine for controlling the cooking device with a
     Raspberry Pi. All cooking data is stored in a PostgreSQL database.

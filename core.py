@@ -1,5 +1,15 @@
 #!/usr/bin/python3
-__author__ = 'lalligood'
+
+'''core.py is a key component of pidrator. It contains the majority of class
+definitions, methods, and functions specific to its operation.
+
+This project is stored and maintained at
+    https://gitlab.com/lalligood/pidrator'''
+
+__author__ = 'Lance Alligood'
+__email__ = 'lalligood@gmail.com'
+#__version__ = 'TBD'
+__status__ = 'Prototype'
 
 from datetime import datetime, timedelta
 import getpass
@@ -11,7 +21,6 @@ import psycopg2
 from psycopg2 import extras
 import sys
 import time
-
 
 class RasPiDatabase:
     # Enable proper handling of UUIDs with PostgreSQL
