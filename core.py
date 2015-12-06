@@ -128,7 +128,13 @@ class RasPiDatabase:
 
     def main_menu(self):
         'Basic Welcome screen to login, create acct, or exit.'
+        user = ()
         while True:
+            print('\n')
+            if user != ():
+                print('Currently logged in as: {}'.format(user[0]))
+            else:
+                print('Not logged in. Please login or create a new account.')
             menuopt = input('''
 pidrator menu
 
@@ -143,7 +149,6 @@ Select from one of the following choices:
 Enter your selection: ''')
             if menuopt == '1':
                 user = self.user_login()
-                return user
             elif menuopt == '2':
             # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
             #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
@@ -158,11 +163,10 @@ Enter your selection: ''')
                     #get_attention('You must login first. Returning to pidrator menu...')
             elif menuopt == '7':
                 user = self.user_create()
-                return user
             elif menuopt == '8':
-                try:
-                    self.change_pswd_prompt(user)
-                except UnboundLocalError:
+                if user != ():
+                    self.change_pswd(user)
+                else:
                     get_attention('You must login first. Returning to pidrator menu...')
             elif menuopt == '9':
                 self.build_tables()
@@ -315,7 +319,7 @@ Enter your selection: ''')
             else: # Password does not match
                 badlogin += 1
             if badlogin == 3: # Quit after 3 failed logins
-                print('Too many incorrect login attempts.')
+                get_attention('Too many incorrect login attempts. Exiting...')
                 self.clean_exit(1)
             else: # Failed login message & try again
                 get_attention('Username and/or password incorrect. Try again...')
@@ -347,19 +351,6 @@ Enter your selection: ''')
                 print('New account created successfully.')
                 get_attention('Please login. Returning to main menu...')
                 return username
-
-    def change_pswd_prompt(self, user):
-        'Prompt user to change password & handle (in)correct responses.'
-        while True:
-            response = input('Do you want to change your password? [Y/N] ')
-            if response.lower() == 'y':
-                self.change_pswd(user)
-                break
-            elif response.lower() == 'n':
-                break
-            else:
-                get_attention('Invalid selection. Please try again...')
-        print('\n\n')
 
     def change_pswd(self, username):
         'Allows the user to change their password.'
