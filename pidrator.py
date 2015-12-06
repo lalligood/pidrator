@@ -36,8 +36,8 @@ def main():
     '''This is the main routine for controlling the cooking device with a
     Raspberry Pi. All cooking data is stored in a PostgreSQL database.
 
-    Before running this application, you should run buildtables.py to set up the
-    database.'''
+    The first time you run pidrator, you need to build the necessary tables and
+    extensions (menu option) and create a user (menu option).'''
     # Make sure running on python 3.x
     c.verify_python_version()
 
