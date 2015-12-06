@@ -80,9 +80,13 @@ class RasPiDatabase:
             if commit:
                 self.conn.commit()
             if fetch == 'all':
-                return self.cur.fetchall()
+                resultset = self.cur.fetchall()
+                logging.info('Query returned: {}'.format(resultset))
+                return resultset
             elif fetch == 'one':
-                return self.cur.fetchone()
+                resultset = self.cur.fetchone()
+                logging.info('Query returned: {}'.format(resultset))
+                return resultset
         except psycopg2.Error as dberror:
             logging.error('{} - {}'.format(dberror.diag.severity, dberror.diag.message_primary))
             logging.error('Failed query: {}'.format(SQL))

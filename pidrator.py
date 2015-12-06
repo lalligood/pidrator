@@ -12,7 +12,7 @@ import logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
 # Logging information
 logfilename = 'app-pidrator.log'
-loglevel = logging.WARNING # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
+loglevel = logging.INFO # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
 logformat = '%(asctime)s [%(levelname)s] %(message)s'
 logging.basicConfig(filename=logfilename, level=loglevel, format=logformat, datefmt=date_format)
 logging.info('Initializing application & attempting to connect to database.')
