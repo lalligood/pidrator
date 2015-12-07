@@ -105,8 +105,10 @@ class RasPiDatabase:
         self.cur.close()
         self.conn.close()
         if exitcode == 0: # Log as info when closing normally
+            print('Exiting pidrator...')
             logging.info('Shutting down application with exit status {}.'.format(exitcode))
         else: # Log as error when closing abnormally
+            print('Unexpectedly exiting pidrator...')
             logging.error('Shutting down application prematurely with exit status {}.'.format(exitcode))
         logging.shutdown()
         sys.exit(exitcode)
@@ -146,20 +148,20 @@ Select from one of the following choices:
 \t9. Create necessary extensions and tables in database
 \th. Help
 \tx. Exit
-Enter your selection: ''')
-            if menuopt == '1':
+Enter your selection: ''').lower()
+            """if menuopt == '1':
                 user = self.user_login()
             elif menuopt == '2':
             # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
             #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
             #    HOWEVER, PIDRATOR SHOULD NEVER BE RUN WITHOUT LOGGING A USER IN FIRST! '''
                 self.cooking_job()
-# Following 4 lines are the production version code which forces user login
-# before creating a cooking job.
+            # Following 4 lines are the production version code which forces user login
+            # before creating a cooking job.
                 #try:
-                    #if user != []:
+                    #if user != ():
                         #self.cooking_job()
-                #except UnboundLocalError:
+                #else:
                     #get_attention('You must login first. Returning to pidrator menu...')
             elif menuopt == '7':
                 user = self.user_create()
@@ -173,10 +175,28 @@ Enter your selection: ''')
             elif menuopt.lower() == 'h':
                 help_screen()
             elif menuopt.lower() == 'x':
-                print('Exiting pidrator...')
                 self.clean_exit(0)
             else:
                 get_attention('Invalid choice. Please try again...')
+"""
+            selections = {
+                '1': user = self.user_login(),
+                '2': self.cooking_job(),
+                '7': user = self.user_create(),
+                '8': self.require_login(),
+                '9': self.build_tables(),
+                'h': help_screen(),
+                'x': self.clean_exit(0)
+                }
+            for option, selection in selections.items():
+                if option == menuopt:
+                    selection
+
+    def require_login(self):
+        if user != ():
+            self.change_pswd(user)
+        else:
+            get_attention('You must login first. Returning to pidrator menu...')
 
     def confirm_job(self):
         'Prompt user before starting the job.'
@@ -284,7 +304,8 @@ Enter your selection: ''')
                 , email_address text not null unique
                 , "password" text not null
                 , createdate timestamp with time zone default now()
-                , constraint users_pkey primary key (id));'''}
+                , constraint users_pkey primary key (id));'''
+                }
         for table_name, table_SQL in tables.items():
             if table_name == table:
                 try:
