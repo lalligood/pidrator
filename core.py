@@ -129,7 +129,8 @@ class RasPiDatabase:
             logging.info('Powertail turned {} successfully.'.format(state))
 
     def main_menu(self):
-        'Basic Welcome screen to login, create acct, or exit.'
+        '''Menu screen to login, create a cooking job, create acct,
+        change password, create database extensions/tables, get help, or exit.'''
         user = ()
         while True:
             print('\n')
@@ -149,7 +150,7 @@ Select from one of the following choices:
 \th. Help
 \tx. Exit
 Enter your selection: ''').lower()
-            """if menuopt == '1':
+            if menuopt == '1':
                 user = self.user_login()
             elif menuopt == '2':
             # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
@@ -178,19 +179,6 @@ Enter your selection: ''').lower()
                 self.clean_exit(0)
             else:
                 get_attention('Invalid choice. Please try again...')
-"""
-            selections = {
-                '1': user = self.user_login(),
-                '2': self.cooking_job(),
-                '7': user = self.user_create(),
-                '8': self.require_login(),
-                '9': self.build_tables(),
-                'h': help_screen(),
-                'x': self.clean_exit(0)
-                }
-            for option, selection in selections.items():
-                if option == menuopt:
-                    selection
 
     def require_login(self):
         if user != ():
