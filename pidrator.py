@@ -40,12 +40,10 @@ def main():
     extensions (menu option) and create a user (menu option).'''
     # Make sure running on python 3.x
     c.verify_python_version()
-
     # Open connection to database
     thedb = c.RasPiDatabase()
-
+    # Main menu
     while True:
-        # Main menu
         user = thedb.main_menu()
 
 if __name__ == "__main__":

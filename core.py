@@ -570,38 +570,29 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         while True:
             # Pick food from list
             foodid = self.pick_list('foods', 'foodname', 'foods', 'foodname')
-
             # Pick cooking device from list
             deviceid = self.pick_list('cooking devices', 'devicename',
                 'devices', 'devicename')
-
             # Pick job from list
             jobid = self.pick_list('job names', 'jobname', 'job_info',
                 'createtime')
-
             # Get user_id
             userid = self.query('select id from users where username = (%s)',
                 user, False, 'one')
-
             # Get temperature setting
             tempset = self.get_temp_setting(jobid)
-
             # Update user_id, device_id, & food_id in job_info
             self.query('''update job_info set user_id = (%s), device_id = (%s),
                 food_id = (%s), temperature = (%s) where id = (%s)''',
                 userid + deviceid + foodid + tempset + jobid, True)
-
             # Now make sure it worked...!
             self.describe_job(jobid)
             c.get_job_time()
             self.confirm_job()
-
             # Set job start time
             self.set_job_start_time(jobid)
-
             # Calculate job run time
             finish_time = self.calculate_job_time(jobid)
-
             # Main cooking loop
             main_cooking_loop(jobid, finish_time)
 
