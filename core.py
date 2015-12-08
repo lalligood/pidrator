@@ -180,12 +180,6 @@ Enter your selection: ''').lower()
             else:
                 get_attention('Invalid choice. Please try again...')
 
-    def require_login(self):
-        if user != ():
-            self.change_pswd(user)
-        else:
-            get_attention('You must login first. Returning to pidrator menu...')
-
     def confirm_job(self):
         'Prompt user before starting the job.'
         while True:
