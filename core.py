@@ -133,15 +133,12 @@ class RasPiDatabase:
         change password, create database extensions/tables, get help, or exit.'''
         user = ()
         while True:
-            print('\n')
+            print('\npidrator menu\n')
             if user != ():
-                print('Currently logged in as: {}'.format(user[0]))
+                print('Currently logged in as: {}\n'.format(user[0]))
             else:
                 print('Not logged in. Please login or create a new account.')
-            menuopt = input('''
-pidrator menu
-
-Select from one of the following choices:
+            menuopt = input('''Select from one of the following choices:
 \t1. Login
 \t2. Start cooking job
 \t7. Create account
