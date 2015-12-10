@@ -487,8 +487,9 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                         print('You selected: {}.'.format(itemname[0]))
                         selectid = 'select id from {} where {} = (%s)'.format(tablename, colname)
                         itemid = self.query(selectid, itemname, False, 'one')
-                        print('\n\n')
-                        return itemid
+                        break
+                print('\n\n')
+                return itemid
 
     def show_pick_list(self, listname, colname, tablename, ordername):
         '''Displays item(s) in the list. If the list is empty, it returns a message
