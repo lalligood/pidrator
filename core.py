@@ -494,7 +494,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
     def show_pick_list(self, listname, colname, tablename, ordername):
         '''Displays item(s) in the list. If the list is empty, it returns a message
     that item(s) need to be added to the list.'''
-        order = eval('(\'' + ordername + '\', )')
+        order = tuple_fmt(ordername)
         selectorder = 'select {} from {} order by {}'.format(colname, tablename, ordername)
         itemlist = self.query(selectorder, None, False, 'all')
         if itemlist == []: # Inform that table is empty
@@ -633,24 +633,26 @@ def dbinput(text, input_type=None):
     response = ''
     if input_type == 'pswd':
         response = getpass.getpass(text)
-        dbformat = eval('(\'' + response + '\', )')
+        dbformat = tuple_fmt(response)
     elif input_type == 'user':
         response = input(text)
-        dbformat = eval('(\'' + response.lower() + '\', )')
+        dbformat = tuple_fmt(response.lower())
     else:
         response = input(text)
-        dbformat = eval('(\'' + response + '\', )')
+        dbformat = tuple_fmt(response)
     return dbformat
 
 def dbnumber(number):
     'Gets numeric value & formats for use in query as a parameter.'
-    response = eval('(\'' + str(number) + '\', )')
-    return response
+    return tuple_fmt(response)
 
 def dbdate(date):
     'Gets date value & formats for use in query as a parameter.'
-    response = eval('(\'' + datetime.strftime(date, date_format) + '\', )')
-    return response
+    return tuple_fmt(datetime.strftime(date, date_format))
+
+def tuple_fmt(x):
+    'Formats input value as a tuple for use as a parameter in a query.'
+    return eval('(\'{}\', )'.format(x))
 
 def read_raw_temp():
     'If device is present, it will open a connection to thermal sensor.'
