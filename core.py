@@ -580,7 +580,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 if self.raspi and self.therm_sens:
                     print('Job has been active for {} minutes.'.format(countdown))
                     print('There are {} minutes left.'.format(timeleft))
-                    print('The current temperature is {} degrees C.'.format(temp_cen))
+                    print('The current temperature is {:,3} degrees C.'.format(temp_cen))
                 else:
                     print('Job has been active for {} minutes and there are {} minutes left.'.format(countdown, timeleft))
             # Quit when job has completed
@@ -701,22 +701,25 @@ def read_raw_temp():
 def format_temp():
     'Reads thermal sensor until it gets a valid result.'
     if raspi:
-        results = read_raw_temp()                    # Read sensor
+        results = read_raw_temp()               # Read sensor
         while results[0].strip()[-3:] != 'YES': # Continues until result
-            results = read_raw_temp()                # is valid, just in case
+            results = read_raw_temp()           # is valid, just in case
         validate = results[1].find('t=')
         if validate != -1:
             parse_temp = lines[1][equals_pos + 2:]
-            temp_c = round((float(parse_temp) / 1000.0), 3)
-            temp_f = round((temp_c * 9.0 / 5.0 + 32.0), 3)
-            return temp_c, temp_f # Return temp to 3 decimal places in C & F
+            temp_c = float(parse_temp) / 1000.0
+            temp_f = (temp_c * 9.0 / 5.0) + 32.0
+            return temp_c, temp_f
+
+def clear_screen():
+    'Clear screen for better usability and to get user\'s undivided attention.'
+    os.system('clear')
 
 def help_screen():
     'Display useful information about using pidrator'
-    #clear screen goes here
+    clear_screen()
     print("""
 pidrator was designed to be used with any model/version of Raspberry Pi. It
 needs a Powertail & thermal sensor to perform all of the designed functionality.
-
 ipsum lorem blah blah blah....
 """)
