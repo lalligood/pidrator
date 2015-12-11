@@ -140,7 +140,9 @@ class RasPiDatabase:
                 print('Not logged in. Please login or create a new account.')
             menuopt = input('''Select from one of the following choices:
 \t1. Login
-\t2. Start cooking job
+\t2. Create a new cooking job
+\t3. Select an existing cooking job
+\t4. Run cooking job
 \t7. Create account
 \t8. Change password
 \t9. Create necessary extensions and tables in database
@@ -153,14 +155,30 @@ Enter your selection: ''').lower()
             # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
             #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
             #    HOWEVER, PIDRATOR SHOULD NEVER BE RUN WITHOUT LOGGING A USER IN FIRST! '''
-                self.cooking_job()
+                self.create_cooking_job()
             # Following 4 lines are the production version code which forces user login
             # before creating a cooking job.
                 #try:
                     #if user != ():
-                        #self.cooking_job()
+                        #self.create_cooking_job()
                 #else:
                     #get_attention('You must login first. Returning to pidrator menu...')
+            elif menuopt == '3':
+            # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
+            #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
+            #    HOWEVER, PIDRATOR SHOULD NEVER BE RUN WITHOUT LOGGING A USER IN FIRST! '''
+                self.select_cooking_job()
+            # Following 4 lines are the production version code which forces user login
+            # before creating a cooking job.
+                #try:
+                    #if user != ():
+                        #self.select_cooking_job()
+                #else:
+                    #get_attention('You must login first. Returning to pidrator menu...')
+            elif menuopt == '4':
+                # DON'T DO ANYTHING JUST YET
+                get_attention('Not yet...')
+                continue
             elif menuopt == '7':
                 user = self.user_create()
             elif menuopt == '8':
@@ -392,6 +410,7 @@ Enter your selection: ''').lower()
                 left outer join devices on job_info.device_id = devices.id
                 left outer join foods on job_info.food_id = foods.id
             where job_info.id = (%s)''', jobid, False, 'one')
+        print('The following job has been created successfully:')
         print('\tJob name:            {}'.format(row[0]))
         print('\tPrepared by:         {}'.format(row[1]))
         print('\tCooking device:      {}'.format(row[2]))
@@ -526,6 +545,13 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             return matchfound
 
     def main_cooking_loop(self, jobid, end):
+        'Routine for running a created or selected cooking job.'
+        c.get_job_time()
+        self.confirm_job()
+        # Set job start time
+        self.set_job_start_time(jobid)
+        # Calculate job run time
+        finish_time = self.calculate_job_time(jobid)
         fractmin = 15 # Log temp to database in seconds
         currdelta = timedelta(seconds=fractmin)
         countdown = 0
@@ -564,7 +590,8 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 print('Job complete!')
                 break
 
-    def cooking_job(self):
+    def create_cooking_job(self):
+        'Build a new cooking job by adding and/or selecting all necessary items.'
         while True:
             # Pick food from list
             foodid = self.pick_list('foods', 'foodname', 'foods', 'foodname')
@@ -585,14 +612,23 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 userid + deviceid + foodid + tempset + jobid, True)
             # Now make sure it worked...!
             self.describe_job(jobid)
-            c.get_job_time()
-            self.confirm_job()
-            # Set job start time
-            self.set_job_start_time(jobid)
-            # Calculate job run time
-            finish_time = self.calculate_job_time(jobid)
-            # Main cooking loop
-            main_cooking_loop(jobid, finish_time)
+            response = input("Enter 'Y' to return to main menu or 'C' to create another job: [Y/C] ")
+            if response.lower() == 'y':
+                get_attention('Returning to main menu...')
+            # Need to return and/or set a value here before allowing job to run
+                break
+            elif response.lower() == 'c':
+                get_attention('Creating another job...')
+            else:
+                get_attention('Invalid choice. Please try again...')
+
+    def select_cooking_job(self):
+        'Display a list of existing cooking jobs for the user to pick from.'
+        while True:
+            # Display number of existing jobs
+            # Display brief details about at least first job
+            # Allow user to pick (one of) the displayed job(s)
+            # Return to main menu when finished selecting job
 
 def verify_python_version():
     'Verify that script is running python 3.x.'
