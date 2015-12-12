@@ -133,6 +133,7 @@ class RasPiDatabase:
         change password, create database extensions/tables, get help, or exit.'''
         user = ()
         while True:
+            clear_screen()
             print('\npidrator menu\n')
             if user != ():
                 print('Currently logged in as: {}\n'.format(user[0]))
@@ -188,9 +189,9 @@ Enter your selection: ''').lower()
                     get_attention('You must login first. Returning to pidrator menu...')
             elif menuopt == '9':
                 self.build_tables()
-            elif menuopt.lower() == 'h':
+            elif menuopt == 'h':
                 help_screen()
-            elif menuopt.lower() == 'x':
+            elif menuopt == 'x':
                 self.clean_exit(0)
             else:
                 get_attention('Invalid choice. Please try again...')
@@ -198,11 +199,11 @@ Enter your selection: ''').lower()
     def confirm_job(self):
         'Prompt user before starting the job.'
         while True:
-            response = input(r'''Enter 's' when you are ready to start your job or 'x' to exit without cooking. ''')
-            if response.lower() == 'x':
+            response = input(r'''Enter 's' when you are ready to start your job or 'x' to exit without cooking. ''').lower()
+            if response == 'x':
                 print('You have chosen to exit without cooking.')
                 self.clean_exit(0)
-            elif response.lower() == 's':
+            elif response == 's':
                 break
             else:
                 get_attention('Invalid selection. Please try again...')
@@ -437,13 +438,13 @@ Enter your selection: ''').lower()
                 return tempsetting
             else: # Previous cooking data available
                 print('Last job was cooked at temperature/setting: {}.'.format(tempcheck[0]))
-                response = input('Are you going to cook at the same temperature/setting? [Y/N] ')
-                if response.lower() == 'y': # Cook at the same temp
+                response = input('Are you going to cook at the same temperature/setting? [Y/N] ').lower()
+                if response == 'y': # Cook at the same temp
                     print('You selected to cook at the same temperature/setting.')
                     tempsetting = tempcheck
                     print('\n\n')
                     return tempsetting
-                elif response.lower() == 'n': # Cook at a different temp
+                elif response == 'n': # Cook at a different temp
                     tempsetting = dbinput('What temperature/setting are you going to use this time? ')
                     print('\n\n')
                     return tempsetting
@@ -478,8 +479,8 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 if len(newitem[0]) == 0: # Make sure user input is not empty
                     get_attention('Invalid entry. Please try again...')
                     continue
-                confirm = input('You entered: {}. Is that correct? [Y/N] '.format(newitem[0]))
-                if confirm.lower() == 'y':
+                confirm = input('You entered: {}. Is that correct? [Y/N] '.format(newitem[0])).lower()
+                if confirm == 'y':
                     # Verify the new item does not match any existing item(s)
                     isamatch = self.match_item_check(colname, tablename, itemlist, itemnbr, newitem)
                     if isamatch:
@@ -489,7 +490,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                     self.query(insertrow, newitem, True)
                     print('{} has been added to the list of {}.'.format(newitem[0], listname))
                     print('Returning to list of available {}.'.format(listname))
-                elif confirm.lower() == 'n':
+                elif confirm == 'n':
                     get_attention('Entry refused. Please try again...')
                     continue
                 else:
@@ -612,12 +613,12 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 userid + deviceid + foodid + tempset + jobid, True)
             # Now make sure it worked...!
             self.describe_job(jobid)
-            response = input("Enter 'Y' to return to main menu or 'C' to create another job: [Y/C] ")
-            if response.lower() == 'y':
+            response = input("Enter 'Y' to return to main menu or 'C' to create another job: [Y/C] ").lower()
+            if response == 'y':
                 get_attention('Returning to main menu...')
             # Need to return and/or set a value here before allowing job to run
                 break
-            elif response.lower() == 'c':
+            elif response == 'c':
                 get_attention('Creating another job...')
             else:
                 get_attention('Invalid choice. Please try again...')
@@ -629,6 +630,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             # Display brief details about at least first job
             # Allow user to pick (one of) the displayed job(s)
             # Return to main menu when finished selecting job
+            pass
 
 def verify_python_version():
     'Verify that script is running python 3.x.'
@@ -657,10 +659,10 @@ def get_job_time():
         if cookhour == 0 and cookmin == 0:
             get_attention('You cannot cook something for 0 hours & 0 minutes! Please try again...')
             continue
-        response = input('You entered {} hours and {} minutes. Is this correct? [Y/N] '.format(cookhour, cookmin))
-        if response.lower() == 'y':
+        response = input('You entered {} hours and {} minutes. Is this correct? [Y/N] '.format(cookhour, cookmin)).lower()
+        if response == 'y':
             break
-        elif response.lower() == 'n':
+        elif response == 'n':
             get_attention('Time selection declined. Exiting')
     print('\n\n')
 
