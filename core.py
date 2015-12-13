@@ -153,17 +153,11 @@ Enter your selection: ''').lower()
             if menuopt == '1':
                 user = self.user_login()
             elif menuopt == '2':
-            # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
-            #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
-            #    HOWEVER, PIDRATOR SHOULD NEVER BE RUN WITHOUT LOGGING A USER IN FIRST! '''
-                self.create_cooking_job()
-            # Following 4 lines are the production version code which forces user login
-            # before creating a cooking job.
-                #try:
-                    #if user != ():
-                        #self.create_cooking_job()
-                #else:
-                    #get_attention('You must login first. Returning to pidrator menu...')
+            # Ensure user login before creating a cooking job.
+                if user != ():
+                    self.create_cooking_job()
+                else:
+                    get_attention('You must login first. Returning to pidrator menu...')
             elif menuopt == '3':
             # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
             #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
@@ -473,8 +467,8 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             # Display all item(s) in list or state that the list is empty
             itemlist, itemnbr, countlist = self.show_pick_list(listname, colname, tablename, ordername)
             itemid = ()
-            # Enter item(s) into the list
-            if itemnbr == '0' or itemlist == []: # Add new item to the table
+            # Whether by user input or being empty, enter item into the list
+            if itemnbr == '0' or itemlist == []:
                 newitem = dbinput('Enter the name of the item you would like to add: ')
                 if len(newitem[0]) == 0: # Make sure user input is not empty
                     get_attention('Invalid entry. Please try again...')
@@ -484,12 +478,15 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                     # Verify the new item does not match any existing item(s)
                     isamatch = self.match_item_check(colname, tablename, itemlist, itemnbr, newitem)
                     if isamatch:
+                        get_attention('Duplicate entry found. Please try again...')
                         continue
-                    # Insert new item into table
-                    insertrow = 'insert into {} ({}) values ((%s))'.format(tablename, colname)
-                    self.query(insertrow, newitem, True)
-                    print('{} has been added to the list of {}.'.format(newitem[0], listname))
-                    print('Returning to list of available {}.'.format(listname))
+                    else:
+                        # Insert new item into table
+                        insertrow = 'insert into {} ({}) values ((%s))'.format(tablename, colname)
+                        self.query(insertrow, newitem, True)
+                        print('{} has been added to the list of {}.'.format(newitem[0], listname))
+                        print('Returning to list of available {}.'.format(listname))
+                        continue
                 elif confirm == 'n':
                     get_attention('Entry refused. Please try again...')
                     continue
