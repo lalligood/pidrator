@@ -134,7 +134,7 @@ class RasPiDatabase:
         user = ()
         while True:
             clear_screen()
-            print('\npidrator menu\n')
+            print('\nPIDRATOR MENU\n')
             if user != ():
                 print('Currently logged in as: {}\n'.format(user[0]))
             else:
@@ -207,11 +207,14 @@ Enter your selection: ''').lower()
         '''Checks to see if all necessary extensions are loaded, and that all tables exist.
     Otherwise it will attempt to create any missing extensions or tables in
     the database.'''
-        print('\n\n')
+        clear_screen()
+        print('CREATING DATABASE EXTENSIONS AND TABLES\n\n')
         # Verify database extensions have been installed
         self.verify_pgextensions()
+        print()
         # Verify database tables exist or create them if they do not
         self.verify_schema()
+        enter_to_continue()
 
     def verify_pgextensions(self):
         '''Attempts to install all necessary PostgreSQL database extensions for the
@@ -249,8 +252,7 @@ Enter your selection: ''').lower()
             for result in results_list:
                 self.create_tables(result)
         else:
-            print('''\nAll extensions and tables are present in the database.
-    Returning to pidrator menu...''')
+            print('\nAll extensions and tables are present in the database.')
 
     def create_tables(self, table):
         'Create table(s) in database for pidrator if any do not exist.'
@@ -282,8 +284,7 @@ Enter your selection: ''').lower()
                 , user_id uuid
                 , device_id uuid
                 , food_id uuid
-                , temperature_deg int
-                , temperature_setting text
+                , temperature text
                 , createtime timestamp with time zone default now()
                 , starttime timestamp with time zone
                 , endtime timestamp with time zone
@@ -623,13 +624,54 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 get_attention('Invalid choice. Please try again...')
 
     def select_cooking_job(self):
-        'Display a list of existing cooking jobs for the user to pick from.'
         while True:
-            # Display number of existing jobs
-            # Display brief details about at least first job
             # Allow user to pick (one of) the displayed job(s)
+            self.show_cooking_job()
             # Return to main menu when finished selecting job
-            pass
+
+    def show_cooking_job(self):
+        'Display a list of existing cooking jobs for the user to pick from.'
+        clear_screen()
+        # Fetch all existing jobs
+        joblist = self.query('''select
+            jobname
+            , foods.foodname
+            , devices.devicename
+            , temperature
+            , cookminutes
+            , starttime
+            , users.fullname
+            , createtime
+        from job_info
+            left outer join users on job_info.user_id = users.id
+            left outer join devices on job_info.device_id = devices.id
+            left outer join foods on job_info.food_id = foods.id
+        order by createtime''', None, False, 'all')
+        if joblist == []:
+            # Display message if no rows are returned
+            print('No jobs found. Please create a new job first')
+        else:
+            # List all row(s) that exist in table
+            print('AVAILABLE JOBS\n')
+            print('The following jobs are available: ')
+            count = 0
+            for x in joblist:
+                count += 1
+                print('\t{}. Job: {}'.format(count, x[0]))
+                if x[4] == None:
+                    jobruntime = 'unknown'
+                else:
+                    jobruntime = str(int(x[5]) / 60) + 'hr ' + str(int(x[5]) % 60) + 'min'
+                print('\t\tPrepares {} in {} at {} for {}.'.format(x[1], x[2], x[3], jobruntime))
+                if x[5] == None:
+                    joblastrun = 'Has never been run.'
+                else:
+                    joblastrun = 'Last run on {}.'.format(x[5])
+                print('\t\t{}'.format(joblastrun))
+                print('\t\tCreated by {} on {}'.format(x[6], x[7]))
+            countlist = count
+            jobnbr = input('Enter the number of the job that you want to run: ')
+        return joblist, jobnbr, countlist
 
 def verify_python_version():
     'Verify that script is running python 3.x.'
@@ -715,6 +757,10 @@ def format_temp():
 def clear_screen():
     'Clear screen for better usability and to get user\'s undivided attention.'
     os.system('clear')
+
+def enter_to_continue():
+    'Request user to press <Enter> to continue.'
+    getpass.getpass('\nPress <Enter> to continue...')
 
 def help_screen():
     'Display useful information about using pidrator'
