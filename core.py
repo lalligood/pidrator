@@ -511,6 +511,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
     def show_pick_list(self, listname, colname, tablename, ordername):
         '''Displays item(s) in the list. If the list is empty, it returns a message
     that item(s) need to be added to the list.'''
+        clear_screen()
         order = tuple_fmt(ordername)
         selectorder = 'select {} from {} order by {}'.format(colname, tablename, ordername)
         itemlist = self.query(selectorder, None, False, 'all')
@@ -519,6 +520,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             itemnbr = ''
             countlist = 0
         else: # Show any row(s) exist in table
+            print('{}\n'.format(listname.upper()))
             print('The following {} are available: '.format(listname))
             count = 0
             for x in itemlist: # Display list of items
