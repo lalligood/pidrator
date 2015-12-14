@@ -134,7 +134,7 @@ class RasPiDatabase:
         user = ()
         while True:
             clear_screen()
-            print('\nPIDRATOR MENU\n')
+            print('PIDRATOR MENU\n')
             if user != ():
                 print('Currently logged in as: {}\n'.format(user[0]))
             else:
@@ -150,45 +150,32 @@ class RasPiDatabase:
 \th. Help
 \tx. Exit
 Enter your selection: ''').lower()
-            if menuopt == '1':
-                user = self.user_login()
-            elif menuopt == '2':
-            # Ensure user login before creating a cooking job.
-                if user != ():
-                    self.create_cooking_job()
-                else:
-                    get_attention('You must login first. Returning to pidrator menu...')
-            elif menuopt == '3':
-            # FOR TESTING PURPOSES ONLY LEAVE THE FOLLOWING LINE INTACT
-            #    THIS WILL ALLOW FOR FASTER TESTING OF COOKING JOB FUNCTIONALITY,
-            #    HOWEVER, PIDRATOR SHOULD NEVER BE RUN WITHOUT LOGGING A USER IN FIRST! '''
-                self.select_cooking_job()
-            # Following 4 lines are the production version code which forces user login
-            # before creating a cooking job.
-                #try:
-                    #if user != ():
-                        #self.select_cooking_job()
-                #else:
-                    #get_attention('You must login first. Returning to pidrator menu...')
-            elif menuopt == '4':
-                # DON'T DO ANYTHING JUST YET
-                get_attention('Not yet...')
-                continue
-            elif menuopt == '7':
-                user = self.user_create()
-            elif menuopt == '8':
-                if user != ():
-                    self.change_pswd(user)
-                else:
-                    get_attention('You must login first. Returning to pidrator menu...')
-            elif menuopt == '9':
-                self.build_tables()
-            elif menuopt == 'h':
-                help_screen()
-            elif menuopt == 'x':
-                self.clean_exit(0)
+            # Ensure user login before allowing certain options.
+            if menuopt in ('2', '3', '8') and user == ():
+                login_first()
             else:
-                get_attention('Invalid choice. Please try again...')
+                if menuopt == '1':
+                    user = self.user_login()
+                elif menuopt == '2':
+                        self.create_cooking_job()
+                elif menuopt == '3':
+                        self.select_cooking_job()
+                elif menuopt == '4':
+                    # DON'T DO ANYTHING JUST YET
+                    get_attention('Not yet...')
+                    continue
+                elif menuopt == '7':
+                    user = self.user_create()
+                elif menuopt == '8':
+                        self.change_pswd(user)
+                elif menuopt == '9':
+                    self.build_tables()
+                elif menuopt == 'h':
+                    help_screen()
+                elif menuopt == 'x':
+                    self.clean_exit(0)
+                else:
+                    get_attention('Invalid choice. Please try again...')
 
     def confirm_job(self):
         'Prompt user before starting the job.'
@@ -313,8 +300,9 @@ Enter your selection: ''').lower()
 
     def user_login(self):
         'Handles user login by verifying that the user & password are correct.'
+        clear_screen()
         badlogin = 0 # Counter for login attempts; 3 strikes & you're out
-        print('\nLogin to create and run a cooking job.\n')
+        print('USER LOGIN\n')
         while True:
             username = dbinput('Enter your username: ', 'user')
             pswd = dbinput('Enter your password: ', 'pswd')
@@ -529,8 +517,11 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 print('\t{}. {}'.format(count, x[0]))
             print('\t0. Add a new item to the {} list.'.format(listname))
             countlist = count
-            itemnbr = input('Enter the number of the item that you want to use: ')
-        return itemlist, itemnbr, countlist
+            try:
+                itemnbr = int(input('Enter the number of the item that you want to use: '))
+            except:
+                get_attention('Invalid choice. Please try again...')
+            return itemlist, itemnbr, countlist
 
     def match_item_check(self, colname, tablename, itemlist, itemnbr, newitem):
         '''Once the user has input a new item, this verifies that it does not match
@@ -625,8 +616,10 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
 
     def select_cooking_job(self):
         while True:
-            # Allow user to pick (one of) the displayed job(s)
+            # Display all created cooking jobs
             self.show_cooking_job()
+            self.clean_exit(0)
+            # Allow user to pick (one of) the displayed job(s)
             # Return to main menu when finished selecting job
 
     def show_cooking_job(self):
@@ -762,6 +755,12 @@ def enter_to_continue():
     'Request user to press <Enter> to continue.'
     getpass.getpass('\nPress <Enter> to continue...')
 
+def login_first():
+    'Warning message to be displayed when user attempts action requiring login first.'
+    clear_screen()
+    get_attention('You must login first.\n')
+    enter_to_continue()
+
 def help_screen():
     'Display useful information about using pidrator'
     clear_screen()
@@ -770,3 +769,4 @@ pidrator was designed to be used with any model/version of Raspberry Pi. It
 needs a Powertail & thermal sensor to perform all of the designed functionality.
 ipsum lorem blah blah blah....
 """)
+    enter_to_continue()
