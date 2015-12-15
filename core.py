@@ -27,6 +27,7 @@ class RasPiDatabase:
     extras.register_uuid()
     def __init__(self):
         'Declare database connection variables.'
+        self.date_format = '%b %d, %Y %I:%M:%S%p' # Mon DD, YYYY HH:MM:SSAMPM
         # Enable functionality ONLY if running on RasPi!
         raspi = platform.machine().startswith('armv')
         if raspi and getpass.getuser() != 'root': # RasPi should only run as root
@@ -138,8 +139,8 @@ class RasPiDatabase:
             if user != ():
                 print('Currently logged in as: {}\n'.format(user[0]))
             else:
-                print('Not logged in. Please login or create a new account.')
-            menuopt = input('''Select from one of the following choices:
+                print('Not logged in. Please login or create a new account.\n')
+            print('''Select from one of the following choices:
 \t1. Login
 \t2. Create a new cooking job
 \t3. Select an existing cooking job
@@ -148,10 +149,10 @@ class RasPiDatabase:
 \t8. Change password
 \t9. Create necessary extensions and tables in database
 \th. Help
-\tx. Exit
-Enter your selection: ''').lower()
+\tx. Exit''')
+            menuopt = input('Enter your selection: ').lower()
             # Ensure user login before allowing certain options.
-            if menuopt in ('2', '3', '8') and user == ():
+            if menuopt in ('2', '3', '4', '8') and user == ():
                 login_first()
             else:
                 if menuopt == '1':
@@ -195,7 +196,7 @@ Enter your selection: ''').lower()
     Otherwise it will attempt to create any missing extensions or tables in
     the database.'''
         clear_screen()
-        print('CREATING DATABASE EXTENSIONS AND TABLES\n\n')
+        print('CREATING DATABASE EXTENSIONS AND TABLES\n')
         # Verify database extensions have been installed
         self.verify_pgextensions()
         print()
@@ -659,9 +660,9 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
                 if x[5] == None:
                     joblastrun = 'Has never been run.'
                 else:
-                    joblastrun = 'Last run on {}.'.format(x[5])
+                    joblastrun = 'Last run on {}.'.format(x[5].strftime(self.date_format))
                 print('\t\t{}'.format(joblastrun))
-                print('\t\tCreated by {} on {}'.format(x[6], x[7]))
+                print('\t\tCreated by {} on {}'.format(x[6], x[7].strftime(self.date_format)))
             countlist = count
             jobnbr = input('Enter the number of the job that you want to run: ')
         return joblist, jobnbr, countlist
@@ -764,7 +765,7 @@ def login_first():
 def help_screen():
     'Display useful information about using pidrator'
     clear_screen()
-    print("""
+    print("""PIDRATOR HELP\n
 pidrator was designed to be used with any model/version of Raspberry Pi. It
 needs a Powertail & thermal sensor to perform all of the designed functionality.
 ipsum lorem blah blah blah....
