@@ -27,7 +27,6 @@ class RasPiDatabase:
     extras.register_uuid()
     def __init__(self):
         'Declare database connection variables.'
-        self.date_format = '%b %d, %Y %I:%M:%S%p' # Mon DD, YYYY HH:MM:SSAMPM
         # Enable functionality ONLY if running on RasPi!
         raspi = platform.machine().startswith('armv')
         if raspi and getpass.getuser() != 'root': # RasPi should only run as root
@@ -158,9 +157,9 @@ class RasPiDatabase:
                 if menuopt == '1':
                     user = self.user_login()
                 elif menuopt == '2':
-                        self.create_cooking_job()
+                    self.create_cooking_job()
                 elif menuopt == '3':
-                        self.select_cooking_job()
+                    self.select_cooking_job()
                 elif menuopt == '4':
                     # DON'T DO ANYTHING JUST YET
                     get_attention('Not yet...')
@@ -168,7 +167,7 @@ class RasPiDatabase:
                 elif menuopt == '7':
                     user = self.user_create()
                 elif menuopt == '8':
-                        self.change_pswd(user)
+                    self.change_pswd(user)
                 elif menuopt == '9':
                     self.build_tables()
                 elif menuopt == 'h':
@@ -618,12 +617,12 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
     def select_cooking_job(self):
         while True:
             # Display all created cooking jobs
-            self.show_cooking_job()
+            self.show_cooking_job(pretty_date_format)
             self.clean_exit(0)
             # Allow user to pick (one of) the displayed job(s)
             # Return to main menu when finished selecting job
 
-    def show_cooking_job(self):
+    def show_cooking_job(self, date_format):
         'Display a list of existing cooking jobs for the user to pick from.'
         clear_screen()
         # Fetch all existing jobs

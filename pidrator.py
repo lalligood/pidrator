@@ -21,6 +21,7 @@ import logging
 
 # For inserting dates to DB & for logging
 date_format = '%Y-%m-%d %H:%M:%S' # YYYY-MM-DD HH:MM:SS
+pretty_date_format = '%b %d, %Y %I:%M:%S%p' # Mon DD, YYYY HH:MM:SSAMPM
 # Logging information
 logfilename = 'app-pidrator.log'
 loglevel = logging.ERROR # Available logging levels, from low to high: DEBUG, INFO, WARNING, ERROR, CRITICAL
