@@ -766,7 +766,14 @@ def help_screen():
     clear_screen()
     print("""PIDRATOR HELP\n
 pidrator was designed to be used with any model/version of Raspberry Pi. It
-needs a Powertail & thermal sensor to perform all of the designed functionality.
-ipsum lorem blah blah blah....
+needs a Powertail & DS18B20 high temperature thermal sensor to perform all of the designed functionality. All data is written to a PostgreSQL 9.x database on the Raspberry Pi.
+
+On the first run, there are extensions & tables that need to be written to the database. Then the next step is to create a user account. Both of these steps can be accomplished through the main menu of the pidrator application.
+
+Then with a user account created (& logged in as that user), one can begin to prepare a cooking job. The user is asked what kind of food they want to prepare, what device the pidrator is going to monitor, & give the cooking job a name for future use.
+
+With a cooking job created/selected, the user is then asked to provide input as to how long they would like to cook the food.
+
+Finally, the selected job is then run. The Powertail will control the device allowing it to run for the length of time put in by the user. Data is periodically collected while cooking & stored in the database.
 """)
     enter_to_continue()
