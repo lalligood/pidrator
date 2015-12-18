@@ -459,7 +459,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             # Whether by user input or being empty, enter item into the list
             if itemnbr == '0' or itemlist == []:
                 newitem = dbinput('Enter the name of the item you would like to add: ')
-                if len(newitem[0]) == 0: # Make sure user input is not empty
+                if len(newitem) == 0: # Make sure user input is not empty
                     get_attention('Invalid entry. Please try again...')
                     continue
                 confirm = input('You entered: {}. Is that correct? [Y/N] '.format(newitem[0])).lower()
@@ -501,7 +501,6 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
         '''Displays item(s) in the list. If the list is empty, it returns a message
     that item(s) need to be added to the list.'''
         clear_screen()
-        order = tuple_fmt(ordername)
         selectorder = 'select {} from {} order by {}'.format(colname, tablename, ordername)
         itemlist = self.query(selectorder, None, False, 'all')
         if itemlist == []: # Inform that table is empty
@@ -591,8 +590,7 @@ It will complete at {}.'''.format(cookhour, cookmin, endtime[0]))
             deviceid = self.pick_list('cooking devices', 'devicename',
                 'devices', 'devicename')
             # Pick job from list
-            jobid = self.pick_list('job names', 'jobname', 'job_info',
-                'createtime')
+            jobid = self.pick_list('job names', 'jobname', 'job_info', 'jobname')
             # Get user_id
             userid = self.query('select id from users where username = (%s)',
                 user, False, 'one')
